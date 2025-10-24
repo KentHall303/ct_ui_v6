@@ -1,0 +1,43 @@
+// Main Content Component Styles
+.main-content-area {
+  background-color: #ffffff;
+  min-height: 100vh;
+  
+  .content-wrapper {
+    padding: 2rem;
+  }
+  
+  .content-header {
+    margin-bottom: 2rem;
+    
+    h1, h2, h3, h4, h5, h6 {
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+  }
+  
+  .content-body {
+    .section {
+      margin-bottom: 2rem;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+  
+  .content-footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #e0e0e0;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .main-content-area {
+    .content-wrapper {
+      padding: 1rem;
+    }
+  }
+}
