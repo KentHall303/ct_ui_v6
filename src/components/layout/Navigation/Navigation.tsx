@@ -10,7 +10,10 @@ import {
   Palette as PaletteIcon,
   PanelLeftOpen,
   PanelLeftClose,
-  LogOut as LogOutIcon
+  LogOut as LogOutIcon,
+  Users as UsersIcon,
+  Briefcase as BriefcaseIcon,
+  Calendar as CalendarIcon
 } from "lucide-react";
 
 type NavigationProps = {
