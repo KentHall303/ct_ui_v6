@@ -15,7 +15,7 @@ const ContactProfileModal3Page = React.lazy(() => import('./screens/DesignHub/Co
 const ContactProfileModal3DirectPage = React.lazy(() => import('./screens/DesignHub/ContactProfileModal3DirectPage').then(m => ({ default: m.ContactProfileModal3DirectPage })));
 const MeetingManagementPage = React.lazy(() => import('./screens/DesignHub/MeetingManagementPage').then(m => ({ default: m.MeetingManagementPage })));
 const ProposalSettingsPage = React.lazy(() => import('./screens/DesignHub/ProposalSettingsPage').then(m => ({ default: m.ProposalSettingsPage })));
-const ProposalModalDirectPage = React.lazy(() => import('./screens/DesignHub/ProposalModalDirectPage').then(m => ({ default: m.ProposalModalDirectPage })));
+const ProposalModalPage = React.lazy(() => import('./screens/DesignHub/ProposalModalPage').then(m => ({ default: m.ProposalModalPage })));
 
 const PlaceholderPage: React.FC<{ title: string; description: string }> = ({ title, description }) => (
   <div className="p-6">
@@ -143,11 +143,11 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/design-hub/proposal',
-    element: <ProposalModalDirectPage />
+    element: <ProposalSettingsPage />
   },
   {
-    path: '/design-hub/proposal-settings',
-    element: <ProposalSettingsPage />
+    path: '/design-hub/proposal-modal',
+    element: <ProposalModalPage />
   },
   {
     path: '/design-hub/triggers',

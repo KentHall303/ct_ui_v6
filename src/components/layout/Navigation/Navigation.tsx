@@ -128,6 +128,7 @@ const navigationItems: NavItem[] = [
       { id: "dh-log-codes", label: "Log Codes", path: "/design-hub/log-codes" },
       { id: "dh-pipeline", label: "Pipeline", path: "/design-hub/pipeline" },
       { id: "dh-proposal", label: "Proposal", path: "/design-hub/proposal" },
+      { id: "dh-proposal-modal", label: "Proposal Modal", path: "/design-hub/proposal-modal" },
       { id: "dh-triggers", label: "Triggers", path: "/design-hub/triggers" },
       { id: "dh-typography", label: "Typography", path: "/design-hub/typography" },
       { id: "form-examples", label: "Form Examples", path: "/design-hub/form-examples" },
