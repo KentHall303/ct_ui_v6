@@ -2,7 +2,10 @@ import React from 'react';
 import { RouteObject } from 'react-router-dom';
 
 const AccountsPage = React.lazy(() => import('./screens/Accounts/AccountsPage').then(m => ({ default: m.AccountsPage })));
+const PipelineClientPage = React.lazy(() => import('./screens/Pipeline/PipelineClientPage').then(m => ({ default: m.PipelineClientPage })));
+const ContactsPage = React.lazy(() => import('./screens/Contacts/ContactsPage').then(m => ({ default: m.ContactsPage })));
 const Jobs = React.lazy(() => import('./screens/Jobs/Jobs').then(m => ({ default: m.Jobs })));
+const CalendarPage = React.lazy(() => import('./screens/Calendar/CalendarPage').then(m => ({ default: m.CalendarPage })));
 const MessageCenterPage = React.lazy(() => import('./screens/MessageCenter/MessageCenterPage').then(m => ({ default: m.MessageCenterPage })));
 const Typology = React.lazy(() => import('./screens/Typology/Typology').then(m => ({ default: m.Typology })));
 const FormExamples = React.lazy(() => import('./screens/FormExamples/FormExamples').then(m => ({ default: m.FormExamples })));
@@ -12,6 +15,7 @@ const ContactProfileModal3Page = React.lazy(() => import('./screens/DesignHub/Co
 const ContactProfileModal3DirectPage = React.lazy(() => import('./screens/DesignHub/ContactProfileModal3DirectPage').then(m => ({ default: m.ContactProfileModal3DirectPage })));
 const MeetingManagementPage = React.lazy(() => import('./screens/DesignHub/MeetingManagementPage').then(m => ({ default: m.MeetingManagementPage })));
 const ProposalSettingsPage = React.lazy(() => import('./screens/DesignHub/ProposalSettingsPage').then(m => ({ default: m.ProposalSettingsPage })));
+const ProposalModalDirectPage = React.lazy(() => import('./screens/DesignHub/ProposalModalDirectPage').then(m => ({ default: m.ProposalModalDirectPage })));
 
 const PlaceholderPage: React.FC<{ title: string; description: string }> = ({ title, description }) => (
   <div className="p-6">
@@ -34,8 +38,68 @@ export const routes: RouteObject[] = [
     element: <AccountsPage />
   },
   {
+    path: '/pipeline',
+    element: <PlaceholderPage title="Pipeline" description="Pipeline content will be implemented here." />
+  },
+  {
+    path: '/pipeline/client',
+    element: <PipelineClientPage />
+  },
+  {
+    path: '/pipeline/employee',
+    element: <PlaceholderPage title="Pipeline - Employee" description="Pipeline employee content will be implemented here." />
+  },
+  {
+    path: '/pipeline/partner',
+    element: <PlaceholderPage title="Pipeline - Partner" description="Pipeline partner content will be implemented here." />
+  },
+  {
+    path: '/pipeline/vendor',
+    element: <PlaceholderPage title="Pipeline - Vendor" description="Pipeline vendor content will be implemented here." />
+  },
+  {
+    path: '/pipeline/new-order',
+    element: <PlaceholderPage title="Pipeline - New Order" description="Pipeline new order content will be implemented here." />
+  },
+  {
+    path: '/contacts',
+    element: <PlaceholderPage title="Contacts" description="Contacts content will be implemented here." />
+  },
+  {
+    path: '/contacts/clients',
+    element: <ContactsPage />
+  },
+  {
+    path: '/contacts/employee',
+    element: <PlaceholderPage title="Contacts - Employee" description="Employee contacts will be implemented here." />
+  },
+  {
+    path: '/contacts/partner',
+    element: <PlaceholderPage title="Contacts - Partner" description="Partner contacts will be implemented here." />
+  },
+  {
+    path: '/contacts/vendor',
+    element: <PlaceholderPage title="Contacts - Vendor" description="Vendor contacts will be implemented here." />
+  },
+  {
+    path: '/contacts/new-other',
+    element: <PlaceholderPage title="Contacts - New Other" description="New other contacts will be implemented here." />
+  },
+  {
+    path: '/contacts/all',
+    element: <PlaceholderPage title="All Contacts" description="All contacts will be implemented here." />
+  },
+  {
+    path: '/contacts/archived',
+    element: <PlaceholderPage title="Archived Contacts" description="Archived contacts will be implemented here." />
+  },
+  {
     path: '/jobs',
     element: <Jobs />
+  },
+  {
+    path: '/calendar',
+    element: <CalendarPage />
   },
   {
     path: '/message-center',
@@ -79,6 +143,10 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/design-hub/proposal',
+    element: <ProposalModalDirectPage />
+  },
+  {
+    path: '/design-hub/proposal-settings',
     element: <ProposalSettingsPage />
   },
   {
