@@ -44,10 +44,54 @@ const navigationItems: NavItem[] = [
     hasDropdown: false
   },
   {
+    id: "accounts",
+    label: "Accounts",
+    path: "/accounts",
+    icon: UsersIcon,
+    hasDropdown: false
+  },
+  {
+    id: "pipeline",
+    label: "Pipeline",
+    path: "/pipeline",
+    icon: BriefcaseIcon,
+    hasDropdown: true,
+    subItems: [
+      { id: "pipeline-client", label: "Client", path: "/pipeline/client" },
+      { id: "pipeline-employee", label: "Employee", path: "/pipeline/employee" },
+      { id: "pipeline-partner", label: "Partner", path: "/pipeline/partner" },
+      { id: "pipeline-vendor", label: "Vendor", path: "/pipeline/vendor" },
+      { id: "pipeline-new-order", label: "New order", path: "/pipeline/new-order" },
+    ]
+  },
+  {
+    id: "contacts",
+    label: "Contacts",
+    path: "/contacts",
+    icon: MessageSquareIcon,
+    hasDropdown: true,
+    subItems: [
+      { id: "contacts-clients", label: "Clients", path: "/contacts/clients" },
+      { id: "contacts-employee", label: "Employee", path: "/contacts/employee" },
+      { id: "contacts-partner", label: "Partner", path: "/contacts/partner" },
+      { id: "contacts-vendor", label: "Vendor", path: "/contacts/vendor" },
+      { id: "contacts-new-other", label: "New Other", path: "/contacts/new-other" },
+      { id: "contacts-all", label: "All", path: "/contacts/all" },
+      { id: "contacts-archived", label: "Archived", path: "/contacts/archived" },
+    ]
+  },
+  {
     id: "jobs",
     label: "Jobs",
     path: "/jobs",
     icon: ClipboardListIcon,
+    hasDropdown: false
+  },
+  {
+    id: "calendar",
+    label: "Calendar",
+    path: "/calendar",
+    icon: CalendarIcon,
     hasDropdown: false
   },
   {
@@ -100,7 +144,7 @@ const navigationItems: NavItem[] = [
       { id: "st-api-monitor", label: "API Monitor", path: "/settings/api-monitor" },
       { id: "st-webhook-monitor", label: "Webhook Monitor", path: "/settings/webhook-monitor" },
     ]
-  },
+  }
 ];
 
 export const Navigation = ({
