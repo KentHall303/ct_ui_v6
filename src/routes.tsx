@@ -1,6 +1,7 @@
 import React from 'react';
 import { RouteObject } from 'react-router-dom';
 
+const AccountsPage = React.lazy(() => import('./screens/Accounts/AccountsPage').then(m => ({ default: m.AccountsPage })));
 const Jobs = React.lazy(() => import('./screens/Jobs/Jobs').then(m => ({ default: m.Jobs })));
 const MessageCenterPage = React.lazy(() => import('./screens/MessageCenter/MessageCenterPage').then(m => ({ default: m.MessageCenterPage })));
 const Typology = React.lazy(() => import('./screens/Typology/Typology').then(m => ({ default: m.Typology })));
@@ -27,6 +28,10 @@ export const routes: RouteObject[] = [
   {
     path: '/dashboard',
     element: <PlaceholderPage title="Dashboard" description="Dashboard content will be implemented here." />
+  },
+  {
+    path: '/accounts',
+    element: <AccountsPage />
   },
   {
     path: '/jobs',
