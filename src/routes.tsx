@@ -4,6 +4,7 @@ import { RouteObject } from 'react-router-dom';
 const AccountsPage = React.lazy(() => import('./screens/Accounts/AccountsPage').then(m => ({ default: m.AccountsPage })));
 const PipelineClientPage = React.lazy(() => import('./screens/Pipeline/PipelineClientPage').then(m => ({ default: m.PipelineClientPage })));
 const ContactsPage = React.lazy(() => import('./screens/Contacts/ContactsPage').then(m => ({ default: m.ContactsPage })));
+const ContactsEmployeePage = React.lazy(() => import('./screens/Contacts/ContactsEmployeePage').then(m => ({ default: m.ContactsEmployeePage })));
 const Jobs = React.lazy(() => import('./screens/Jobs/Jobs').then(m => ({ default: m.Jobs })));
 const CalendarPage = React.lazy(() => import('./screens/Calendar/CalendarPage').then(m => ({ default: m.CalendarPage })));
 const MessageCenterPage = React.lazy(() => import('./screens/MessageCenter/MessageCenterPage').then(m => ({ default: m.MessageCenterPage })));
@@ -71,7 +72,7 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/contacts/employee',
-    element: <PlaceholderPage title="Contacts - Employee" description="Employee contacts will be implemented here." />
+    element: <ContactsEmployeePage />
   },
   {
     path: '/contacts/partner',
