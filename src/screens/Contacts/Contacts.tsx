@@ -78,7 +78,7 @@ const getButtonVariantClass = (variant: string) => {
 
 const ContactsHeader = () => (
   <div className="px-3 pt-3">
-    <div className="bg-white rounded-3 pt-2 pb-4 px-3 border shadow-sm">
+    <div className="bg-danger rounded-3 pt-2 pb-4 px-3 border shadow-sm">
     <div className="d-flex align-items-center justify-content-between mb-1">
       <div className="d-flex align-items-baseline gap-4">
         <h1 className="h2 fw-bold text-dark">Contacts - Client</h1>
