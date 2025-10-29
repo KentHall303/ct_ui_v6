@@ -8,7 +8,7 @@ import { AddCOGSModal } from "../../components/modals/AddCOGSModal";
 import { GrossMarginModal } from "../../components/modals/GrossMarginModal";
 import { JobsReportsFSModal } from "../../components/modals/JobsReportsFSModal";
 import { supabase } from "../../lib/supabase";
-import { sampleCalendarEvents, CalendarEvent } from "../../data/sampleCalendarData";
+import { sampleCalendarEvents, CalendarEvent, isEventStart, isEventEnd, isEventMiddle } from "../../data/sampleCalendarData";
 
 const actionButtons = [
   { label: "New Quote", variant: "default", icon: PlusIcon },
@@ -839,14 +839,36 @@ const CalendarView = () => {
                         <div className="d-flex flex-column gap-1">
                           {day.events.slice(0, 2).map((event) => {
                             const colors = getStatusColor(event.status);
+                            const isStart = isEventStart(event, day.dateString);
+                            const isEnd = isEventEnd(event, day.dateString);
+                            const isMiddle = isEventMiddle(event, day.dateString);
+                            const isMultiDay = event.isMultiDay;
+
+                            let borderRadius = '0.25rem';
+                            if (isMultiDay) {
+                              if (isStart && !isEnd) {
+                                borderRadius = '0.25rem 0 0 0.25rem';
+                              } else if (isEnd && !isStart) {
+                                borderRadius = '0 0.25rem 0.25rem 0';
+                              } else if (isMiddle) {
+                                borderRadius = '0';
+                              }
+                            }
+
                             return (
                               <div
                                 key={event.id}
-                                className={`${colors.bg} bg-opacity-10 ${colors.text} border ${colors.border} rounded px-2 py-1`}
+                                className={`${colors.bg} bg-opacity-10 ${colors.text} border ${colors.border} px-2 py-1 ${isMultiDay ? 'fw-bold' : ''}`}
                                 style={{
                                   fontSize: '0.65rem',
                                   cursor: 'pointer',
-                                  transition: 'all 0.15s ease'
+                                  transition: 'all 0.15s ease',
+                                  borderRadius,
+                                  position: 'relative',
+                                  ...(isMultiDay && {
+                                    borderLeft: isStart ? undefined : 'none',
+                                    borderRight: isEnd ? undefined : 'none',
+                                  })
                                 }}
                                 onMouseEnter={(e) => {
                                   e.currentTarget.style.transform = 'scale(1.02)';
@@ -854,10 +876,20 @@ const CalendarView = () => {
                                 onMouseLeave={(e) => {
                                   e.currentTarget.style.transform = 'scale(1)';
                                 }}
-                                title={`${event.quoteNumber}\n${event.contactName}\n${event.time}\n${event.amount}`}
+                                title={`${event.quoteNumber}\n${event.contactName}\n${event.time}\n${event.amount}${isMultiDay ? '\nMulti-day event' : ''}`}
                               >
-                                <div className="fw-semibold text-truncate">{event.time}</div>
-                                <div className="text-truncate">{event.quoteNumber}</div>
+                                {isStart && (
+                                  <>
+                                    <div className="fw-semibold text-truncate">{event.time}</div>
+                                    <div className="text-truncate">{event.quoteNumber}</div>
+                                  </>
+                                )}
+                                {isMiddle && (
+                                  <div className="text-truncate">{event.quoteNumber} (cont.)</div>
+                                )}
+                                {isEnd && !isStart && (
+                                  <div className="text-truncate">{event.quoteNumber} (ends)</div>
+                                )}
                               </div>
                             );
                           })}

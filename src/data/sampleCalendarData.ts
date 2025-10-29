@@ -8,6 +8,8 @@ export interface CalendarEvent {
   estimator: string;
   amount: string;
   type: 'quote' | 'installation' | 'inspection' | 'follow_up';
+  endDate?: string;
+  isMultiDay?: boolean;
 }
 
 export const sampleCalendarEvents: CalendarEvent[] = [
@@ -230,13 +232,76 @@ export const sampleCalendarEvents: CalendarEvent[] = [
     estimator: 'Test_Account Owner',
     amount: '$4,230.00',
     type: 'installation'
+  },
+  {
+    id: '21',
+    quoteNumber: 'Quote #195',
+    contactName: 'Global Enterprises',
+    date: '2025-09-08',
+    time: 'All Day',
+    status: 'active',
+    estimator: 'Test_Account Owner',
+    amount: '$25,500.00',
+    type: 'installation',
+    endDate: '2025-09-11',
+    isMultiDay: true
+  },
+  {
+    id: '22',
+    quoteNumber: 'Quote #198',
+    contactName: 'Tech Solutions Inc',
+    date: '2025-09-16',
+    time: 'All Day',
+    status: 'active',
+    estimator: 'Test_Account Owner',
+    amount: '$18,750.00',
+    type: 'installation',
+    endDate: '2025-09-19',
+    isMultiDay: true
+  },
+  {
+    id: '23',
+    quoteNumber: 'Quote #201',
+    contactName: 'Metro Construction',
+    date: '2025-09-23',
+    time: 'All Day',
+    status: 'pending',
+    estimator: 'Test_Account Owner',
+    amount: '$32,000.00',
+    type: 'installation',
+    endDate: '2025-09-27',
+    isMultiDay: true
   }
 ];
 
 export const getEventsByDate = (date: string): CalendarEvent[] => {
-  return sampleCalendarEvents.filter(event => event.date === date);
+  return sampleCalendarEvents.filter(event => {
+    if (event.isMultiDay && event.endDate) {
+      const eventStart = new Date(event.date);
+      const eventEnd = new Date(event.endDate);
+      const checkDate = new Date(date);
+      return checkDate >= eventStart && checkDate <= eventEnd;
+    }
+    return event.date === date;
+  });
 };
 
 export const getEventsByEstimator = (estimator: string): CalendarEvent[] => {
   return sampleCalendarEvents.filter(event => event.estimator === estimator);
+};
+
+export const isEventStart = (event: CalendarEvent, date: string): boolean => {
+  return event.date === date;
+};
+
+export const isEventEnd = (event: CalendarEvent, date: string): boolean => {
+  return event.isMultiDay && event.endDate === date;
+};
+
+export const isEventMiddle = (event: CalendarEvent, date: string): boolean => {
+  if (!event.isMultiDay || !event.endDate) return false;
+  const eventStart = new Date(event.date);
+  const eventEnd = new Date(event.endDate);
+  const checkDate = new Date(date);
+  return checkDate > eventStart && checkDate < eventEnd;
 };
