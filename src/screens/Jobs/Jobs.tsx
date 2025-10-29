@@ -649,24 +649,66 @@ const TableView = () => {
   );
 };
 
-const CalendarView = () => (
-  <Card className="h-100">
-    <Card.Header className="bg-light">
-      <h5 className="mb-0 fw-semibold">Calendar View</h5>
-    </Card.Header>
-    <Card.Body className="p-0">
-      <div className="d-flex h-100 bg-white">
-        {/* Left Sidebar - Estimators */}
-        <div className="border-end border-2 bg-light p-4" style={{ width: '256px' }}>
-          <div className="mb-6">
-            <h3 className="small fw-semibold text-dark mb-3">Estimators</h3>
-            <div className="d-grid gap-2">
+const CalendarView = () => {
+  const scrollRef = React.useRef<HTMLDivElement | null>(null);
+  const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
+
+  React.useLayoutEffect(() => {
+    function computeHeight() {
+      if (!scrollRef.current) return;
+      const rect = scrollRef.current.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const h = Math.max(400, Math.floor(vh - rect.top - 16));
+      setMaxHeight(h);
+    }
+    computeHeight();
+    window.addEventListener("resize", computeHeight);
+    return () => window.removeEventListener("resize", computeHeight);
+  }, []);
+
+  const hours = Array.from({ length: 14 }, (_, i) => i + 7);
+  const today = new Date();
+  const currentWeekStart = new Date(2025, 9, 26);
+  const weekDays = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(currentWeekStart);
+    date.setDate(currentWeekStart.getDate() + i);
+    return date;
+  });
+
+  const sampleEvents = [
+    { day: 1, startHour: 9, duration: 1.5, title: 'Time with Manish', color: '#4285f4', url: 'https://us02web.zoom.us/...' },
+    { day: 1, startHour: 10.5, duration: 2, title: 'Kent / Emanuel', color: '#4285f4' },
+    { day: 2, startHour: 8, duration: 1, title: 'Time with Manish', color: '#4285f4' },
+    { day: 2, startHour: 9, duration: 1, title: 'Com with Ankit', color: '#7baaf7' },
+    { day: 2, startHour: 11, duration: 1, title: 'TMI - Weekly Review', color: '#7baaf7' },
+    { day: 3, startHour: 9, duration: 1, title: 'Time with Manish', color: '#4285f4' },
+    { day: 3, startHour: 10, duration: 1, title: 'Com with Ankit', color: '#7baaf7' },
+    { day: 3, startHour: 11, duration: 1, title: 'Footprints/CT weekly mtg', color: '#7baaf7' },
+    { day: 3, startHour: 13, duration: 1, title: 'Jessica/Kent 2', color: '#93c5fd' },
+    { day: 4, startHour: 8, duration: 1.5, title: 'Time with Manish', color: '#4285f4' },
+    { day: 4, startHour: 9.5, duration: 1.5, title: 'Com with Ankit', color: '#7baaf7' },
+    { day: 4, startHour: 11, duration: 1, title: 'REFINE: TK-954 Next Plan Trip', color: '#ea4335' },
+    { day: 4, startHour: 12, duration: 1, title: 'ClientTether::Footprints Floors', color: '#ea4335' },
+    { day: 4, startHour: 14, duration: 1, title: 'Kent / Emanuel', color: '#4285f4' },
+    { day: 5, startHour: 9, duration: 1, title: 'Travel to CO', color: '#7baaf7' },
+    { day: 5, startHour: 13, duration: 1, title: 'Kent/Kurt Zoom Call', color: '#ea4335' },
+    { day: 6, startHour: 14, duration: 3, title: 'Test Tickets on Stage', color: '#fbbc04' },
+  ];
+
+  return (
+    <div className="bg-white rounded-3 border shadow-sm" style={{ maxHeight: maxHeight ?? undefined, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div className="d-flex" style={{ height: '100%', minHeight: 0 }}>
+        <div className="border-end bg-light p-3" style={{ width: '200px', flexShrink: 0, overflowY: 'auto' }}>
+          <div className="mb-4">
+            <h6 className="small fw-semibold text-dark mb-2">Estimators</h6>
+            <div className="d-flex flex-column gap-1">
               {estimators.map((estimator, index) => (
-                <label key={index} className="d-flex align-items-center gap-2 small">
-                  <input 
-                    type="checkbox" 
+                <label key={index} className="d-flex align-items-center gap-2" style={{ fontSize: '0.813rem', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
                     defaultChecked={estimator.checked}
-                    className="form-check-input" 
+                    className="form-check-input m-0"
+                    style={{ width: '16px', height: '16px', flexShrink: 0 }}
                   />
                   <span className={estimator.checked ? 'text-dark' : 'text-secondary'}>
                     {estimator.name}
@@ -677,95 +719,180 @@ const CalendarView = () => (
           </div>
 
           <div>
-            <h3 className="small fw-semibold text-dark mb-3">Filters</h3>
-            <div className="d-grid gap-2">
-              <Button variant="success" size="sm" className="w-100 justify-content-start small">
+            <h6 className="small fw-semibold text-dark mb-2">Filters</h6>
+            <div className="d-flex flex-column gap-2">
+              <Button variant="success" size="sm" className="w-100 justify-content-start" style={{ fontSize: '0.813rem' }}>
                 Today
               </Button>
-              <Button variant="success" size="sm" className="w-100 justify-content-start small">
+              <Button variant="success" size="sm" className="w-100 justify-content-start" style={{ fontSize: '0.813rem' }}>
                 Tomorrow
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Main Calendar Area */}
-        <div className="flex-fill p-4">
-          <div className="bg-white border border-2 rounded h-100">
-            {/* Calendar Header */}
-            <div className="d-flex align-items-center justify-content-between p-4 border-bottom border-2">
-              <div className="d-flex align-items-center gap-4">
-                <Button variant="outline-secondary" size="sm">
-                  <ChevronLeftIcon size={16} />
+        <div className="flex-fill" style={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+          <div className="border-bottom p-3 bg-white" style={{ flexShrink: 0 }}>
+            <div className="d-flex align-items-center justify-content-between">
+              <div className="d-flex align-items-center gap-2">
+                <Button variant="outline-secondary" size="sm" className="px-2 py-1">
+                  <ChevronLeftIcon size={14} />
                 </Button>
-                <h2 className="h5 fw-semibold">September 2025</h2>
-                <Button variant="outline-secondary" size="sm">
-                  <ChevronRightIcon size={16} />
+                <Button variant="primary" size="sm" className="px-3 py-1" style={{ fontSize: '0.813rem' }}>
+                  Today
                 </Button>
+                <Button variant="outline-secondary" size="sm" className="px-2 py-1">
+                  <ChevronRightIcon size={14} />
+                </Button>
+                <h5 className="mb-0 ms-2" style={{ fontSize: '1.1rem', fontWeight: 500 }}>Oct - Nov 2025</h5>
+                <span className="badge bg-light text-dark border ms-2" style={{ fontSize: '0.75rem' }}>Week 44</span>
               </div>
               <div className="d-flex align-items-center gap-2">
-                <FloatingSelect label="View" className="w-32">
-                  <FloatingSelectOption value="month">Month</FloatingSelectOption>
-                  <FloatingSelectOption value="week">Week</FloatingSelectOption>
-                  <FloatingSelectOption value="day">Day</FloatingSelectOption>
-                </FloatingSelect>
+                <span className="small text-secondary" style={{ fontSize: '0.813rem' }}>View</span>
+                <div className="btn-group btn-group-sm" role="group">
+                  <button type="button" className="btn btn-outline-secondary" style={{ fontSize: '0.813rem' }}>Day</button>
+                  <button type="button" className="btn btn-primary" style={{ fontSize: '0.813rem' }}>Week</button>
+                  <button type="button" className="btn btn-outline-secondary" style={{ fontSize: '0.813rem' }}>Month</button>
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* Calendar Grid */}
-            <div className="p-4">
-              <div className="row g-1 mb-2">
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                  <div key={day} className="col p-2 text-center small fw-medium text-secondary bg-light rounded">
-                    {day}
-                  </div>
-                ))}
-              </div>
-              
-              <div className="row g-1" style={{ height: '384px' }}>
-                {/* Calendar days - simplified for demo */}
-                {Array.from({ length: 35 }, (_, i) => {
-                  const dayNumber = i - 6; // Start from previous month
-                  const isCurrentMonth = dayNumber > 0 && dayNumber <= 30;
-                  const isToday = dayNumber === 15; // Example today
-                  
+          <div ref={scrollRef} className="flex-fill" style={{ overflowY: 'auto', overflowX: 'auto', minHeight: 0 }}>
+            <div style={{ minWidth: '800px' }}>
+              <div className="d-flex border-bottom bg-white sticky-top" style={{ top: 0, zIndex: 10 }}>
+                <div style={{ width: '60px', flexShrink: 0, borderRight: '1px solid #e5e7eb' }}></div>
+                {weekDays.map((date, index) => {
+                  const isToday = date.getDate() === 29 && date.getMonth() === 9;
+                  const dayName = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][index];
+                  const dayNum = date.getDate();
+
                   return (
                     <div
-                      key={i}
-                      className={`col p-2 border border-1 rounded ${
-                        isCurrentMonth ? 'bg-white' : 'bg-light'
-                      } ${isToday ? 'bg-primary bg-opacity-10 border-primary' : ''}`}
-                      style={{ minHeight: '80px' }}
+                      key={index}
+                      className="flex-fill text-center py-2 border-end"
+                      style={{ minWidth: '100px' }}
                     >
-                      {isCurrentMonth && (
-                        <div className={`small ${isToday ? 'fw-bold text-primary' : 'text-secondary'}`}>
-                          {dayNumber}
-                        </div>
-                      )}
-                      {/* Sample events */}
-                      {(dayNumber === 3 || dayNumber === 15 || dayNumber === 24) && (
-                        <div className="mt-1">
-                          <div className="small bg-primary bg-opacity-10 text-primary px-1 py-1 rounded mb-1" style={{ fontSize: '0.75rem' }}>
-                            Quote #122
-                          </div>
-                          {dayNumber === 15 && (
-                            <div className="small bg-success bg-opacity-10 text-success px-1 py-1 rounded" style={{ fontSize: '0.75rem' }}>
-                              Quote #146
-                            </div>
-                          )}
-                        </div>
-                      )}
+                      <div className="small text-secondary mb-1" style={{ fontSize: '0.688rem', fontWeight: 500 }}>
+                        {dayName}
+                      </div>
+                      <div
+                        className={`mx-auto ${isToday ? 'bg-primary text-white' : 'text-dark'}`}
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          borderRadius: '50%',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '0.875rem',
+                          fontWeight: 500
+                        }}
+                      >
+                        {dayNum}
+                      </div>
                     </div>
                   );
                 })}
+              </div>
+
+              <div className="position-relative">
+                <div className="d-flex">
+                  <div style={{ width: '60px', flexShrink: 0 }}>
+                    {hours.map((hour) => (
+                      <div
+                        key={hour}
+                        className="text-end pe-2 text-secondary"
+                        style={{ height: '60px', fontSize: '0.688rem', paddingTop: '4px' }}
+                      >
+                        {hour === 12 ? '12 PM' : hour > 12 ? `${hour - 12} PM` : `${hour} AM`}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex-fill position-relative" style={{ borderLeft: '1px solid #e5e7eb' }}>
+                    {weekDays.map((_, dayIndex) => (
+                      <div
+                        key={dayIndex}
+                        className="position-absolute"
+                        style={{
+                          left: `${(dayIndex / 7) * 100}%`,
+                          width: `${100 / 7}%`,
+                          height: '100%',
+                          borderRight: '1px solid #e5e7eb'
+                        }}
+                      >
+                        {hours.map((hour) => (
+                          <div
+                            key={hour}
+                            className="border-top"
+                            style={{
+                              height: '60px',
+                              borderColor: '#f3f4f6'
+                            }}
+                          />
+                        ))}
+                      </div>
+                    ))}
+
+                    {sampleEvents.map((event, index) => {
+                      const top = (event.startHour - 7) * 60;
+                      const height = event.duration * 60;
+                      const left = (event.day / 7) * 100;
+                      const width = (1 / 7) * 100;
+
+                      return (
+                        <div
+                          key={index}
+                          className="position-absolute rounded"
+                          style={{
+                            top: `${top}px`,
+                            left: `calc(${left}% + 4px)`,
+                            width: `calc(${width}% - 8px)`,
+                            height: `${height - 2}px`,
+                            backgroundColor: event.color,
+                            color: 'white',
+                            padding: '4px 6px',
+                            fontSize: '0.75rem',
+                            fontWeight: 500,
+                            overflow: 'hidden',
+                            cursor: 'pointer',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            zIndex: 1
+                          }}
+                        >
+                          <div style={{
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            lineHeight: '1.3'
+                          }}>
+                            {event.title}
+                          </div>
+                          {event.url && (
+                            <div style={{
+                              fontSize: '0.625rem',
+                              opacity: 0.9,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}>
+                              {event.startHour >= 12 ? `${event.startHour === 12 ? 12 : event.startHour - 12}:${(event.startHour % 1) * 60 || '00'}pm` : `${event.startHour}:${(event.startHour % 1) * 60 || '00'}am`}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </Card.Body>
-  </Card>
-);
+    </div>
+  );
+};
 
 export const Jobs = (): JSX.Element => {
   const [currentView, setCurrentView] = React.useState<'table' | 'calendar'>('table');
