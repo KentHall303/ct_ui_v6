@@ -300,9 +300,8 @@ const CalendarBody = () => {
               </div>
             </div>
 
-            {/* Calendar Grid */}
-            <div className="flex-fill p-3" style={{ overflowY: 'auto' }}>
-              {/* Day Headers */}
+            {/* Day Headers - Fixed */}
+            <div className="px-3 pt-3 pb-0 bg-white">
               <div className="d-grid mb-2" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                   <div key={day} className="text-center py-2 small fw-semibold text-secondary bg-light rounded">
@@ -310,7 +309,10 @@ const CalendarBody = () => {
                   </div>
                 ))}
               </div>
+            </div>
 
+            {/* Calendar Grid - Scrollable */}
+            <div className="flex-fill px-3 pb-3 bg-white" style={{ overflowY: 'auto' }}>
               {/* Calendar Days */}
               <div className="d-grid" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
                 {calendarDays.map((day, i) => (
