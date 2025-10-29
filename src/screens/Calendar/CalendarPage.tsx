@@ -1,11 +1,11 @@
 import React from "react";
 import { BodyLayout } from "../../components/layout/BodyLayout/BodyLayout";
-import { Calendar } from "./Calendar";
+import { CalendarRedesigned } from "./CalendarRedesigned";
 
 export const CalendarPage = (): JSX.Element => {
   return (
     <BodyLayout>
-      <Calendar />
+      <CalendarRedesigned />
     </BodyLayout>
   );
 };
