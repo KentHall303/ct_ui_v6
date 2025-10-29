@@ -294,6 +294,12 @@ body {
     padding: var(--bs-form-control-padding-y, .375rem)
              var(--bs-form-control-padding-x, .75rem) !important;
     line-height: var(--bs-body-line-height, 1.5) !important;
+    width: 100% !important;
+    font-size: 0.875rem !important;
+  }
+
+  > .form-select {
+    padding-right: 2.5rem !important;
   }
 
   > .form-control::placeholder { opacity: 1 !important; }
@@ -624,10 +630,10 @@ body {
       }
 
       &:nth-child(odd) {
-        background-color: #f8fafc;
+        background-color: #f5f7fa;
 
         td {
-          background-color: #f8fafc;
+          background-color: #f5f7fa;
         }
       }
 
