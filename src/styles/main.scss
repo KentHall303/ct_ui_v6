@@ -604,13 +604,14 @@ body {
   tbody {
     tr {
       border-bottom: 1px solid #e9ecef;
-      transition: background-color 0.2s ease;
+      transition: background-color 0.15s ease, box-shadow 0.15s ease;
 
       &:hover {
-        background-color: #e2e8f0 !important;
+        background-color: #e8f0fe !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 
         td {
-          background-color: #e2e8f0 !important;
+          background-color: #e8f0fe !important;
         }
       }
 
@@ -634,7 +635,7 @@ body {
         padding: 0.875rem 1rem !important;
         vertical-align: middle !important;
         font-size: 0.8125rem !important;
-        transition: background-color 0.2s ease;
+        transition: background-color 0.15s ease;
 
         &.position-sticky {
           box-shadow: 2px 0 4px rgba(0, 0, 0, 0.06);
@@ -649,6 +650,45 @@ body {
       &:last-child td {
         border-bottom: 1px solid #dee2e6;
       }
+    }
+  }
+}
+
+/* ======================================================================
+   Responsive Improvements for Filter and Search Inputs
+   ====================================================================== */
+@media (max-width: 1199.98px) {
+  .contacts-header-filters {
+    .filter-select-wrapper {
+      width: 180px !important;
+    }
+
+    .search-input-wrapper {
+      width: 220px !important;
+    }
+  }
+}
+
+@media (max-width: 991.98px) {
+  .contacts-header-filters {
+    .filter-select-wrapper {
+      width: 160px !important;
+    }
+
+    .search-input-wrapper {
+      width: 200px !important;
+    }
+  }
+}
+
+@media (max-width: 767.98px) {
+  .contacts-header-filters {
+    width: 100% !important;
+
+    .filter-select-wrapper,
+    .search-input-wrapper {
+      width: 100% !important;
+      max-width: none !important;
     }
   }
 }

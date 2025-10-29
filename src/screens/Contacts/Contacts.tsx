@@ -87,7 +87,7 @@ const ContactsHeader = () => (
     </div>
 
     <div className="d-flex align-items-start justify-content-between gap-4 mb-3">
-      <div className="d-flex flex-column gap-2">
+      <div className="d-flex flex-column gap-3">
         <div className="d-flex gap-2 flex-wrap">
           {actionButtons.map((button, index) => (
             <Button
@@ -117,7 +117,7 @@ const ContactsHeader = () => (
         </div>
       </div>
 
-      <div className="d-flex flex-column gap-2 align-items-end">
+      <div className="d-flex flex-column gap-3 align-items-end">
         <div className="d-flex gap-2 flex-wrap">
           {rightButtons
             .filter((b) => b.variant === "info")
@@ -152,8 +152,8 @@ const ContactsHeader = () => (
       </div>
     </div>
 
-    <div className="py-0">
-      <div className="d-flex align-items-center justify-content-between flex-wrap gap-4">
+    <div className="py-0 mt-3">
+      <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
         <div className="d-flex align-items-center gap-2">
           <Button variant="link" size="sm" className="p-1 text-decoration-none">
             <ChevronsLeftIcon size={16} />
@@ -181,8 +181,8 @@ const ContactsHeader = () => (
           </Button>
         </div>
 
-        <div className="d-flex align-items-center gap-3 flex-wrap">
-          <div className="d-flex flex-column align-items-start position-relative" style={{ width: '192px', minWidth: '0' }}>
+        <div className="d-flex align-items-center gap-2 flex-wrap contacts-header-filters">
+          <div className="d-flex flex-column align-items-start position-relative filter-select-wrapper" style={{ width: '220px', minWidth: '0' }}>
             <FloatingSelect label="Filter">
               <FloatingSelectOption value="all-opportunities">
                 All Opportunities
@@ -190,7 +190,7 @@ const ContactsHeader = () => (
             </FloatingSelect>
           </div>
 
-          <div className="d-flex flex-column align-items-start position-relative" style={{ width: '256px', minWidth: '0' }}>
+          <div className="d-flex flex-column align-items-start position-relative search-input-wrapper" style={{ width: '280px', minWidth: '0' }}>
             <FloatingInput label="Search" placeholder="Search Contact..." />
           </div>
         </div>
