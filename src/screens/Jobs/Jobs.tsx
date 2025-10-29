@@ -8,6 +8,7 @@ import { AddCOGSModal } from "../../components/modals/AddCOGSModal";
 import { GrossMarginModal } from "../../components/modals/GrossMarginModal";
 import { JobsReportsFSModal } from "../../components/modals/JobsReportsFSModal";
 import { supabase } from "../../lib/supabase";
+import { sampleCalendarEvents, CalendarEvent } from "../../data/sampleCalendarData";
 
 const actionButtons = [
   { label: "New Quote", variant: "default", icon: PlusIcon },
@@ -649,26 +650,108 @@ const TableView = () => {
   );
 };
 
-const CalendarView = () => (
-  <Card className="h-100">
-    <Card.Header className="bg-light">
-      <h5 className="mb-0 fw-semibold">Calendar View</h5>
-    </Card.Header>
-    <Card.Body className="p-0">
-      <div className="d-flex h-100 bg-white">
+const CalendarView = () => {
+  const scrollRef = React.useRef<HTMLDivElement | null>(null);
+  const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
+  const [selectedEstimators, setSelectedEstimators] = React.useState<string[]>(['Test_Account Owner']);
+
+  React.useLayoutEffect(() => {
+    function computeHeight() {
+      if (!scrollRef.current) return;
+      const rect = scrollRef.current.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const h = Math.max(400, Math.floor(vh - rect.top - 16));
+      setMaxHeight(h);
+    }
+    computeHeight();
+    window.addEventListener("resize", computeHeight);
+    return () => window.removeEventListener("resize", computeHeight);
+  }, []);
+
+  const toggleEstimator = (estimatorName: string) => {
+    setSelectedEstimators(prev =>
+      prev.includes(estimatorName)
+        ? prev.filter(e => e !== estimatorName)
+        : [...prev, estimatorName]
+    );
+  };
+
+  const getEventsByDate = (date: string): CalendarEvent[] => {
+    return sampleCalendarEvents.filter(event => {
+      const matchesDate = event.date === date;
+      const matchesEstimator = selectedEstimators.length === 0 || selectedEstimators.includes(event.estimator);
+      return matchesDate && matchesEstimator;
+    });
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return { bg: 'bg-success', text: 'text-success', border: 'border-success' };
+      case 'pending':
+        return { bg: 'bg-warning', text: 'text-warning', border: 'border-warning' };
+      case 'overdue':
+        return { bg: 'bg-danger', text: 'text-danger', border: 'border-danger' };
+      case 'completed':
+        return { bg: 'bg-info', text: 'text-info', border: 'border-info' };
+      default:
+        return { bg: 'bg-secondary', text: 'text-secondary', border: 'border-secondary' };
+    }
+  };
+
+  const generateCalendarDays = () => {
+    const days = [];
+    const firstDayOfMonth = 1;
+    const startDayOfWeek = 0;
+
+    for (let i = 0; i < 35; i++) {
+      const dayNumber = i - startDayOfWeek + 1;
+      const isCurrentMonth = dayNumber > 0 && dayNumber <= 30;
+      const dateString = isCurrentMonth ? `2025-09-${String(dayNumber).padStart(2, '0')}` : '';
+      const isToday = dayNumber === 15;
+      const events = isCurrentMonth ? getEventsByDate(dateString) : [];
+
+      days.push({
+        dayNumber: isCurrentMonth ? dayNumber : null,
+        dateString,
+        isCurrentMonth,
+        isToday,
+        events
+      });
+    }
+    return days;
+  };
+
+  const calendarDays = generateCalendarDays();
+
+  return (
+    <div
+      ref={scrollRef}
+      className="bg-white rounded-3 border shadow-sm"
+      style={{ maxHeight: maxHeight ?? undefined, display: 'flex', flexDirection: 'column' }}
+    >
+      <div className="d-flex flex-fill" style={{ minHeight: 0 }}>
         {/* Left Sidebar - Estimators */}
-        <div className="border-end border-2 bg-light p-4" style={{ width: '256px' }}>
-          <div className="mb-6">
-            <h3 className="small fw-semibold text-dark mb-3">Estimators</h3>
-            <div className="d-grid gap-2">
+        <div className="border-end bg-light p-3" style={{ width: '240px', flexShrink: 0, overflowY: 'auto' }}>
+          <div className="mb-4">
+            <h6 className="fw-bold text-dark mb-3">Estimators</h6>
+            <div className="d-flex flex-column gap-2">
               {estimators.map((estimator, index) => (
-                <label key={index} className="d-flex align-items-center gap-2 small">
-                  <input 
-                    type="checkbox" 
-                    defaultChecked={estimator.checked}
-                    className="form-check-input" 
+                <label
+                  key={index}
+                  className="d-flex align-items-center gap-2 p-2 rounded"
+                  style={{ cursor: 'pointer', transition: 'background-color 0.15s' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedEstimators.includes(estimator.name)}
+                    onChange={() => toggleEstimator(estimator.name)}
+                    className="form-check-input mt-0"
+                    style={{ cursor: 'pointer' }}
                   />
-                  <span className={estimator.checked ? 'text-dark' : 'text-secondary'}>
+                  <span className={`small ${selectedEstimators.includes(estimator.name) ? 'fw-semibold text-dark' : 'text-secondary'}`}>
                     {estimator.name}
                   </span>
                 </label>
@@ -677,12 +760,12 @@ const CalendarView = () => (
           </div>
 
           <div>
-            <h3 className="small fw-semibold text-dark mb-3">Filters</h3>
-            <div className="d-grid gap-2">
-              <Button variant="success" size="sm" className="w-100 justify-content-start small">
+            <h6 className="fw-bold text-dark mb-3">Quick Filters</h6>
+            <div className="d-flex flex-column gap-2">
+              <Button variant="outline-primary" size="sm" className="w-100 text-start small">
                 Today
               </Button>
-              <Button variant="success" size="sm" className="w-100 justify-content-start small">
+              <Button variant="outline-primary" size="sm" className="w-100 text-start small">
                 Tomorrow
               </Button>
             </div>
@@ -690,82 +773,115 @@ const CalendarView = () => (
         </div>
 
         {/* Main Calendar Area */}
-        <div className="flex-fill p-4">
-          <div className="bg-white border border-2 rounded h-100">
-            {/* Calendar Header */}
-            <div className="d-flex align-items-center justify-content-between p-4 border-bottom border-2">
-              <div className="d-flex align-items-center gap-4">
-                <Button variant="outline-secondary" size="sm">
-                  <ChevronLeftIcon size={16} />
-                </Button>
-                <h2 className="h5 fw-semibold">September 2025</h2>
-                <Button variant="outline-secondary" size="sm">
-                  <ChevronRightIcon size={16} />
-                </Button>
-              </div>
-              <div className="d-flex align-items-center gap-2">
-                <FloatingSelect label="View" className="w-32">
-                  <FloatingSelectOption value="month">Month</FloatingSelectOption>
-                  <FloatingSelectOption value="week">Week</FloatingSelectOption>
-                  <FloatingSelectOption value="day">Day</FloatingSelectOption>
-                </FloatingSelect>
-              </div>
+        <div className="flex-fill d-flex flex-column" style={{ minHeight: 0 }}>
+          {/* Calendar Header */}
+          <div className="d-flex align-items-center justify-content-between px-4 py-3 border-bottom bg-white">
+            <div className="d-flex align-items-center gap-3">
+              <Button variant="outline-secondary" size="sm" className="px-2 py-1">
+                <ChevronLeftIcon size={16} />
+              </Button>
+              <h5 className="mb-0 fw-bold">September 2025</h5>
+              <Button variant="outline-secondary" size="sm" className="px-2 py-1">
+                <ChevronRightIcon size={16} />
+              </Button>
+            </div>
+            <div className="d-flex align-items-center gap-2">
+              <Button variant="primary" size="sm" className="px-3">Month</Button>
+              <Button variant="outline-secondary" size="sm" className="px-3">Week</Button>
+              <Button variant="outline-secondary" size="sm" className="px-3">Day</Button>
+            </div>
+          </div>
+
+          {/* Calendar Grid */}
+          <div className="flex-fill p-3" style={{ overflowY: 'auto' }}>
+            {/* Day Headers */}
+            <div className="d-grid mb-2" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                <div key={day} className="text-center py-2 small fw-semibold text-secondary bg-light rounded">
+                  {day}
+                </div>
+              ))}
             </div>
 
-            {/* Calendar Grid */}
-            <div className="p-4">
-              <div className="row g-1 mb-2">
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                  <div key={day} className="col p-2 text-center small fw-medium text-secondary bg-light rounded">
-                    {day}
-                  </div>
-                ))}
-              </div>
-              
-              <div className="row g-1" style={{ height: '384px' }}>
-                {/* Calendar days - simplified for demo */}
-                {Array.from({ length: 35 }, (_, i) => {
-                  const dayNumber = i - 6; // Start from previous month
-                  const isCurrentMonth = dayNumber > 0 && dayNumber <= 30;
-                  const isToday = dayNumber === 15; // Example today
-                  
-                  return (
-                    <div
-                      key={i}
-                      className={`col p-2 border border-1 rounded ${
-                        isCurrentMonth ? 'bg-white' : 'bg-light'
-                      } ${isToday ? 'bg-primary bg-opacity-10 border-primary' : ''}`}
-                      style={{ minHeight: '80px' }}
-                    >
-                      {isCurrentMonth && (
-                        <div className={`small ${isToday ? 'fw-bold text-primary' : 'text-secondary'}`}>
-                          {dayNumber}
-                        </div>
-                      )}
-                      {/* Sample events */}
-                      {(dayNumber === 3 || dayNumber === 15 || dayNumber === 24) && (
-                        <div className="mt-1">
-                          <div className="small bg-primary bg-opacity-10 text-primary px-1 py-1 rounded mb-1" style={{ fontSize: '0.75rem' }}>
-                            Quote #122
-                          </div>
-                          {dayNumber === 15 && (
-                            <div className="small bg-success bg-opacity-10 text-success px-1 py-1 rounded" style={{ fontSize: '0.75rem' }}>
-                              Quote #146
+            {/* Calendar Days */}
+            <div className="d-grid" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+              {calendarDays.map((day, i) => (
+                <div
+                  key={i}
+                  className={`border rounded p-2 ${
+                    day.isCurrentMonth ? 'bg-white' : 'bg-light'
+                  } ${day.isToday ? 'border-primary border-2 shadow-sm' : 'border-1'}`}
+                  style={{
+                    minHeight: '110px',
+                    cursor: day.isCurrentMonth ? 'pointer' : 'default',
+                    transition: 'all 0.15s ease',
+                    position: 'relative'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (day.isCurrentMonth) {
+                      e.currentTarget.style.backgroundColor = '#f8f9fa';
+                      e.currentTarget.style.transform = 'translateY(-1px)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (day.isCurrentMonth) {
+                      e.currentTarget.style.backgroundColor = 'white';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                    }
+                  }}
+                >
+                  {day.dayNumber && (
+                    <>
+                      <div className={`small mb-2 ${day.isToday ? 'fw-bold text-primary' : 'text-secondary'}`} style={{ fontSize: '0.75rem' }}>
+                        {day.dayNumber}
+                      </div>
+                      {day.events.length > 0 && (
+                        <div className="d-flex flex-column gap-1">
+                          {day.events.slice(0, 2).map((event) => {
+                            const colors = getStatusColor(event.status);
+                            return (
+                              <div
+                                key={event.id}
+                                className={`${colors.bg} bg-opacity-10 ${colors.text} border ${colors.border} rounded px-2 py-1`}
+                                style={{
+                                  fontSize: '0.65rem',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.15s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.transform = 'scale(1.02)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.transform = 'scale(1)';
+                                }}
+                                title={`${event.quoteNumber}\n${event.contactName}\n${event.time}\n${event.amount}`}
+                              >
+                                <div className="fw-semibold text-truncate">{event.time}</div>
+                                <div className="text-truncate">{event.quoteNumber}</div>
+                              </div>
+                            );
+                          })}
+                          {day.events.length > 2 && (
+                            <div
+                              className="small text-primary fw-semibold text-center"
+                              style={{ fontSize: '0.65rem', cursor: 'pointer' }}
+                            >
+                              +{day.events.length - 2} more
                             </div>
                           )}
                         </div>
                       )}
-                    </div>
-                  );
-                })}
-              </div>
+                    </>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </div>
-    </Card.Body>
-  </Card>
-);
+    </div>
+  );
+};
 
 export const Jobs = (): JSX.Element => {
   const [currentView, setCurrentView] = React.useState<'table' | 'calendar'>('table');
