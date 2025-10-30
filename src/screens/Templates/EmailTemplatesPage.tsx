@@ -172,19 +172,26 @@ const EmailTemplates = (): JSX.Element => {
     <>
       <div className="d-flex flex-column w-100 h-100">
         <div className="px-3 pt-4 pb-3">
-          <div className="d-flex flex-column align-items-center gap-3">
-            <h1 className="h2 fw-bold text-dark text-uppercase m-0" style={{ letterSpacing: '0.1em' }}>
-              EMAIL TEMPLATES
-            </h1>
+          <div className="d-flex align-items-center gap-3">
             <Button
-              variant="success"
-              className="rounded-circle d-flex align-items-center justify-content-center"
-              style={{ width: '40px', height: '40px', padding: 0 }}
+              variant="link"
+              className="d-flex align-items-center gap-2 text-decoration-none p-0 border-0"
               onClick={handleAddNew}
               title="Add new template"
+              style={{ fontSize: '0.875rem' }}
             >
-              <Plus size={20} />
+              <div
+                className="rounded-circle bg-success d-flex align-items-center justify-content-center"
+                style={{ width: '32px', height: '32px' }}
+              >
+                <Plus size={16} className="text-white" />
+              </div>
+              <span className="text-dark fw-medium">Add new</span>
             </Button>
+            <h1 className="h2 fw-bold text-dark text-uppercase m-0 flex-grow-1 text-center" style={{ letterSpacing: '0.1em' }}>
+              EMAIL TEMPLATES
+            </h1>
+            <div style={{ width: '100px' }}></div>
           </div>
         </div>
 
@@ -279,22 +286,48 @@ const EmailTemplates = (): JSX.Element => {
                           </div>
                         </TableCell>
                         <TableCell role="gridcell">
-                          <div className="d-flex gap-2">
+                          <div className="d-flex gap-2 justify-content-center">
                             <button
-                              className="btn btn-link p-0 text-primary"
+                              className="btn btn-link p-0 border-0 rounded-circle d-flex align-items-center justify-content-center"
                               onClick={() => handleEdit(template)}
                               title="Edit template"
-                              style={{ border: 'none', background: 'none' }}
+                              style={{
+                                width: '32px',
+                                height: '32px',
+                                color: '#6c757d',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = '#f8f9fa';
+                                e.currentTarget.style.color = '#0d6efd';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                                e.currentTarget.style.color = '#6c757d';
+                              }}
                             >
-                              <Edit2 size={18} />
+                              <Edit2 size={16} />
                             </button>
                             <button
-                              className="btn btn-link p-0 text-danger"
+                              className="btn btn-link p-0 border-0 rounded-circle d-flex align-items-center justify-content-center"
                               onClick={() => handleDelete(template)}
                               title="Delete template"
-                              style={{ border: 'none', background: 'none' }}
+                              style={{
+                                width: '32px',
+                                height: '32px',
+                                color: '#6c757d',
+                                transition: 'all 0.2s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = '#f8f9fa';
+                                e.currentTarget.style.color = '#dc3545';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                                e.currentTarget.style.color = '#6c757d';
+                              }}
                             >
-                              <Trash2 size={18} />
+                              <Trash2 size={16} />
                             </button>
                           </div>
                         </TableCell>

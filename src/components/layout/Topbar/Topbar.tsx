@@ -7,9 +7,9 @@ export const Topbar = (): JSX.Element => {
       <header className="d-flex align-items-center justify-content-between w-100 px-3 bg-white" style={{ height: '36px', minHeight: '36px' }}>
         {/* Left side - Logo */}
         <div className="d-flex align-items-center h-100">
-          <Image 
-            src="/rectangle.png"
-            alt="Company Logo"
+          <Image
+            src="/logo.svg"
+            alt="ClientTether"
             className="h-100"
             style={{ maxHeight: '24px' }}
           />
