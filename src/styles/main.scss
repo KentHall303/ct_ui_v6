@@ -491,24 +491,24 @@ body {
       position: sticky !important;
       top: 0 !important;
       z-index: 10 !important;
-      background-color: #2596be !important;
-      border-bottom: 2px solid #1a7a9e !important;
-      border-top: 1px solid #1a7a9e !important;
+      background-color: #adb5bd !important;
+      border-bottom: 2px solid #6c757d !important;
+      border-top: 1px solid #6c757d !important;
       font-weight: 600 !important;
       font-size: 0.8125rem !important;
       text-transform: uppercase;
       letter-spacing: 0.025em;
-      color: #ffffff !important;
+      color: #212529 !important;
       padding: 0.875rem 1rem !important;
       white-space: nowrap;
       vertical-align: middle !important;
 
       &:first-child {
-        border-left: 1px solid #1a7a9e;
+        border-left: 1px solid #6c757d;
       }
 
       &:last-child {
-        border-right: 1px solid #1a7a9e;
+        border-right: 1px solid #6c757d;
       }
     }
   }
@@ -571,14 +571,14 @@ body {
     th {
       position: sticky !important;
       top: 0 !important;
-      background-color: #2596be !important;
-      border-bottom: 2px solid #1a7a9e !important;
-      border-top: 1px solid #1a7a9e !important;
+      background-color: #adb5bd !important;
+      border-bottom: 2px solid #6c757d !important;
+      border-top: 1px solid #6c757d !important;
       font-weight: 600 !important;
       font-size: 0.8125rem !important;
       text-transform: uppercase;
       letter-spacing: 0.025em;
-      color: #ffffff !important;
+      color: #212529 !important;
       padding: 0.875rem 1rem !important;
       white-space: nowrap;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
@@ -587,11 +587,11 @@ body {
       transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 
       &:first-child {
-        border-left: 1px solid #1a7a9e;
+        border-left: 1px solid #6c757d;
       }
 
       &:last-child {
-        border-right: 1px solid #1a7a9e;
+        border-right: 1px solid #6c757d;
       }
 
       &.position-sticky {
@@ -602,13 +602,13 @@ body {
         cursor: pointer;
 
         &:hover {
-          background-color: #1e7a9e !important;
-          color: #ffffff !important;
+          background-color: #868e96 !important;
+          color: #212529 !important;
           box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
         }
 
         &:active {
-          background-color: #1a6a8a !important;
+          background-color: #868e96 !important;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
       }
