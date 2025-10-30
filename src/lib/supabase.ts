@@ -69,3 +69,22 @@ export interface MeetingSubcontractor {
 export interface MeetingWithSubcontractors extends Meeting {
   subcontractors: Array<Subcontractor & { is_primary: boolean; notes?: string }>;
 }
+
+export interface EmailTemplate {
+  id: string;
+  name: string;
+  subject?: string;
+  contact_type?: string;
+  exclude_client: boolean;
+  content: string;
+  category: string;
+  description?: string;
+  variables?: Record<string, any>;
+  tags?: string[];
+  is_active: boolean;
+  usage_count: number;
+  last_used_at?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+}
