@@ -151,6 +151,10 @@ export const routes: RouteObject[] = [
     element: <ProposalModalPage />
   },
   {
+    path: '/design-hub/table-standards',
+    element: <PlaceholderPage title="Table Standards" description="Table Standards content will be implemented here." />
+  },
+  {
     path: '/design-hub/triggers',
     element: <PlaceholderPage title="Triggers" description="Triggers content will be implemented here." />
   },
