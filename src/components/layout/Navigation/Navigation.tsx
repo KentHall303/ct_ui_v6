@@ -13,7 +13,8 @@ import {
   LogOut as LogOutIcon,
   Users as UsersIcon,
   Briefcase as BriefcaseIcon,
-  Calendar as CalendarIcon
+  Calendar as CalendarIcon,
+  FileText as FileTextIcon
 } from "lucide-react";
 
 type NavigationProps = {
@@ -115,6 +116,13 @@ const navigationItems: NavItem[] = [
       { id: "ap-conversion", label: "Conversion Plans", path: "/action-plans/conversion" },
       { id: "ap-retention", label: "Retention Plans", path: "/action-plans/retention" },
     ]
+  },
+  {
+    id: "templates",
+    label: "Templates",
+    path: "/templates",
+    icon: FileTextIcon,
+    hasDropdown: false
   },
   {
     id: "design-hub",

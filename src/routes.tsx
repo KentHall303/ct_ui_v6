@@ -124,6 +124,10 @@ export const routes: RouteObject[] = [
     element: <PlaceholderPage title="Retention Plans" description="Retention Plans content will be implemented here." />
   },
   {
+    path: '/templates',
+    element: <PlaceholderPage title="Templates" description="Templates content will be implemented here." />
+  },
+  {
     path: '/design-hub',
     element: <Typology />
   },
