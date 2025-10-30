@@ -17,6 +17,7 @@ const ContactProfileModal3DirectPage = React.lazy(() => import('./screens/Design
 const MeetingManagementPage = React.lazy(() => import('./screens/DesignHub/MeetingManagementPage').then(m => ({ default: m.MeetingManagementPage })));
 const ProposalSettingsPage = React.lazy(() => import('./screens/DesignHub/ProposalSettingsPage').then(m => ({ default: m.ProposalSettingsPage })));
 const ProposalModalPage = React.lazy(() => import('./screens/DesignHub/ProposalModalPage').then(m => ({ default: m.ProposalModalPage })));
+const TableStandardsPage = React.lazy(() => import('./screens/DesignHub/TableStandardsPage').then(m => ({ default: m.TableStandardsPage })));
 
 const PlaceholderPage: React.FC<{ title: string; description: string }> = ({ title, description }) => (
   <div className="p-6">
@@ -152,7 +153,7 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/design-hub/table-standards',
-    element: <PlaceholderPage title="Table Standards" description="Table Standards content will be implemented here." />
+    element: <TableStandardsPage />
   },
   {
     path: '/design-hub/triggers',
