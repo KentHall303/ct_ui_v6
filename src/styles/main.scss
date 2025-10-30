@@ -571,7 +571,7 @@ body {
     th {
       position: sticky !important;
       top: 0 !important;
-      background: linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%) !important;
+      background: #e9ecef !important;
       border-bottom: 2px solid #dee2e6 !important;
       border-top: 1px solid #dee2e6 !important;
       font-weight: 600 !important;
@@ -602,13 +602,13 @@ body {
         cursor: pointer;
 
         &:hover {
-          background: linear-gradient(180deg, #e0e4e8 0%, #d4d8dc 100%) !important;
+          background: #d4d8dc !important;
           color: #212529 !important;
           box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
         }
 
         &:active {
-          background: linear-gradient(180deg, #d4d8dc 0%, #c8ccd0 100%) !important;
+          background: #c8ccd0 !important;
           box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
       }

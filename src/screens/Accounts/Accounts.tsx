@@ -379,7 +379,7 @@ export const Accounts = (): JSX.Element => {
                     </TableCell>
 
                     <TableCell role="gridcell">
-                      <span className={`badge ${account.status === 'Active' ? 'bg-success' : 'bg-secondary'}`}>
+                      <span className={`badge ${account.status === 'Active' ? 'bg-success' : 'bg-secondary'}`} style={{ fontSize: '0.875rem' }}>
                         {account.status}
                       </span>
                     </TableCell>
