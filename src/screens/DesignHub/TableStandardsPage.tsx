@@ -3,6 +3,79 @@ import { BodyLayout } from "../../components/layout/BodyLayout/BodyLayout";
 import { Button } from "../../components/bootstrap/Button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/bootstrap/Table";
 
+function parseDateString(dateStr: string): Date | null {
+  if (!dateStr || dateStr.trim() === '') return null;
+  const parsed = new Date(dateStr);
+  return isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function sortAccounts(accounts: Account[], key: string, direction: 'asc' | 'desc'): Account[] {
+  const dateColumns = ['lastLogin', 'createdDate'];
+  const isDateColumn = dateColumns.includes(key);
+
+  const sorted = [...accounts].sort((a, b) => {
+    let aVal = a[key as keyof Account];
+    let bVal = b[key as keyof Account];
+
+    if (isDateColumn) {
+      const aDate = parseDateString(String(aVal));
+      const bDate = parseDateString(String(bVal));
+
+      if (aDate === null && bDate === null) return 0;
+      if (aDate === null) return 1;
+      if (bDate === null) return -1;
+
+      return direction === 'asc'
+        ? aDate.getTime() - bDate.getTime()
+        : bDate.getTime() - aDate.getTime();
+    }
+
+    const aStr = String(aVal).toLowerCase();
+    const bStr = String(bVal).toLowerCase();
+
+    if (aStr < bStr) return direction === 'asc' ? -1 : 1;
+    if (aStr > bStr) return direction === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  return sorted;
+}
+
+function buildHierarchy(accounts: Account[]): Account[] {
+  const result: Account[] = [];
+  const accountMap = new Map<number, Account>();
+
+  accounts.forEach(acc => accountMap.set(acc.id, acc));
+
+  accounts.forEach(account => {
+    if (account.level === 0) {
+      result.push(account);
+      addChildren(account, accounts, result);
+    }
+  });
+
+  return result;
+}
+
+function addChildren(parent: Account, allAccounts: Account[], result: Account[]) {
+  const parentIndex = allAccounts.indexOf(parent);
+
+  for (let i = parentIndex + 1; i < allAccounts.length; i++) {
+    const account = allAccounts[i];
+
+    if (account.level <= parent.level) {
+      break;
+    }
+
+    if (account.level === parent.level + 1) {
+      result.push(account);
+      if (account.hasChildren) {
+        addChildren(account, allAccounts, result);
+      }
+    }
+  }
+}
+
 type Account = {
   id: number;
   company: string;
@@ -169,10 +242,13 @@ const TableStandards = (): JSX.Element => {
     direction: 'asc' | 'desc';
   } | null>({ key: 'company', direction: 'asc' });
 
+  const [expandedRows, setExpandedRows] = React.useState<Set<number>>(new Set());
+
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
 
   const handleSort = (key: string) => {
+    setExpandedRows(new Set());
     setSortConfig(current => {
       if (current?.key === key) {
         return { key, direction: current.direction === 'asc' ? 'desc' : 'asc' };
@@ -181,12 +257,61 @@ const TableStandards = (): JSX.Element => {
     });
   };
 
+  const toggleRow = (accountId: number) => {
+    setExpandedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(accountId)) {
+        newSet.delete(accountId);
+      } else {
+        newSet.add(accountId);
+      }
+      return newSet;
+    });
+  };
+
+  const isRowVisible = (account: Account, index: number): boolean => {
+    if (account.level === 0) return true;
+
+    for (let i = index - 1; i >= 0; i--) {
+      const potentialParent = sortedAndFilteredData[i];
+
+      if (potentialParent.level < account.level) {
+        if (potentialParent.level === account.level - 1) {
+          if (!expandedRows.has(potentialParent.id)) {
+            return false;
+          }
+        }
+
+        if (potentialParent.level === 0) {
+          break;
+        }
+      }
+    }
+
+    return true;
+  };
+
   const getSortIcon = (key: string) => {
     if (sortConfig?.key === key) {
       return sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
     }
     return ' ▲';
   };
+
+  const sortedAndFilteredData = React.useMemo(() => {
+    if (!sortConfig) return accountsData;
+
+    const topLevelAccounts = accountsData.filter(acc => acc.level === 0);
+    const sortedTopLevel = sortAccounts(topLevelAccounts, sortConfig.key, sortConfig.direction);
+
+    const result: Account[] = [];
+    sortedTopLevel.forEach(parent => {
+      result.push(parent);
+      addChildren(parent, accountsData, result);
+    });
+
+    return result;
+  }, [sortConfig]);
 
   const getSortProps = (key: string) => ({
     'aria-sort': sortConfig?.key === key
@@ -289,23 +414,36 @@ const TableStandards = (): JSX.Element => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {accountsData.map((account, index) => (
-                  <TableRow
-                    key={account.id}
-                    role="row"
-                    aria-rowindex={index + 2}
-                  >
-                    <TableCell role="gridcell">
-                      <div
-                        className="d-flex align-items-center gap-2"
-                        style={{ paddingLeft: `${account.level * 24}px` }}
-                      >
-                        {account.hasChildren && (
-                          <span className="text-warning fw-bold" style={{ fontSize: '1rem' }}>+</span>
-                        )}
-                        <span className="fw-medium text-dark">{account.company}</span>
-                      </div>
-                    </TableCell>
+                {sortedAndFilteredData.map((account, index) => {
+                  const isVisible = isRowVisible(account, index);
+                  const isExpanded = expandedRows.has(account.id);
+
+                  return (
+                    <TableRow
+                      key={account.id}
+                      role="row"
+                      aria-rowindex={index + 2}
+                      style={{ display: isVisible ? '' : 'none' }}
+                    >
+                      <TableCell role="gridcell">
+                        <div
+                          className="d-flex align-items-center gap-2"
+                          style={{ paddingLeft: `${account.level * 24}px` }}
+                        >
+                          {account.hasChildren && (
+                            <span
+                              className="text-warning fw-bold"
+                              style={{ fontSize: '1rem', cursor: 'pointer', userSelect: 'none' }}
+                              onClick={() => toggleRow(account.id)}
+                              role="button"
+                              aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                            >
+                              {isExpanded ? '−' : '+'}
+                            </span>
+                          )}
+                          <span className="fw-medium text-dark">{account.company}</span>
+                        </div>
+                      </TableCell>
 
                     <TableCell role="gridcell">
                       <div className="text-dark small">{account.accountAdmin}</div>
@@ -333,28 +471,29 @@ const TableStandards = (): JSX.Element => {
                       </span>
                     </TableCell>
 
-                    <TableCell role="gridcell">
-                      <div className="d-flex gap-1">
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          className="px-2 py-1"
-                          title="Login to this account"
-                        >
-                          Login
-                        </Button>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          className="px-2 py-1"
-                          title="Account actions"
-                        >
-                          Actions
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                      <TableCell role="gridcell">
+                        <div className="d-flex gap-1">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            className="px-2 py-1"
+                            title="Login to this account"
+                          >
+                            Login
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="px-2 py-1"
+                            title="Account actions"
+                          >
+                            Actions
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
