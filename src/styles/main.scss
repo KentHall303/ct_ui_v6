@@ -583,6 +583,8 @@ body {
       white-space: nowrap;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
       z-index: 100 !important;
+      text-align: left !important;
+      transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 
       &:first-child {
         border-left: 1px solid #dee2e6;
@@ -597,11 +599,17 @@ body {
       }
 
       &[role="button"] {
-        transition: background-color 0.15s ease, color 0.15s ease;
+        cursor: pointer;
 
         &:hover {
-          background: linear-gradient(180deg, #e9ecef 0%, #dde0e3 100%) !important;
+          background: linear-gradient(180deg, #e0e4e8 0%, #d4d8dc 100%) !important;
           color: #212529 !important;
+          box-shadow: 0 3px 6px rgba(0, 0, 0, 0.12);
+        }
+
+        &:active {
+          background: linear-gradient(180deg, #d4d8dc 0%, #c8ccd0 100%) !important;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
       }
     }
@@ -638,9 +646,10 @@ body {
       }
 
       td {
-        padding: 0.875rem 1rem !important;
+        padding: 0.5rem 1rem !important;
         vertical-align: middle !important;
         font-size: 0.8125rem !important;
+        text-align: left !important;
         transition: background-color 0.15s ease;
 
         &.position-sticky {
