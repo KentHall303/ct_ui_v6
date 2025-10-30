@@ -3,7 +3,6 @@ import { Button } from "../../components/bootstrap/Button";
 import { FloatingInput } from "../../components/bootstrap/FormControls";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/bootstrap/Table";
 import { StandardSearch } from "../../components/bootstrap/StandardSearch";
-import { ChevronRight } from "lucide-react";
 
 type Account = {
   id: number;
@@ -216,8 +215,6 @@ export const Accounts = (): JSX.Element => {
     direction: 'asc' | 'desc';
   } | null>({ key: 'company', direction: 'asc' });
 
-  const [collapsedIds, setCollapsedIds] = React.useState<Set<number>>(new Set());
-
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
 
@@ -253,42 +250,6 @@ export const Accounts = (): JSX.Element => {
     style: { cursor: 'pointer' }
   });
 
-  const toggleCollapse = (accountId: number) => {
-    setCollapsedIds(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(accountId)) {
-        newSet.delete(accountId);
-      } else {
-        newSet.add(accountId);
-      }
-      return newSet;
-    });
-  };
-
-  const isRowVisible = (account: Account, index: number): boolean => {
-    if (account.level === 0) return true;
-
-    for (let i = index - 1; i >= 0; i--) {
-      const potentialParent = accountsData[i];
-
-      if (potentialParent.level < account.level) {
-        if (collapsedIds.has(potentialParent.id)) {
-          return false;
-        }
-
-        if (potentialParent.level === account.level - 1) {
-          break;
-        }
-      }
-    }
-
-    return true;
-  };
-
-  const visibleAccounts = accountsData.filter((account, index) =>
-    isRowVisible(account, index)
-  );
-
   React.useLayoutEffect(() => {
     function computeHeight() {
       if (!scrollRef.current) return;
@@ -318,8 +279,8 @@ export const Accounts = (): JSX.Element => {
           <div style={{ minWidth: '1000px' }}>
             <Table className="contacts-table position-relative">
               <caption className="visually-hidden">
-                Accounts table showing {visibleAccounts.length} of {accountsData.length} records.
-                Use arrow keys to navigate, Enter or Space to sort columns or expand/collapse rows.
+                Accounts table showing {accountsData.length} records.
+                Use arrow keys to navigate, Enter or Space to sort columns.
                 {sortConfig && ` Currently sorted by ${sortConfig.key} in ${sortConfig.direction}ending order.`}
               </caption>
               <TableHeader>
@@ -379,7 +340,7 @@ export const Accounts = (): JSX.Element => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {visibleAccounts.map((account, index) => (
+                {accountsData.map((account, index) => (
                   <TableRow
                     key={account.id}
                     role="row"
@@ -390,37 +351,8 @@ export const Accounts = (): JSX.Element => {
                         className="d-flex align-items-center gap-2"
                         style={{ paddingLeft: `${account.level * 24}px` }}
                       >
-                        {account.hasChildren ? (
-                          <button
-                            onClick={() => toggleCollapse(account.id)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' || e.key === ' ') {
-                                e.preventDefault();
-                                toggleCollapse(account.id);
-                              }
-                            }}
-                            className="border-0 bg-transparent p-0 d-flex align-items-center justify-content-center"
-                            style={{
-                              cursor: 'pointer',
-                              width: '20px',
-                              height: '20px',
-                              transition: 'transform 0.2s ease'
-                            }}
-                            aria-expanded={!collapsedIds.has(account.id)}
-                            aria-label={collapsedIds.has(account.id) ? `Expand ${account.company}` : `Collapse ${account.company}`}
-                            title={collapsedIds.has(account.id) ? 'Expand' : 'Collapse'}
-                          >
-                            <ChevronRight
-                              size={16}
-                              className="text-warning"
-                              style={{
-                                transform: collapsedIds.has(account.id) ? 'rotate(0deg)' : 'rotate(90deg)',
-                                transition: 'transform 0.2s ease'
-                              }}
-                            />
-                          </button>
-                        ) : (
-                          <div style={{ width: '20px' }} />
+                        {account.hasChildren && (
+                          <span className="text-warning fw-bold" style={{ fontSize: '1rem' }}>+</span>
                         )}
                         <span className="fw-medium text-dark">{account.company}</span>
                       </div>
