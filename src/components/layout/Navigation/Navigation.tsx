@@ -122,7 +122,15 @@ const navigationItems: NavItem[] = [
     label: "Templates",
     path: "/templates",
     icon: FileTextIcon,
-    hasDropdown: false
+    hasDropdown: true,
+    subItems: [
+      { id: "tp-email", label: "Email", path: "/templates/email" },
+      { id: "tp-task", label: "Task", path: "/templates/task" },
+      { id: "tp-text", label: "Text", path: "/templates/text" },
+      { id: "tp-appt-invites", label: "Appt Invites", path: "/templates/appt-invites" },
+      { id: "tp-notes-logs", label: "Notes/Logs", path: "/templates/notes-logs" },
+      { id: "tp-export-list", label: "Export List for Review", path: "/templates/export-list" },
+    ]
   },
   {
     id: "design-hub",

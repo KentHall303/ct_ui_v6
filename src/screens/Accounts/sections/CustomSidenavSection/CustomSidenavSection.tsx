@@ -2,7 +2,7 @@
 import React from "react";
 import { flushSync } from "react-dom";
 import { Button, Collapse, Image } from "react-bootstrap";
-import { LayoutDashboard as LayoutDashboardIcon, Users as UsersIcon, Briefcase as BriefcaseIcon, Calendar as CalendarIcon, MessageSquare as MessageSquareIcon, ClipboardList as ClipboardListIcon, Settings as SettingsIcon, ChevronDown as ChevronDownIcon, Palette as PaletteIcon, PanelLeftOpen, PanelLeftClose, LogOut as LogOutIcon } from "lucide-react";
+import { LayoutDashboard as LayoutDashboardIcon, Users as UsersIcon, Briefcase as BriefcaseIcon, Calendar as CalendarIcon, MessageSquare as MessageSquareIcon, ClipboardList as ClipboardListIcon, Settings as SettingsIcon, ChevronDown as ChevronDownIcon, Palette as PaletteIcon, PanelLeftOpen, PanelLeftClose, LogOut as LogOutIcon, FileText as FileTextIcon } from "lucide-react";
 
 /* ────────────────────────────────────────────────────────────────────────────
    Props
@@ -42,6 +42,15 @@ const actionPlansSub = [
   { id: "ap-retention", label: "Retention Plans" },
 ];
 
+const templatesSub = [
+  { id: "tp-email", label: "Email" },
+  { id: "tp-task", label: "Task" },
+  { id: "tp-text", label: "Text" },
+  { id: "tp-appt-invites", label: "Appt Invites" },
+  { id: "tp-notes-logs", label: "Notes/Logs" },
+  { id: "tp-export-list", label: "Export List for Review" },
+];
+
 const designHubSub = [
   { id: "dh-announcements", label: "Announcements" },
   { id: "dh-hosted-pages", label: "Hosted Pages" },
@@ -77,6 +86,7 @@ const navigationItems: NavItem[] = [
   { id: "jobs", label: "Jobs", icon: ClipboardListIcon, hasDropdown: false },
   { id: "calendar", label: "Calendar", icon: CalendarIcon, hasDropdown: false },
   { id: "action-plans", label: "Action Plans", icon: ClipboardListIcon, hasDropdown: true, subItems: actionPlansSub },
+  { id: "templates", label: "Templates", icon: FileTextIcon, hasDropdown: true, subItems: templatesSub },
   { id: "design-hub", label: "Design Hub", icon: PaletteIcon, hasDropdown: true, subItems: designHubSub },
   { id: "settings", label: "Settings", icon: SettingsIcon, hasDropdown: true, subItems: settingsSub },
 ];

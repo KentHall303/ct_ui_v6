@@ -18,6 +18,13 @@ const MeetingManagementPage = React.lazy(() => import('./screens/DesignHub/Meeti
 const ProposalSettingsPage = React.lazy(() => import('./screens/DesignHub/ProposalSettingsPage').then(m => ({ default: m.ProposalSettingsPage })));
 const ProposalModalPage = React.lazy(() => import('./screens/DesignHub/ProposalModalPage').then(m => ({ default: m.ProposalModalPage })));
 const TableStandardsPage = React.lazy(() => import('./screens/DesignHub/TableStandardsPage').then(m => ({ default: m.TableStandardsPage })));
+const TemplatesPage = React.lazy(() => import('./screens/Templates/TemplatesPage').then(m => ({ default: m.TemplatesPage })));
+const EmailTemplatesPage = React.lazy(() => import('./screens/Templates/EmailTemplatesPage').then(m => ({ default: m.EmailTemplatesPage })));
+const TaskTemplatesPage = React.lazy(() => import('./screens/Templates/TaskTemplatesPage').then(m => ({ default: m.TaskTemplatesPage })));
+const TextTemplatesPage = React.lazy(() => import('./screens/Templates/TextTemplatesPage').then(m => ({ default: m.TextTemplatesPage })));
+const ApptInvitesTemplatesPage = React.lazy(() => import('./screens/Templates/ApptInvitesTemplatesPage').then(m => ({ default: m.ApptInvitesTemplatesPage })));
+const NotesLogsTemplatesPage = React.lazy(() => import('./screens/Templates/NotesLogsTemplatesPage').then(m => ({ default: m.NotesLogsTemplatesPage })));
+const ExportListTemplatesPage = React.lazy(() => import('./screens/Templates/ExportListTemplatesPage').then(m => ({ default: m.ExportListTemplatesPage })));
 
 const PlaceholderPage: React.FC<{ title: string; description: string }> = ({ title, description }) => (
   <div className="p-6">
@@ -125,7 +132,31 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/templates',
-    element: <PlaceholderPage title="Templates" description="Templates content will be implemented here." />
+    element: <TemplatesPage />
+  },
+  {
+    path: '/templates/email',
+    element: <EmailTemplatesPage />
+  },
+  {
+    path: '/templates/task',
+    element: <TaskTemplatesPage />
+  },
+  {
+    path: '/templates/text',
+    element: <TextTemplatesPage />
+  },
+  {
+    path: '/templates/appt-invites',
+    element: <ApptInvitesTemplatesPage />
+  },
+  {
+    path: '/templates/notes-logs',
+    element: <NotesLogsTemplatesPage />
+  },
+  {
+    path: '/templates/export-list',
+    element: <ExportListTemplatesPage />
   },
   {
     path: '/design-hub',
