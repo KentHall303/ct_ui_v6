@@ -328,7 +328,7 @@ const TableStandards = (): JSX.Element => {
                     </TableCell>
 
                     <TableCell role="gridcell">
-                      <span className={`badge ${account.status === 'Active' ? 'bg-success' : 'bg-secondary'}`}>
+                      <span className={`badge badge-table-status ${account.status === 'Active' ? 'bg-success' : 'bg-secondary'}`}>
                         {account.status}
                       </span>
                     </TableCell>

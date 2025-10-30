@@ -709,6 +709,31 @@ body {
 }
 
 /* ======================================================================
+   Table Status Badge - Match button height
+   ====================================================================== */
+.badge-table-status {
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  padding: 0.25rem 0.75rem !important;
+  line-height: 1.5 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 31px !important;
+  border-radius: 0.25rem !important;
+
+  &.bg-success {
+    background-color: #198754 !important;
+    color: #ffffff !important;
+  }
+
+  &.bg-secondary {
+    background-color: #6c757d !important;
+    color: #ffffff !important;
+  }
+}
+
+/* ======================================================================
    Print Styles - For PDF Generation
    ====================================================================== */
 @media print {
