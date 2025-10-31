@@ -34,8 +34,8 @@ export const TopbarSection = (): JSX.Element => {
         </div>
       </header>
       
-      {/* Gray separator line */}
-      <div className="w-100" style={{ height: '3px', backgroundColor: '#e0e0e0' }} />
+      {/* Red separator line */}
+      <div className="w-100" style={{ height: '3px', backgroundColor: '#B71C1C' }} />
     </>
   );
 };
