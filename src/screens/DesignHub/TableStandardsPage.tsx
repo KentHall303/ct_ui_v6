@@ -2,6 +2,7 @@ import React from "react";
 import { BodyLayout } from "../../components/layout/BodyLayout/BodyLayout";
 import { Button } from "../../components/bootstrap/Button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/bootstrap/Table";
+import { EmailTemplatesDemo } from "../../components/EmailTemplatesDemo";
 
 function parseDateString(dateStr: string): Date | null {
   if (!dateStr || dateStr.trim() === '') return null;
@@ -507,6 +508,9 @@ export const TableStandardsPage = (): JSX.Element => {
   return (
     <BodyLayout>
       <TableStandards />
+      <div className="mt-5">
+        <EmailTemplatesDemo />
+      </div>
     </BodyLayout>
   );
 };
