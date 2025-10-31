@@ -29,7 +29,7 @@ export const BodyLayout: React.FC<BodyLayoutProps> = ({
       )}
 
       {/* Body Content - Fills remaining space */}
-      <div className="flex-fill min-h-0 w-100 overflow-hidden">
+      <div className="flex-fill min-h-0 w-100 overflow-auto">
         {children}
       </div>
 

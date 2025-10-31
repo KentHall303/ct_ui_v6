@@ -90,8 +90,6 @@ export const EmailTemplatesDemo = (): JSX.Element => {
     direction: 'asc' | 'desc';
   } | null>({ key: 'name', direction: 'asc' });
 
-  const scrollRef = React.useRef<HTMLDivElement | null>(null);
-  const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
 
   const handleSort = (key: string) => {
     setSortConfig(current => {
@@ -141,18 +139,6 @@ export const EmailTemplatesDemo = (): JSX.Element => {
     style: { cursor: 'pointer' }
   });
 
-  React.useLayoutEffect(() => {
-    function computeHeight() {
-      if (!scrollRef.current) return;
-      const rect = scrollRef.current.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const h = Math.max(200, Math.floor(vh - rect.top - 16));
-      setMaxHeight(h);
-    }
-    computeHeight();
-    window.addEventListener("resize", computeHeight);
-    return () => window.removeEventListener("resize", computeHeight);
-  }, []);
 
   return (
     <div className="d-flex flex-column w-100">
@@ -181,9 +167,8 @@ export const EmailTemplatesDemo = (): JSX.Element => {
 
       <div className="px-3 pt-3">
         <div
-          ref={scrollRef}
           className="bg-white rounded-3 overflow-auto border shadow-sm"
-          style={{ maxHeight: maxHeight ?? undefined }}
+          style={{ maxHeight: '500px' }}
         >
           <div style={{ minWidth: '1000px' }}>
             <Table className="standard-table position-relative">

@@ -245,8 +245,6 @@ const TableStandards = (): JSX.Element => {
 
   const [expandedRows, setExpandedRows] = React.useState<Set<number>>(new Set());
 
-  const scrollRef = React.useRef<HTMLDivElement | null>(null);
-  const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
 
   const handleSort = (key: string) => {
     setExpandedRows(new Set());
@@ -330,26 +328,13 @@ const TableStandards = (): JSX.Element => {
     style: { cursor: 'pointer' }
   });
 
-  React.useLayoutEffect(() => {
-    function computeHeight() {
-      if (!scrollRef.current) return;
-      const rect = scrollRef.current.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const h = Math.max(200, Math.floor(vh - rect.top - 16));
-      setMaxHeight(h);
-    }
-    computeHeight();
-    window.addEventListener("resize", computeHeight);
-    return () => window.removeEventListener("resize", computeHeight);
-  }, []);
 
   return (
-    <div className="d-flex flex-column w-100 h-100">
+    <div className="d-flex flex-column w-100">
       <div className="px-3 pt-3">
         <div
-          ref={scrollRef}
           className="bg-white rounded-3 overflow-auto border shadow-sm"
-          style={{ maxHeight: maxHeight ?? undefined }}
+          style={{ maxHeight: '500px' }}
         >
           <div style={{ minWidth: '1000px' }}>
             <Table className="contacts-table position-relative">
@@ -508,7 +493,7 @@ export const TableStandardsPage = (): JSX.Element => {
   return (
     <BodyLayout>
       <TableStandards />
-      <div className="mt-5">
+      <div className="mt-5 pb-5">
         <EmailTemplatesDemo />
       </div>
     </BodyLayout>
