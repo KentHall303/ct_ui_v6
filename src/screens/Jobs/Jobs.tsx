@@ -210,7 +210,7 @@ const getStatusBadge = (status: string) => {
   }
 };
 
-const JobsHeader = ({ currentView, onViewChange, onReportsClick }: { currentView: 'table' | 'calendar', onViewChange: (view: 'table' | 'calendar') => void, onReportsClick: () => void }) => (
+const JobsHeader = ({ currentView, onViewChange, onReportsClick }: { currentView: 'table' | 'calendar' | 'dispatching', onViewChange: (view: 'table' | 'calendar' | 'dispatching') => void, onReportsClick: () => void }) => (
   <div className="px-3 pt-3">
     <div className="bg-white rounded-3 pt-2 pb-4 px-3 border shadow-sm">
     {/* Title Section - Following wireframe standards */}
@@ -245,6 +245,15 @@ const JobsHeader = ({ currentView, onViewChange, onReportsClick }: { currentView
           >
             <CalendarIconView size={16} />
             Calendar
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link d-flex align-items-center gap-2 ${currentView === 'dispatching' ? 'active' : ''}`}
+            onClick={() => onViewChange('dispatching')}
+          >
+            <TrendingUpIcon size={16} />
+            Dispatching
           </button>
         </li>
       </ul>
@@ -916,7 +925,7 @@ const CalendarView = () => {
 };
 
 export const Jobs = (): JSX.Element => {
-  const [currentView, setCurrentView] = React.useState<'table' | 'calendar'>('table');
+  const [currentView, setCurrentView] = React.useState<'table' | 'calendar' | 'dispatching'>('table');
   const [showReportsModal, setShowReportsModal] = React.useState(false);
 
   return (
@@ -930,7 +939,7 @@ export const Jobs = (): JSX.Element => {
           />
         </div>
         <div className="px-3 pt-3">
-          {currentView === 'table' ? <TableView /> : <CalendarView />}
+          {currentView === 'table' ? <TableView /> : currentView === 'calendar' ? <CalendarView /> : <div className="bg-white rounded-3 border shadow-sm p-5 text-center"><h4 className="text-secondary">Dispatching View Coming Soon</h4></div>}
         </div>
       </div>
 
