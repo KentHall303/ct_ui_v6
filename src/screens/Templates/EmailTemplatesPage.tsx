@@ -3,93 +3,49 @@ import { BodyLayout } from '../../components/layout/BodyLayout/BodyLayout';
 import { Button } from '../../components/bootstrap/Button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/bootstrap/Table';
 import { Plus } from 'lucide-react';
+import { emailTemplateService } from '../../services/emailTemplateService';
+import { EmailTemplate } from '../../lib/supabase';
 
-type EmailTemplate = {
-  id: number;
+type EmailTemplateDisplay = {
+  id: string;
   name: string;
   subject: string;
   contactType: string;
   excludeClient: boolean;
 };
 
-const sampleTemplates: EmailTemplate[] = [
-  {
-    id: 1,
-    name: "! please provide missing Data",
-    subject: "! Fill in form",
-    contactType: "All",
-    excludeClient: false
-  },
-  {
-    id: 2,
-    name: "{{client.firstName}} signature process as promised",
-    subject: "{{client.firstName}} signature process as promised",
-    contactType: "All",
-    excludeClient: false
-  },
-  {
-    id: 3,
-    name: "! please provide missing Data",
-    subject: "! Fill in form",
-    contactType: "All",
-    excludeClient: false
-  },
-  {
-    id: 4,
-    name: "{{client.firstName}} signature process as promised",
-    subject: "{{client.firstName}} signature process as promised",
-    contactType: "All",
-    excludeClient: false
-  },
-  {
-    id: 5,
-    name: "! please provide missing Data",
-    subject: "! Fill in form",
-    contactType: "All",
-    excludeClient: false
-  },
-  {
-    id: 6,
-    name: "{{client.firstName}} signature process as promised",
-    subject: "{{client.firstName}} signature process as promised",
-    contactType: "All",
-    excludeClient: false
-  },
-  {
-    id: 7,
-    name: "! please provide missing Data",
-    subject: "! Fill in form",
-    contactType: "All",
-    excludeClient: false
-  },
-  {
-    id: 8,
-    name: "{{client.firstName}} signature process as promised",
-    subject: "{{client.firstName}} signature process as promised",
-    contactType: "All",
-    excludeClient: false
-  },
-  {
-    id: 9,
-    name: "! please provide missing Data",
-    subject: "! Fill in form",
-    contactType: "All",
-    excludeClient: false
-  },
-  {
-    id: 10,
-    name: "{{client.firstName}} signature process as promised",
-    subject: "{{client.firstName}} signature process as promised",
-    contactType: "All",
-    excludeClient: false
-  }
-];
-
 const EmailTemplates = (): JSX.Element => {
+  const [templates, setTemplates] = React.useState<EmailTemplateDisplay[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
   const [sortConfig, setSortConfig] = React.useState<{
     key: string;
     direction: 'asc' | 'desc';
   } | null>({ key: 'name', direction: 'asc' });
+
+  React.useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        setLoading(true);
+        const data = await emailTemplateService.getAll();
+        const displayTemplates: EmailTemplateDisplay[] = data.map(template => ({
+          id: template.id,
+          name: template.name,
+          subject: template.subject,
+          contactType: template.contact_type,
+          excludeClient: template.exclude_client
+        }));
+        setTemplates(displayTemplates);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load templates');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTemplates();
+  }, []);
 
   const handleSort = (key: string) => {
     setSortConfig(current => {
@@ -108,11 +64,11 @@ const EmailTemplates = (): JSX.Element => {
   };
 
   const sortedTemplates = React.useMemo(() => {
-    if (!sortConfig) return sampleTemplates;
+    if (!sortConfig) return templates;
 
-    return [...sampleTemplates].sort((a, b) => {
-      let aVal = a[sortConfig.key as keyof EmailTemplate];
-      let bVal = b[sortConfig.key as keyof EmailTemplate];
+    return [...templates].sort((a, b) => {
+      let aVal = a[sortConfig.key as keyof EmailTemplateDisplay];
+      let bVal = b[sortConfig.key as keyof EmailTemplateDisplay];
 
       const aStr = String(aVal).toLowerCase();
       const bStr = String(bVal).toLowerCase();
@@ -121,7 +77,7 @@ const EmailTemplates = (): JSX.Element => {
       if (aStr > bStr) return sortConfig.direction === 'asc' ? 1 : -1;
       return 0;
     });
-  }, [sortConfig]);
+  }, [templates, sortConfig]);
 
   const getSortProps = (key: string) => ({
     'aria-sort': sortConfig?.key === key
@@ -138,6 +94,36 @@ const EmailTemplates = (): JSX.Element => {
     role: 'button',
     style: { cursor: 'pointer' }
   });
+
+  if (loading) {
+    return (
+      <div className="d-flex flex-column w-100">
+        <div className="px-3 pt-4 pb-3">
+          <h2 className="h2 fw-bold text-dark text-uppercase m-0 text-center" style={{ letterSpacing: '0.1em' }}>
+            EMAIL TEMPLATES
+          </h2>
+        </div>
+        <div className="px-3 pt-3 text-center">
+          <p>Loading templates...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="d-flex flex-column w-100">
+        <div className="px-3 pt-4 pb-3">
+          <h2 className="h2 fw-bold text-dark text-uppercase m-0 text-center" style={{ letterSpacing: '0.1em' }}>
+            EMAIL TEMPLATES
+          </h2>
+        </div>
+        <div className="px-3 pt-3 text-center">
+          <p className="text-danger">Error: {error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="d-flex flex-column w-100">
@@ -172,7 +158,7 @@ const EmailTemplates = (): JSX.Element => {
           <div style={{ minWidth: '1000px' }}>
             <Table className="standard-table position-relative">
               <caption className="visually-hidden">
-                Email templates table showing {sampleTemplates.length} records.
+                Email templates table showing {templates.length} records.
                 Use arrow keys to navigate, Enter or Space to sort columns.
                 {sortConfig && ` Currently sorted by ${sortConfig.key} in ${sortConfig.direction}ending order.`}
               </caption>
