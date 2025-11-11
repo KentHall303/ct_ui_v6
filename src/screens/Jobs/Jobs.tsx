@@ -1038,15 +1038,12 @@ const DispatchingView = () => {
                               e.currentTarget.style.transform = 'translateY(0)';
                               e.currentTarget.style.boxShadow = 'none';
                             }}
-                            title={`${event.quoteNumber}\n${event.contactName}\n${event.amount}`}
+                            title={`${event.time}\n${event.quoteNumber}\n${event.contactName}`}
                           >
-                            <div style={{ fontSize: '0.65rem', fontWeight: '700', color: colors.text, marginBottom: '1px' }}>
-                              {event.time}
-                            </div>
-                            <div style={{ fontSize: '0.65rem', fontWeight: '600', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: '700', color: colors.text, marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {event.quoteNumber}
                             </div>
-                            <div style={{ fontSize: '0.6rem', color: colors.text, opacity: 0.8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <div style={{ fontSize: '0.7rem', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {event.contactName}
                             </div>
                           </div>
