@@ -786,47 +786,6 @@ const DispatchingView = () => {
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleDrop = (e: React.DragEvent, estimatorName: string, dropX: number, containerWidth: number) => {
-    e.preventDefault();
-    if (!draggedEvent) return;
-
-    const gridStart = 7;
-    const gridEnd = 21;
-    const totalHours = gridEnd - gridStart;
-
-    // Calculate the time based on drop position, snap to half-hour
-    const dropPercentage = dropX / containerWidth;
-    const exactDropHour = gridStart + (dropPercentage * totalHours);
-
-    // Snap to nearest half hour (0.5 increment)
-    const snappedHour = Math.round(exactDropHour * 2) / 2;
-
-    // Clamp to grid boundaries
-    const clampedHour = Math.max(gridStart, Math.min(gridEnd - 0.5, snappedHour));
-
-    const newTime = formatTimeFromDecimal(clampedHour);
-
-    console.log('Drop debug:', {
-      dropX,
-      containerWidth,
-      dropPercentage,
-      exactDropHour,
-      snappedHour,
-      clampedHour,
-      newTime
-    });
-
-    setEvents(prevEvents =>
-      prevEvents.map(evt =>
-        evt.id === draggedEvent.id
-          ? { ...evt, estimator: estimatorName, time: newTime }
-          : evt
-      )
-    );
-
-    setDraggedEvent(null);
-  };
-
   return (
     <div className="bg-white rounded-3 border shadow-sm" style={{ height: 'calc(100vh - 280px)' }}>
       <div className="d-flex h-100">
@@ -954,31 +913,74 @@ const DispatchingView = () => {
                     <div
                       className="position-relative flex-fill"
                       style={{ backgroundColor: '#fafafa' }}
-                      onDragOver={handleDragOver}
-                      onDrop={(e) => {
-                        const rect = e.currentTarget.getBoundingClientRect();
-                        const dropX = e.clientX - rect.left;
-                        handleDrop(e, estimatorName, dropX, rect.width);
-                      }}
                     >
-                      {/* Hour and Half-Hour Grid Lines */}
+                      {/* Half-Hour Drop Zones */}
                       <div className="d-flex h-100 position-absolute w-100">
-                        {hours.map((_, i) => (
-                          <div key={i} className="position-relative" style={{ flex: 1, height: '100%' }}>
-                            {/* Hour line (solid) */}
-                            <div className="border-end h-100" style={{ position: 'absolute', left: 0, width: '1px' }} />
-                            {/* Half-hour line (dashed) */}
-                            <div
-                              className="h-100"
-                              style={{
-                                position: 'absolute',
-                                left: '50%',
-                                width: '1px',
-                                borderRight: '1px dashed #d1d5db'
-                              }}
-                            />
-                          </div>
-                        ))}
+                        {hours.map((_, hourIndex) => {
+                          const hourValue = hourIndex + 7;
+                          return (
+                            <React.Fragment key={hourIndex}>
+                              {/* First half (on the hour) */}
+                              <div
+                                className="position-relative"
+                                style={{ flex: 1, height: '100%', borderRight: '1px dashed #d1d5db' }}
+                                onDragOver={handleDragOver}
+                                onDrop={(e) => {
+                                  const newTime = formatTimeFromDecimal(hourValue);
+                                  if (draggedEvent) {
+                                    setEvents(prevEvents =>
+                                      prevEvents.map(evt =>
+                                        evt.id === draggedEvent.id
+                                          ? { ...evt, estimator: estimatorName, time: newTime }
+                                          : evt
+                                      )
+                                    );
+                                    setDraggedEvent(null);
+                                  }
+                                  e.preventDefault();
+                                }}
+                                onDragEnter={(e) => {
+                                  if (draggedEvent) {
+                                    e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+                                  }
+                                }}
+                                onDragLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = 'transparent';
+                                }}
+                              >
+                                <div className="border-end h-100" style={{ position: 'absolute', left: 0, width: '1px' }} />
+                              </div>
+                              {/* Second half (half-hour) */}
+                              <div
+                                className="position-relative"
+                                style={{ flex: 1, height: '100%', borderRight: hourIndex === hours.length - 1 ? '1px solid #dee2e6' : '1px solid #dee2e6' }}
+                                onDragOver={handleDragOver}
+                                onDrop={(e) => {
+                                  const newTime = formatTimeFromDecimal(hourValue + 0.5);
+                                  if (draggedEvent) {
+                                    setEvents(prevEvents =>
+                                      prevEvents.map(evt =>
+                                        evt.id === draggedEvent.id
+                                          ? { ...evt, estimator: estimatorName, time: newTime }
+                                          : evt
+                                      )
+                                    );
+                                    setDraggedEvent(null);
+                                  }
+                                  e.preventDefault();
+                                }}
+                                onDragEnter={(e) => {
+                                  if (draggedEvent) {
+                                    e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+                                  }
+                                }}
+                                onDragLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = 'transparent';
+                                }}
+                              />
+                            </React.Fragment>
+                          );
+                        })}
                       </div>
 
                       {/* Events */}
