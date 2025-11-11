@@ -659,6 +659,301 @@ const TableView = () => {
   );
 };
 
+const DispatchingView = () => {
+  const [selectedDate, setSelectedDate] = React.useState(new Date(2025, 8, 15)); // Sept 15, 2025
+  const [selectedEstimators, setSelectedEstimators] = React.useState<string[]>(['Test_Account Owner']);
+
+  const estimators = [
+    { name: 'Test_Account Owner', color: '#3b82f6' },
+    { name: 'Standard Kent', color: '#10b981' },
+    { name: 'Sara Joe', color: '#8b5cf6' },
+    { name: 'Jeanette Standards', color: '#f59e0b' },
+    { name: 'Sara Admin', color: '#ec4899' },
+    { name: 'Absolute Nugget', color: '#06b6d4' },
+    { name: 'Frank Team', color: '#84cc16' },
+  ];
+
+  const toggleEstimator = (estimatorName: string) => {
+    setSelectedEstimators(prev =>
+      prev.includes(estimatorName)
+        ? prev.filter(e => e !== estimatorName)
+        : [...prev, estimatorName]
+    );
+  };
+
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  };
+
+  const goToToday = () => {
+    setSelectedDate(new Date(2025, 8, 15));
+  };
+
+  const goToTomorrow = () => {
+    const tomorrow = new Date(selectedDate);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    setSelectedDate(tomorrow);
+  };
+
+  const navigateDay = (direction: number) => {
+    const newDate = new Date(selectedDate);
+    newDate.setDate(newDate.getDate() + direction);
+    setSelectedDate(newDate);
+  };
+
+  // Generate hours from 7 AM to 8 PM
+  const hours = Array.from({ length: 14 }, (_, i) => {
+    const hour = i + 7;
+    return hour <= 12 ? `${hour} am` : `${hour - 12} pm`;
+  });
+
+  // Get events for selected date and estimator
+  const getEventsForEstimator = (estimatorName: string) => {
+    const dateString = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
+    return sampleCalendarEvents.filter(event =>
+      event.estimator === estimatorName && event.date === dateString
+    );
+  };
+
+  const parseTime = (timeStr: string): number => {
+    const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!match) return 7;
+    let hours = parseInt(match[1]);
+    const minutes = parseInt(match[2]);
+    const period = match[3].toUpperCase();
+
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+
+    return hours + minutes / 60;
+  };
+
+  const calculatePosition = (time: string): { left: string; width: string } => {
+    const startHour = parseTime(time);
+    const gridStart = 7;
+    const gridEnd = 21;
+    const totalHours = gridEnd - gridStart;
+
+    if (startHour < gridStart || startHour >= gridEnd) {
+      return { left: '0%', width: '0%' };
+    }
+
+    const left = ((startHour - gridStart) / totalHours) * 100;
+    const width = (2 / totalHours) * 100; // 2-hour default width
+
+    return {
+      left: `${left}%`,
+      width: `${Math.min(width, 100 - left)}%`
+    };
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active':
+        return { bg: '#d1f4e0', border: '#10b981', text: '#059669' };
+      case 'pending':
+        return { bg: '#fef3c7', border: '#f59e0b', text: '#d97706' };
+      case 'overdue':
+        return { bg: '#fee2e2', border: '#ef4444', text: '#dc2626' };
+      case 'completed':
+        return { bg: '#dbeafe', border: '#3b82f6', text: '#2563eb' };
+      default:
+        return { bg: '#f3f4f6', border: '#9ca3af', text: '#6b7280' };
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-3 border shadow-sm" style={{ height: 'calc(100vh - 280px)' }}>
+      <div className="d-flex h-100">
+        {/* Left Sidebar */}
+        <div className="border-end bg-light p-3" style={{ width: '240px', flexShrink: 0, overflowY: 'auto' }}>
+          <div className="mb-4">
+            <h6 className="fw-bold text-dark mb-3">Estimators</h6>
+            <div className="d-flex flex-column gap-2">
+              {estimators.map((estimator, index) => (
+                <label
+                  key={index}
+                  className="d-flex align-items-center gap-2 p-2 rounded"
+                  style={{ cursor: 'pointer', transition: 'background-color 0.15s' }}
+                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
+                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedEstimators.includes(estimator.name)}
+                    onChange={() => toggleEstimator(estimator.name)}
+                    className="form-check-input mt-0"
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <span className={`small ${selectedEstimators.includes(estimator.name) ? 'fw-semibold text-dark' : 'text-secondary'}`}>
+                    {estimator.name}
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <h6 className="fw-bold text-dark mb-3">Quick Filters</h6>
+            <div className="d-flex flex-column gap-2">
+              <Button
+                variant="outline-primary"
+                size="sm"
+                className="w-100 text-start small"
+                onClick={goToToday}
+              >
+                Today
+              </Button>
+              <Button
+                variant="outline-primary"
+                size="sm"
+                className="w-100 text-start small"
+                onClick={goToTomorrow}
+              >
+                Tomorrow
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Timeline Area */}
+        <div className="flex-fill d-flex flex-column" style={{ minHeight: 0, overflow: 'hidden' }}>
+          {/* Date Navigation Header */}
+          <div className="d-flex align-items-center justify-content-between px-4 py-3 border-bottom bg-white">
+            <div className="d-flex align-items-center gap-3">
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                className="px-2 py-1"
+                onClick={() => navigateDay(-1)}
+              >
+                <ChevronLeftIcon size={16} />
+              </Button>
+              <h5 className="mb-0 fw-bold">{formatDate(selectedDate)}</h5>
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                className="px-2 py-1"
+                onClick={() => navigateDay(1)}
+              >
+                <ChevronRightIcon size={16} />
+              </Button>
+            </div>
+          </div>
+
+          {/* Timeline Grid */}
+          <div className="flex-fill" style={{ overflowY: 'auto', overflowX: 'auto' }}>
+            <div style={{ minWidth: '1200px' }}>
+              {/* Hours Header */}
+              <div className="d-flex border-bottom bg-light sticky-top" style={{ top: 0, zIndex: 2 }}>
+                <div className="border-end bg-white" style={{ width: '180px', flexShrink: 0, padding: '12px 16px' }}>
+                  <span className="small fw-semibold text-secondary">Unassigned</span>
+                </div>
+                <div className="d-flex flex-fill">
+                  {hours.map((hour, i) => (
+                    <div
+                      key={i}
+                      className="text-center border-end"
+                      style={{ flex: 1, padding: '12px 8px', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280' }}
+                    >
+                      {hour}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Estimator Rows */}
+              {selectedEstimators.map((estimatorName, index) => {
+                const events = getEventsForEstimator(estimatorName);
+                const estimator = estimators.find(e => e.name === estimatorName);
+
+                return (
+                  <div key={index} className="d-flex border-bottom" style={{ minHeight: '80px' }}>
+                    {/* Estimator Name */}
+                    <div className="border-end d-flex align-items-center" style={{ width: '180px', flexShrink: 0, padding: '12px 16px', backgroundColor: '#fff' }}>
+                      <div className="d-flex align-items-center gap-2">
+                        <div
+                          className="rounded-circle"
+                          style={{
+                            width: '8px',
+                            height: '8px',
+                            backgroundColor: estimator?.color || '#9ca3af',
+                            flexShrink: 0
+                          }}
+                        />
+                        <span className="small fw-medium text-dark">{estimatorName}</span>
+                      </div>
+                    </div>
+
+                    {/* Timeline */}
+                    <div className="position-relative flex-fill" style={{ backgroundColor: '#fafafa' }}>
+                      {/* Hour Grid Lines */}
+                      <div className="d-flex h-100 position-absolute w-100">
+                        {hours.map((_, i) => (
+                          <div
+                            key={i}
+                            className="border-end"
+                            style={{ flex: 1, height: '100%' }}
+                          />
+                        ))}
+                      </div>
+
+                      {/* Events */}
+                      {events.map((event) => {
+                        const position = calculatePosition(event.time);
+                        const colors = getStatusColor(event.status);
+
+                        return (
+                          <div
+                            key={event.id}
+                            className="position-absolute"
+                            style={{
+                              left: position.left,
+                              width: position.width,
+                              top: '8px',
+                              bottom: '8px',
+                              backgroundColor: colors.bg,
+                              border: `2px solid ${colors.border}`,
+                              borderRadius: '6px',
+                              padding: '8px',
+                              cursor: 'pointer',
+                              transition: 'all 0.15s ease',
+                              zIndex: 1
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.transform = 'translateY(-2px)';
+                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.transform = 'translateY(0)';
+                              e.currentTarget.style.boxShadow = 'none';
+                            }}
+                            title={`${event.quoteNumber}\n${event.contactName}\n${event.amount}`}
+                          >
+                            <div style={{ fontSize: '0.7rem', fontWeight: '700', color: colors.text, marginBottom: '2px' }}>
+                              {event.time}
+                            </div>
+                            <div style={{ fontSize: '0.7rem', fontWeight: '600', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {event.quoteNumber}
+                            </div>
+                            <div style={{ fontSize: '0.65rem', color: colors.text, opacity: 0.8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              {event.contactName}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const CalendarView = () => {
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
@@ -939,7 +1234,7 @@ export const Jobs = (): JSX.Element => {
           />
         </div>
         <div className="px-3 pt-3">
-          {currentView === 'table' ? <TableView /> : currentView === 'calendar' ? <CalendarView /> : <div className="bg-white rounded-3 border shadow-sm p-5 text-center"><h4 className="text-secondary">Dispatching View Coming Soon</h4></div>}
+          {currentView === 'table' ? <TableView /> : currentView === 'calendar' ? <CalendarView /> : <DispatchingView />}
         </div>
       </div>
 
