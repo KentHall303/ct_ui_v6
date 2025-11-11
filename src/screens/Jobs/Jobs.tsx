@@ -661,7 +661,9 @@ const TableView = () => {
 
 const DispatchingView = () => {
   const [selectedDate, setSelectedDate] = React.useState(new Date(2025, 8, 15)); // Sept 15, 2025
-  const [selectedEstimators, setSelectedEstimators] = React.useState<string[]>(['Test_Account Owner']);
+  const [selectedEstimators, setSelectedEstimators] = React.useState<string[]>(['Test_Account Owner', 'Sara Joe', 'Jeanette Standards']);
+  const [events, setEvents] = React.useState<CalendarEvent[]>(sampleCalendarEvents);
+  const [draggedEvent, setDraggedEvent] = React.useState<CalendarEvent | null>(null);
 
   const estimators = [
     { name: 'Test_Account Owner', color: '#3b82f6' },
@@ -710,7 +712,7 @@ const DispatchingView = () => {
   // Get events for selected date and estimator
   const getEventsForEstimator = (estimatorName: string) => {
     const dateString = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
-    return sampleCalendarEvents.filter(event =>
+    return events.filter(event =>
       event.estimator === estimatorName && event.date === dateString
     );
   };
@@ -726,6 +728,17 @@ const DispatchingView = () => {
     if (period === 'AM' && hours === 12) hours = 0;
 
     return hours + minutes / 60;
+  };
+
+  const formatTimeFromDecimal = (decimal: number): string => {
+    let hours = Math.floor(decimal);
+    const minutes = Math.round((decimal - hours) * 60);
+
+    const period = hours >= 12 ? 'PM' : 'AM';
+    if (hours > 12) hours -= 12;
+    if (hours === 0) hours = 12;
+
+    return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
   };
 
   const calculatePosition = (time: string): { left: string; width: string } => {
@@ -760,6 +773,42 @@ const DispatchingView = () => {
       default:
         return { bg: '#f3f4f6', border: '#9ca3af', text: '#6b7280' };
     }
+  };
+
+  const handleDragStart = (e: React.DragEvent, event: CalendarEvent) => {
+    setDraggedEvent(event);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, estimatorName: string, dropX: number, containerWidth: number) => {
+    e.preventDefault();
+    if (!draggedEvent) return;
+
+    const gridStart = 7;
+    const gridEnd = 21;
+    const totalHours = gridEnd - gridStart;
+
+    // Calculate the time based on drop position, snap to half-hour
+    const dropPercentage = dropX / containerWidth;
+    const dropHour = gridStart + (dropPercentage * totalHours);
+    const snappedHour = Math.round(dropHour * 2) / 2; // Snap to nearest half hour
+
+    const newTime = formatTimeFromDecimal(snappedHour);
+
+    setEvents(prevEvents =>
+      prevEvents.map(evt =>
+        evt.id === draggedEvent.id
+          ? { ...evt, estimator: estimatorName, time: newTime }
+          : evt
+      )
+    );
+
+    setDraggedEvent(null);
   };
 
   return (
@@ -864,7 +913,7 @@ const DispatchingView = () => {
 
               {/* Estimator Rows */}
               {selectedEstimators.map((estimatorName, index) => {
-                const events = getEventsForEstimator(estimatorName);
+                const estimatorEvents = getEventsForEstimator(estimatorName);
                 const estimator = estimators.find(e => e.name === estimatorName);
 
                 return (
@@ -886,26 +935,46 @@ const DispatchingView = () => {
                     </div>
 
                     {/* Timeline */}
-                    <div className="position-relative flex-fill" style={{ backgroundColor: '#fafafa' }}>
-                      {/* Hour Grid Lines */}
+                    <div
+                      className="position-relative flex-fill"
+                      style={{ backgroundColor: '#fafafa' }}
+                      onDragOver={handleDragOver}
+                      onDrop={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        const dropX = e.clientX - rect.left;
+                        handleDrop(e, estimatorName, dropX, rect.width);
+                      }}
+                    >
+                      {/* Hour and Half-Hour Grid Lines */}
                       <div className="d-flex h-100 position-absolute w-100">
                         {hours.map((_, i) => (
-                          <div
-                            key={i}
-                            className="border-end"
-                            style={{ flex: 1, height: '100%' }}
-                          />
+                          <div key={i} className="position-relative" style={{ flex: 1, height: '100%' }}>
+                            {/* Hour line (solid) */}
+                            <div className="border-end h-100" style={{ position: 'absolute', left: 0, width: '1px' }} />
+                            {/* Half-hour line (dashed) */}
+                            <div
+                              className="h-100"
+                              style={{
+                                position: 'absolute',
+                                left: '50%',
+                                width: '1px',
+                                borderRight: '1px dashed #d1d5db'
+                              }}
+                            />
+                          </div>
                         ))}
                       </div>
 
                       {/* Events */}
-                      {events.map((event) => {
+                      {estimatorEvents.map((event) => {
                         const position = calculatePosition(event.time);
                         const colors = getStatusColor(event.status);
 
                         return (
                           <div
                             key={event.id}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, event)}
                             className="position-absolute"
                             style={{
                               left: position.left,
@@ -916,13 +985,16 @@ const DispatchingView = () => {
                               border: `2px solid ${colors.border}`,
                               borderRadius: '6px',
                               padding: '8px',
-                              cursor: 'pointer',
+                              cursor: 'grab',
                               transition: 'all 0.15s ease',
-                              zIndex: 1
+                              zIndex: 1,
+                              opacity: draggedEvent?.id === event.id ? 0.5 : 1
                             }}
                             onMouseEnter={(e) => {
-                              e.currentTarget.style.transform = 'translateY(-2px)';
-                              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                              if (!draggedEvent) {
+                                e.currentTarget.style.transform = 'translateY(-2px)';
+                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+                              }
                             }}
                             onMouseLeave={(e) => {
                               e.currentTarget.style.transform = 'translateY(0)';
