@@ -664,6 +664,7 @@ const DispatchingView = () => {
   const [selectedEstimators, setSelectedEstimators] = React.useState<string[]>(['Test_Account Owner', 'Sara Joe', 'Jeanette Standards']);
   const [events, setEvents] = React.useState<CalendarEvent[]>(sampleCalendarEvents);
   const [draggedEvent, setDraggedEvent] = React.useState<CalendarEvent | null>(null);
+  const [viewMode, setViewMode] = React.useState<'timeline' | 'map'>('timeline');
 
   const estimators = [
     { name: 'Test_Account Owner', color: '#3b82f6' },
@@ -863,11 +864,30 @@ const DispatchingView = () => {
                 <ChevronRightIcon size={16} />
               </Button>
             </div>
+            <div className="btn-group" role="group">
+              <button
+                type="button"
+                className={`btn btn-sm ${viewMode === 'timeline' ? 'btn-primary' : 'btn-outline-primary'}`}
+                onClick={() => setViewMode('timeline')}
+                style={{ fontSize: '0.8rem' }}
+              >
+                Timeline View
+              </button>
+              <button
+                type="button"
+                className={`btn btn-sm ${viewMode === 'map' ? 'btn-primary' : 'btn-outline-primary'}`}
+                onClick={() => setViewMode('map')}
+                style={{ fontSize: '0.8rem' }}
+              >
+                Map View
+              </button>
+            </div>
           </div>
 
           {/* Timeline Grid */}
-          <div className="flex-fill" style={{ overflowY: 'auto', overflowX: 'auto' }}>
-            <div style={{ minWidth: '1200px' }}>
+          {viewMode === 'timeline' ? (
+            <div className="flex-fill" style={{ overflowY: 'auto', overflowX: 'auto' }}>
+              <div style={{ minWidth: '1200px' }}>
               {/* Hours Header */}
               <div className="d-flex border-bottom bg-light sticky-top" style={{ top: 0, zIndex: 2 }}>
                 <div className="border-end bg-white" style={{ width: '180px', flexShrink: 0, padding: '12px 16px' }}>
@@ -892,20 +912,20 @@ const DispatchingView = () => {
                 const estimator = estimators.find(e => e.name === estimatorName);
 
                 return (
-                  <div key={index} className="d-flex border-bottom" style={{ minHeight: '80px' }}>
+                  <div key={index} className="d-flex border-bottom" style={{ minHeight: '48px' }}>
                     {/* Estimator Name */}
-                    <div className="border-end d-flex align-items-center" style={{ width: '180px', flexShrink: 0, padding: '12px 16px', backgroundColor: '#fff' }}>
+                    <div className="border-end d-flex align-items-center" style={{ width: '180px', flexShrink: 0, padding: '6px 12px', backgroundColor: '#fff' }}>
                       <div className="d-flex align-items-center gap-2">
                         <div
                           className="rounded-circle"
                           style={{
-                            width: '8px',
-                            height: '8px',
+                            width: '6px',
+                            height: '6px',
                             backgroundColor: estimator?.color || '#9ca3af',
                             flexShrink: 0
                           }}
                         />
-                        <span className="small fw-medium text-dark">{estimatorName}</span>
+                        <span style={{ fontSize: '0.8rem', fontWeight: '500' }} className="text-dark">{estimatorName}</span>
                       </div>
                     </div>
 
@@ -997,12 +1017,12 @@ const DispatchingView = () => {
                             style={{
                               left: position.left,
                               width: position.width,
-                              top: '8px',
-                              bottom: '8px',
+                              top: '4px',
+                              bottom: '4px',
                               backgroundColor: colors.bg,
                               border: `2px solid ${colors.border}`,
-                              borderRadius: '6px',
-                              padding: '8px',
+                              borderRadius: '4px',
+                              padding: '4px 6px',
                               cursor: 'grab',
                               transition: 'all 0.15s ease',
                               zIndex: 1,
@@ -1020,13 +1040,13 @@ const DispatchingView = () => {
                             }}
                             title={`${event.quoteNumber}\n${event.contactName}\n${event.amount}`}
                           >
-                            <div style={{ fontSize: '0.7rem', fontWeight: '700', color: colors.text, marginBottom: '2px' }}>
+                            <div style={{ fontSize: '0.65rem', fontWeight: '700', color: colors.text, marginBottom: '1px' }}>
                               {event.time}
                             </div>
-                            <div style={{ fontSize: '0.7rem', fontWeight: '600', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <div style={{ fontSize: '0.65rem', fontWeight: '600', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {event.quoteNumber}
                             </div>
-                            <div style={{ fontSize: '0.65rem', color: colors.text, opacity: 0.8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <div style={{ fontSize: '0.6rem', color: colors.text, opacity: 0.8, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {event.contactName}
                             </div>
                           </div>
@@ -1038,6 +1058,178 @@ const DispatchingView = () => {
               })}
             </div>
           </div>
+          ) : (
+            /* Map View */
+            <div className="flex-fill position-relative" style={{ overflowY: 'auto' }}>
+              {/* Mock Map Background */}
+              <div className="position-relative" style={{ minHeight: '600px', backgroundColor: '#e5e7eb' }}>
+                {/* Map Placeholder */}
+                <div className="position-absolute w-100 h-100 d-flex align-items-center justify-content-center" style={{ opacity: 0.3 }}>
+                  <div className="text-center">
+                    <div style={{ fontSize: '4rem', color: '#9ca3af' }}>🗺️</div>
+                    <p className="text-muted">Map Integration Placeholder</p>
+                  </div>
+                </div>
+
+                {/* User Pins and Routes */}
+                {selectedEstimators.map((estimatorName, index) => {
+                  const estimator = estimators.find(e => e.name === estimatorName);
+                  const estimatorEvents = events.filter(e => e.estimator === estimatorName);
+
+                  return (
+                    <div key={estimatorName}>
+                      {/* User Pin */}
+                      <div
+                        className="position-absolute"
+                        style={{
+                          top: `${120 + index * 150}px`,
+                          left: `${100 + index * 80}px`,
+                          zIndex: 10
+                        }}
+                      >
+                        <div className="d-flex flex-column align-items-center">
+                          <div
+                            className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow"
+                            style={{
+                              width: '40px',
+                              height: '40px',
+                              backgroundColor: estimator?.color || '#9ca3af',
+                              fontSize: '0.75rem'
+                            }}
+                          >
+                            {estimatorName.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                          </div>
+                          <div className="mt-1 px-2 py-1 bg-white rounded shadow-sm" style={{ fontSize: '0.7rem', fontWeight: '600' }}>
+                            {estimatorName}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Route Line (mock) */}
+                      <svg
+                        className="position-absolute"
+                        style={{
+                          top: 0,
+                          left: 0,
+                          width: '100%',
+                          height: '100%',
+                          pointerEvents: 'none',
+                          zIndex: 1
+                        }}
+                      >
+                        <path
+                          d={`M ${115 + index * 80} ${140 + index * 150} Q ${300 + index * 100} ${200 + index * 80} ${400 + index * 120} ${180 + index * 100}`}
+                          fill="none"
+                          stroke={estimator?.color || '#9ca3af'}
+                          strokeWidth="3"
+                          strokeDasharray="5,5"
+                          opacity="0.6"
+                        />
+                      </svg>
+
+                      {/* Appointment Pins */}
+                      {estimatorEvents.slice(0, 3).map((event, eventIndex) => (
+                        <div
+                          key={event.id}
+                          className="position-absolute"
+                          style={{
+                            top: `${150 + index * 150 + eventIndex * 40}px`,
+                            left: `${380 + index * 120 + eventIndex * 50}px`,
+                            zIndex: 5
+                          }}
+                        >
+                          <div className="position-relative">
+                            {/* Pin Icon */}
+                            <div
+                              className="rounded-circle d-flex align-items-center justify-content-center shadow"
+                              style={{
+                                width: '32px',
+                                height: '32px',
+                                backgroundColor: 'white',
+                                border: `3px solid ${estimator?.color || '#9ca3af'}`
+                              }}
+                            >
+                              <div
+                                style={{
+                                  width: '8px',
+                                  height: '8px',
+                                  backgroundColor: estimator?.color || '#9ca3af',
+                                  borderRadius: '50%'
+                                }}
+                              />
+                            </div>
+                            {/* Event Info Card */}
+                            <div
+                              className="position-absolute bg-white rounded shadow px-2 py-1"
+                              style={{
+                                top: '-8px',
+                                left: '40px',
+                                minWidth: '140px',
+                                fontSize: '0.65rem',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              <div className="fw-bold" style={{ color: estimator?.color }}>{event.time}</div>
+                              <div className="fw-semibold text-dark">{event.quoteNumber}</div>
+                              <div className="text-muted" style={{ fontSize: '0.6rem' }}>{event.contactName}</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Timeline Strip at Bottom */}
+              <div className="border-top bg-white p-3" style={{ position: 'sticky', bottom: 0 }}>
+                <div className="d-flex gap-3" style={{ overflowX: 'auto' }}>
+                  {selectedEstimators.map((estimatorName) => {
+                    const estimator = estimators.find(e => e.name === estimatorName);
+                    const estimatorEvents = events.filter(e => e.estimator === estimatorName).sort((a, b) => {
+                      const parseTime = (time: string) => {
+                        const [timePart, period] = time.split(' ');
+                        let [hours, minutes] = timePart.split(':').map(Number);
+                        if (period === 'PM' && hours !== 12) hours += 12;
+                        if (period === 'AM' && hours === 12) hours = 0;
+                        return hours + minutes / 60;
+                      };
+                      return parseTime(a.time) - parseTime(b.time);
+                    });
+
+                    return (
+                      <div key={estimatorName} className="d-flex align-items-center gap-2 bg-light rounded p-2" style={{ minWidth: '200px' }}>
+                        <div
+                          className="rounded-circle"
+                          style={{
+                            width: '8px',
+                            height: '8px',
+                            backgroundColor: estimator?.color || '#9ca3af',
+                            flexShrink: 0
+                          }}
+                        />
+                        <div className="flex-fill">
+                          <div style={{ fontSize: '0.75rem', fontWeight: '600' }} className="text-dark mb-1">
+                            {estimatorName}
+                          </div>
+                          <div className="d-flex gap-1" style={{ fontSize: '0.65rem' }}>
+                            {estimatorEvents.slice(0, 4).map((event, idx) => (
+                              <span key={event.id} className="text-muted">
+                                {event.time}{idx < Math.min(estimatorEvents.length, 4) - 1 ? ' →' : ''}
+                              </span>
+                            ))}
+                            {estimatorEvents.length > 4 && (
+                              <span className="text-muted">+{estimatorEvents.length - 4}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
