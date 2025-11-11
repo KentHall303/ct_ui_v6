@@ -731,8 +731,9 @@ const DispatchingView = () => {
   };
 
   const formatTimeFromDecimal = (decimal: number): string => {
-    let hours = Math.floor(decimal);
-    const minutes = Math.round((decimal - hours) * 60);
+    const totalMinutes = Math.round(decimal * 60);
+    let hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
 
     const period = hours >= 12 ? 'PM' : 'AM';
     if (hours > 12) hours -= 12;
@@ -795,10 +796,25 @@ const DispatchingView = () => {
 
     // Calculate the time based on drop position, snap to half-hour
     const dropPercentage = dropX / containerWidth;
-    const dropHour = gridStart + (dropPercentage * totalHours);
-    const snappedHour = Math.round(dropHour * 2) / 2; // Snap to nearest half hour
+    const exactDropHour = gridStart + (dropPercentage * totalHours);
 
-    const newTime = formatTimeFromDecimal(snappedHour);
+    // Snap to nearest half hour (0.5 increment)
+    const snappedHour = Math.round(exactDropHour * 2) / 2;
+
+    // Clamp to grid boundaries
+    const clampedHour = Math.max(gridStart, Math.min(gridEnd - 0.5, snappedHour));
+
+    const newTime = formatTimeFromDecimal(clampedHour);
+
+    console.log('Drop debug:', {
+      dropX,
+      containerWidth,
+      dropPercentage,
+      exactDropHour,
+      snappedHour,
+      clampedHour,
+      newTime
+    });
 
     setEvents(prevEvents =>
       prevEvents.map(evt =>
