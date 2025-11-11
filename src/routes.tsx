@@ -19,7 +19,7 @@ const ProposalSettingsPage = React.lazy(() => import('./screens/DesignHub/Propos
 const ProposalModalPage = React.lazy(() => import('./screens/DesignHub/ProposalModalPage').then(m => ({ default: m.ProposalModalPage })));
 const TableStandardsPage = React.lazy(() => import('./screens/DesignHub/TableStandardsPage').then(m => ({ default: m.TableStandardsPage })));
 const TemplatesPage = React.lazy(() => import('./screens/Templates/TemplatesPage').then(m => ({ default: m.TemplatesPage })));
-const EmailTemplatesPage = React.lazy(() => import('./screens/Templates/EmailTemplatesPage').then(m => ({ default: m.EmailTemplatesPage })));
+const EmailTemplatesPage = React.lazy(() => import('./components/EmailTemplatesDemo').then(m => ({ default: m.EmailTemplatesDemo })));
 const TaskTemplatesPage = React.lazy(() => import('./screens/Templates/TaskTemplatesPage').then(m => ({ default: m.TaskTemplatesPage })));
 const TextTemplatesPage = React.lazy(() => import('./screens/Templates/TextTemplatesPage').then(m => ({ default: m.TextTemplatesPage })));
 const ApptInvitesTemplatesPage = React.lazy(() => import('./screens/Templates/ApptInvitesTemplatesPage').then(m => ({ default: m.ApptInvitesTemplatesPage })));
