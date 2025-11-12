@@ -1159,8 +1159,68 @@ const DispatchingView = () => {
                 const estimatorEvents = getEventsForEstimator(estimatorName);
                 const estimator = estimators.find(e => e.name === estimatorName);
 
+                // Calculate the maximum number of overlapping events for this estimator to determine row height
+                const visibleEventsForRow = estimatorEvents
+                  .map(event => ({
+                    event,
+                    position: calculatePosition(event.start_date, event.end_date, selectedDate)
+                  }))
+                  .filter(({ position }) => position.visible);
+
+                // Build event layers to find max depth
+                const eventLayersMap = new Map<string, number>();
+                const sortedEvents = visibleEventsForRow.sort((a, b) => {
+                  const aLeft = parseFloat(a.position.left);
+                  const bLeft = parseFloat(b.position.left);
+                  if (aLeft !== bLeft) return aLeft - bLeft;
+                  const aWidth = parseFloat(a.position.width);
+                  const bWidth = parseFloat(b.position.width);
+                  return bWidth - aWidth;
+                });
+
+                for (const { event, position } of sortedEvents) {
+                  const eventStart = parseFloat(position.left);
+                  const eventEnd = eventStart + parseFloat(position.width);
+
+                  let layer = 0;
+                  let foundLayer = false;
+
+                  while (!foundLayer) {
+                    let hasConflict = false;
+
+                    for (const [otherId, otherLayer] of eventLayersMap.entries()) {
+                      if (otherLayer !== layer) continue;
+
+                      const otherData = sortedEvents.find(ve => ve.event.id === otherId);
+                      if (!otherData) continue;
+
+                      const otherStart = parseFloat(otherData.position.left);
+                      const otherEnd = otherStart + parseFloat(otherData.position.width);
+
+                      if (!(eventEnd <= otherStart || eventStart >= otherEnd)) {
+                        hasConflict = true;
+                        break;
+                      }
+                    }
+
+                    if (!hasConflict) {
+                      eventLayersMap.set(event.id, layer);
+                      foundLayer = true;
+                    } else {
+                      layer++;
+                    }
+                  }
+                }
+
+                const maxLayers = eventLayersMap.size > 0 ? Math.max(...Array.from(eventLayersMap.values())) + 1 : 1;
+                const standardEventHeight = 40;
+                const eventSpacing = 6;
+                const rowPadding = 16;
+                const calculatedRowHeight = rowPadding + (maxLayers * standardEventHeight) + ((maxLayers - 1) * eventSpacing);
+                const rowHeight = Math.max(60, calculatedRowHeight);
+
                 return (
-                  <div key={index} className="d-flex border-bottom" style={{ minHeight: '56px' }}>
+                  <div key={index} className="d-flex border-bottom" style={{ minHeight: `${rowHeight}px` }}>
                     {/* Estimator Name */}
                     <div className="border-end d-flex align-items-center" style={{ width: '180px', flexShrink: 0, padding: '6px 12px', backgroundColor: '#fff' }}>
                       <div className="d-flex align-items-center gap-2">
@@ -1180,7 +1240,7 @@ const DispatchingView = () => {
                     {/* Timeline */}
                     <div
                       className="position-relative flex-fill timeline-container"
-                      style={{ backgroundColor: '#fafafa' }}
+                      style={{ backgroundColor: '#fafafa', minHeight: `${rowHeight}px` }}
                     >
                       {/* Half-Hour Drop Zones */}
                       <div className="d-flex h-100 position-absolute w-100">
@@ -1297,64 +1357,9 @@ const DispatchingView = () => {
 
                       {/* Events */}
                       {(() => {
-                        const eventLayers = new Map<string, number>();
-                        const visibleEvents = estimatorEvents
-                          .map(event => ({
-                            event,
-                            position: calculatePosition(event.start_date, event.end_date, selectedDate)
-                          }))
-                          .filter(({ position }) => position.visible)
-                          .sort((a, b) => {
-                            const aLeft = parseFloat(a.position.left);
-                            const bLeft = parseFloat(b.position.left);
-                            if (aLeft !== bLeft) return aLeft - bLeft;
-                            const aWidth = parseFloat(a.position.width);
-                            const bWidth = parseFloat(b.position.width);
-                            return bWidth - aWidth;
-                          });
-
-                        for (const { event, position } of visibleEvents) {
-                          const eventStart = parseFloat(position.left);
-                          const eventEnd = eventStart + parseFloat(position.width);
-
-                          let layer = 0;
-                          let foundLayer = false;
-
-                          while (!foundLayer) {
-                            let hasConflict = false;
-
-                            for (const [otherId, otherLayer] of eventLayers.entries()) {
-                              if (otherLayer !== layer) continue;
-
-                              const otherData = visibleEvents.find(ve => ve.event.id === otherId);
-                              if (!otherData) continue;
-
-                              const otherStart = parseFloat(otherData.position.left);
-                              const otherEnd = otherStart + parseFloat(otherData.position.width);
-
-                              if (!(eventEnd <= otherStart || eventStart >= otherEnd)) {
-                                hasConflict = true;
-                                break;
-                              }
-                            }
-
-                            if (!hasConflict) {
-                              eventLayers.set(event.id, layer);
-                              foundLayer = true;
-                            } else {
-                              layer++;
-                            }
-                          }
-                        }
-
-                        const maxLayer = eventLayers.size > 0 ? Math.max(...Array.from(eventLayers.values())) : 0;
-                        const eventHeight = 32;
-                        const eventSpacing = 4;
-                        const rowHeight = 56;
-                        const availableHeight = rowHeight - 16;
-                        const heightPerEvent = maxLayer > 0
-                          ? Math.min(eventHeight, (availableHeight - (maxLayer * eventSpacing)) / (maxLayer + 1))
-                          : eventHeight;
+                        // Use the same layer calculation that we already computed above for row height
+                        const standardEventHeight = 40;
+                        const eventSpacing = 6;
 
                         return estimatorEvents.map((event) => {
                           const position = calculatePosition(event.start_date, event.end_date, selectedDate);
@@ -1363,8 +1368,8 @@ const DispatchingView = () => {
                             return null;
                           }
 
-                          const layer = eventLayers.get(event.id) || 0;
-                          const topOffset = 8 + (layer * (heightPerEvent + eventSpacing));
+                          const layer = eventLayersMap.get(event.id) || 0;
+                          const topOffset = 8 + (layer * (standardEventHeight + eventSpacing));
 
                           const colors = getStatusColor(event.status);
                           const displayTitle = event.quote_number || event.title;
@@ -1414,7 +1419,7 @@ const DispatchingView = () => {
                               left: position.left,
                               width: position.width,
                               top: `${topOffset}px`,
-                              height: `${heightPerEvent}px`,
+                              height: `${standardEventHeight}px`,
                               backgroundColor: colors.bg,
                               border: position.isMultiDay ? `2px dashed ${colors.border}` : `2px solid ${colors.border}`,
                               borderRadius,
