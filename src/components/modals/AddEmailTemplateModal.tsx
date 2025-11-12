@@ -11,6 +11,8 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
   show,
   onHide
 }) => {
+  console.log('AddEmailTemplateModal rendered with show:', show);
+
   const [subject, setSubject] = useState('');
   const [name, setName] = useState('');
   const [additionalEmails, setAdditionalEmails] = useState('');

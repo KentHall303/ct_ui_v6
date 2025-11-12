@@ -26,6 +26,10 @@ const EmailTemplates = (): JSX.Element => {
   const [showAddModal, setShowAddModal] = React.useState(false);
 
   React.useEffect(() => {
+    console.log('EmailTemplates: showAddModal changed to:', showAddModal);
+  }, [showAddModal]);
+
+  React.useEffect(() => {
     const fetchTemplates = async () => {
       try {
         setLoading(true);
@@ -136,7 +140,10 @@ const EmailTemplates = (): JSX.Element => {
             className="d-flex align-items-center gap-2 text-decoration-none p-0 border-0"
             title="Add new template"
             style={{ fontSize: '0.875rem' }}
-            onClick={() => setShowAddModal(true)}
+            onClick={() => {
+              console.log('Add new button clicked');
+              setShowAddModal(true);
+            }}
           >
             <div
               className="rounded-circle bg-success d-flex align-items-center justify-content-center"
@@ -278,7 +285,10 @@ const EmailTemplates = (): JSX.Element => {
 
       <AddEmailTemplateModal
         show={showAddModal}
-        onHide={() => setShowAddModal(false)}
+        onHide={() => {
+          console.log('Modal onHide called');
+          setShowAddModal(false);
+        }}
       />
     </div>
   );
