@@ -56,14 +56,17 @@ export async function fetchCalendarEvents(
   endDate: Date,
   estimatorIds?: string[]
 ): Promise<CalendarEventWithEstimator[]> {
+  // Fetch events that overlap with the date range:
+  // - Events that start before or during the range AND end during or after the range
+  // This ensures multi-day events that span across the viewed date are included
   let query = supabase
     .from('calendar_events')
     .select(`
       *,
       estimator:estimators(*)
     `)
-    .gte('start_date', startDate.toISOString())
     .lte('start_date', endDate.toISOString())
+    .gte('end_date', startDate.toISOString())
     .order('start_date');
 
   if (estimatorIds && estimatorIds.length > 0) {
