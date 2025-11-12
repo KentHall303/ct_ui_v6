@@ -1296,28 +1296,90 @@ const DispatchingView = () => {
                       </div>
 
                       {/* Events */}
-                      {estimatorEvents.map((event) => {
-                        const position = calculatePosition(event.start_date, event.end_date, selectedDate);
+                      {(() => {
+                        const eventLayers = new Map<string, number>();
+                        const visibleEvents = estimatorEvents
+                          .map(event => ({
+                            event,
+                            position: calculatePosition(event.start_date, event.end_date, selectedDate)
+                          }))
+                          .filter(({ position }) => position.visible)
+                          .sort((a, b) => {
+                            const aLeft = parseFloat(a.position.left);
+                            const bLeft = parseFloat(b.position.left);
+                            if (aLeft !== bLeft) return aLeft - bLeft;
+                            const aWidth = parseFloat(a.position.width);
+                            const bWidth = parseFloat(b.position.width);
+                            return bWidth - aWidth;
+                          });
 
-                        if (!position.visible) {
-                          return null;
-                        }
+                        for (const { event, position } of visibleEvents) {
+                          const eventStart = parseFloat(position.left);
+                          const eventEnd = eventStart + parseFloat(position.width);
 
-                        const colors = getStatusColor(event.status);
-                        const displayTitle = event.quote_number || event.title;
-                        const time = new Date(event.start_date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                          let layer = 0;
+                          let foundLayer = false;
 
-                        // Determine border radius based on day type
-                        let borderRadius = '4px';
-                        if (position.isMultiDay) {
-                          if (position.dayType === 'start') {
-                            borderRadius = '4px 0 0 4px';
-                          } else if (position.dayType === 'end') {
-                            borderRadius = '0 4px 4px 0';
-                          } else if (position.dayType === 'middle') {
-                            borderRadius = '0';
+                          while (!foundLayer) {
+                            let hasConflict = false;
+
+                            for (const [otherId, otherLayer] of eventLayers.entries()) {
+                              if (otherLayer !== layer) continue;
+
+                              const otherData = visibleEvents.find(ve => ve.event.id === otherId);
+                              if (!otherData) continue;
+
+                              const otherStart = parseFloat(otherData.position.left);
+                              const otherEnd = otherStart + parseFloat(otherData.position.width);
+
+                              if (!(eventEnd <= otherStart || eventStart >= otherEnd)) {
+                                hasConflict = true;
+                                break;
+                              }
+                            }
+
+                            if (!hasConflict) {
+                              eventLayers.set(event.id, layer);
+                              foundLayer = true;
+                            } else {
+                              layer++;
+                            }
                           }
                         }
+
+                        const maxLayer = eventLayers.size > 0 ? Math.max(...Array.from(eventLayers.values())) : 0;
+                        const eventHeight = 32;
+                        const eventSpacing = 4;
+                        const rowHeight = 56;
+                        const availableHeight = rowHeight - 16;
+                        const heightPerEvent = maxLayer > 0
+                          ? Math.min(eventHeight, (availableHeight - (maxLayer * eventSpacing)) / (maxLayer + 1))
+                          : eventHeight;
+
+                        return estimatorEvents.map((event) => {
+                          const position = calculatePosition(event.start_date, event.end_date, selectedDate);
+
+                          if (!position.visible) {
+                            return null;
+                          }
+
+                          const layer = eventLayers.get(event.id) || 0;
+                          const topOffset = 8 + (layer * (heightPerEvent + eventSpacing));
+
+                          const colors = getStatusColor(event.status);
+                          const displayTitle = event.quote_number || event.title;
+                          const time = new Date(event.start_date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+                          let borderRadius = '4px';
+                          if (position.isMultiDay) {
+                            if (position.dayType === 'start') {
+                              borderRadius = '4px 0 0 4px';
+                            } else if (position.dayType === 'end') {
+                              borderRadius = '0 4px 4px 0';
+                            } else if (position.dayType === 'middle') {
+                              borderRadius = '0';
+                            }
+                          }
 
                         return (
                           <div
@@ -1351,8 +1413,8 @@ const DispatchingView = () => {
                             style={{
                               left: position.left,
                               width: position.width,
-                              top: '8px',
-                              height: '32px',
+                              top: `${topOffset}px`,
+                              height: `${heightPerEvent}px`,
                               backgroundColor: colors.bg,
                               border: position.isMultiDay ? `2px dashed ${colors.border}` : `2px solid ${colors.border}`,
                               borderRadius,
@@ -1405,7 +1467,8 @@ const DispatchingView = () => {
                             )}
                           </div>
                         );
-                      })}
+                      });
+                      })()}
                     </div>
                   </div>
                 );
