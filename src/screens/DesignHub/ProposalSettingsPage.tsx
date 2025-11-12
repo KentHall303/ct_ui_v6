@@ -477,6 +477,19 @@ const PreferencesTab = () => {
 
 const PreNotesCard = () => {
   const [showArchived, setShowArchived] = React.useState(false);
+  const [preNotes, setPreNotes] = React.useState([
+    { id: 1, type: 'Quote', displayOrder: '-', text: 'Interior Painting Scope w/ * Mark off & cover: All surfaces and objects, as needed to protect from overspray…' }
+  ]);
+
+  const handleAddPreNote = () => {
+    const newNote = {
+      id: preNotes.length + 1,
+      type: '',
+      displayOrder: '-',
+      text: ''
+    };
+    setPreNotes([...preNotes, newNote]);
+  };
 
   return (
     <Card className="border shadow-sm">
@@ -490,7 +503,7 @@ const PreNotesCard = () => {
             onChange={(e) => setShowArchived(e.target.checked)}
           />
           <AddButton
-            onClick={() => {}}
+            onClick={handleAddPreNote}
             title="Add New Note"
             size={24}
           />
@@ -508,45 +521,58 @@ const PreNotesCard = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow>
-                <TableCell>
-                  <Form.Check type="checkbox" label="Quote" />
-                </TableCell>
-                <TableCell>-</TableCell>
-                <TableCell>
-                  <small className="text-muted">
-                    Interior Painting Scope w/ * Mark off & cover: All surfaces and objects, as needed to protect from overspray…
-                  </small>
-                </TableCell>
-                <TableCell>
-                  <div className="d-flex align-items-center gap-1">
-                    <Button
-                      variant="outline-secondary"
-                      size="sm"
-                      className="rounded-circle p-1"
-                      title="Edit"
-                    >
-                      <PencilIcon size={12} />
-                    </Button>
-                    <Button
-                      variant="outline-secondary"
-                      size="sm"
-                      className="rounded-circle p-1"
-                      title="Copy"
-                    >
-                      <Copy size={12} />
-                    </Button>
-                    <Button
-                      variant="outline-secondary"
-                      size="sm"
-                      className="rounded-circle p-1"
-                      title="View"
-                    >
-                      <Eye size={12} />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
+              {preNotes.map((note) => (
+                <TableRow key={note.id}>
+                  <TableCell>
+                    <Form.Check type="checkbox" label={note.type || 'Quote'} />
+                  </TableCell>
+                  <TableCell>{note.displayOrder}</TableCell>
+                  <TableCell>
+                    <small className="text-muted">
+                      {note.text || 'New note...'}
+                    </small>
+                  </TableCell>
+                  <TableCell>
+                    <div className="d-flex align-items-center gap-1">
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        className="rounded-circle p-1"
+                        title="Edit"
+                      >
+                        <PencilIcon size={12} />
+                      </Button>
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        className="rounded-circle p-1"
+                        title="Copy"
+                      >
+                        <Copy size={12} />
+                      </Button>
+                      <Button
+                        variant="outline-secondary"
+                        size="sm"
+                        className="rounded-circle p-1"
+                        title="View"
+                      >
+                        <Eye size={12} />
+                      </Button>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        className="rounded-circle p-1"
+                        title="Delete"
+                        onClick={() => {
+                          setPreNotes(preNotes.filter((n) => n.id !== note.id));
+                        }}
+                      >
+                        <TrashIcon size={12} />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </div>
@@ -563,6 +589,11 @@ const QuoteTypeCard = () => {
   ]);
   const [showArchived, setShowArchived] = React.useState(false);
 
+  const handleAddQuoteType = () => {
+    const newId = Math.max(...quoteTypes.map(qt => qt.id), 0) + 1;
+    setQuoteTypes([...quoteTypes, { id: newId, name: 'New Quote Type' }]);
+  };
+
   return (
     <Card className="border shadow-sm h-100">
       <Card.Header className="bg-light d-flex align-items-center justify-content-between">
@@ -575,7 +606,7 @@ const QuoteTypeCard = () => {
             onChange={(e) => setShowArchived(e.target.checked)}
           />
           <AddButton
-            onClick={() => {}}
+            onClick={handleAddQuoteType}
             title="Add New Quote Type"
             size={24}
           />
@@ -638,12 +669,17 @@ const SubEmailCard = () => {
     { id: 3, name: 'Bill Reece', email: 'Kent+test303@gmail.com' },
   ]);
 
+  const handleAddSubEmail = () => {
+    const newId = Math.max(...subEmails.map(se => se.id), 0) + 1;
+    setSubEmails([...subEmails, { id: newId, name: '', email: '' }]);
+  };
+
   return (
     <Card className="border shadow-sm h-100">
       <Card.Header className="bg-light d-flex align-items-center justify-content-between">
         <h6 className="mb-0 fw-semibold">Sub's Email</h6>
         <AddButton
-          onClick={() => {}}
+          onClick={handleAddSubEmail}
           title="Add New Email"
           size={24}
         />
