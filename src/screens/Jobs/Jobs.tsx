@@ -10,7 +10,7 @@ import { JobsReportsFSModal } from "../../components/modals/JobsReportsFSModal";
 import { EditAppointmentModal } from "../../components/modals/EditAppointmentModal";
 import { supabase } from "../../lib/supabase";
 import { sampleCalendarEvents, CalendarEvent, isEventStart, isEventEnd, isEventMiddle } from "../../data/sampleCalendarData";
-import { fetchCalendarEvents, fetchEstimators, CalendarEventWithEstimator } from "../../services/calendarService";
+import { fetchCalendarEvents, fetchEstimators, CalendarEventWithEstimator, updateCalendarEvent } from "../../services/calendarService";
 
 const actionButtons = [
   { label: "New Quote", variant: "default", icon: PlusIcon },
@@ -774,7 +774,7 @@ const DispatchingView = () => {
     return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
   };
 
-  const calculatePosition = (startDate: string): { left: string; width: string } => {
+  const calculatePosition = (startDate: string): { left: string; width: string; visible: boolean } => {
     const date = new Date(startDate);
     const hours = date.getHours();
     const minutes = date.getMinutes();
@@ -785,7 +785,7 @@ const DispatchingView = () => {
     const totalHours = gridEnd - gridStart;
 
     if (startHour < gridStart || startHour >= gridEnd) {
-      return { left: '0%', width: '0%' };
+      return { left: '0%', width: '0%', visible: false };
     }
 
     const left = ((startHour - gridStart) / totalHours) * 100;
@@ -793,7 +793,8 @@ const DispatchingView = () => {
 
     return {
       left: `${left}%`,
-      width: `${Math.min(width, 100 - left)}%`
+      width: `${Math.min(width, 100 - left)}%`,
+      visible: true
     };
   };
 
@@ -1000,19 +1001,26 @@ const DispatchingView = () => {
                                 className="position-relative"
                                 style={{ flex: 1, height: '100%', borderRight: '1px dashed #d1d5db' }}
                                 onDragOver={handleDragOver}
-                                onDrop={(e) => {
-                                  const newTime = formatTimeFromDecimal(hourValue);
-                                  if (draggedEvent) {
-                                    setEvents(prevEvents =>
-                                      prevEvents.map(evt =>
-                                        evt.id === draggedEvent.id
-                                          ? { ...evt, estimator: estimatorName, time: newTime }
-                                          : evt
-                                      )
-                                    );
-                                    setDraggedEvent(null);
-                                  }
+                                onDrop={async (e) => {
                                   e.preventDefault();
+                                  if (draggedEvent) {
+                                    const newStartDate = new Date(selectedDate);
+                                    newStartDate.setHours(hourValue, 0, 0, 0);
+
+                                    const duration = new Date(draggedEvent.end_date).getTime() - new Date(draggedEvent.start_date).getTime();
+                                    const newEndDate = new Date(newStartDate.getTime() + duration);
+
+                                    const estimator = dbEstimators.find(e => e.name === estimatorName);
+
+                                    await updateCalendarEvent(draggedEvent.id, {
+                                      start_date: newStartDate.toISOString(),
+                                      end_date: newEndDate.toISOString(),
+                                      estimator_id: estimator?.id || null
+                                    });
+
+                                    setDraggedEvent(null);
+                                    loadCalendarData();
+                                  }
                                 }}
                                 onDragEnter={(e) => {
                                   if (draggedEvent) {
@@ -1030,19 +1038,26 @@ const DispatchingView = () => {
                                 className="position-relative"
                                 style={{ flex: 1, height: '100%', borderRight: hourIndex === hours.length - 1 ? '1px solid #dee2e6' : '1px solid #dee2e6' }}
                                 onDragOver={handleDragOver}
-                                onDrop={(e) => {
-                                  const newTime = formatTimeFromDecimal(hourValue + 0.5);
-                                  if (draggedEvent) {
-                                    setEvents(prevEvents =>
-                                      prevEvents.map(evt =>
-                                        evt.id === draggedEvent.id
-                                          ? { ...evt, estimator: estimatorName, time: newTime }
-                                          : evt
-                                      )
-                                    );
-                                    setDraggedEvent(null);
-                                  }
+                                onDrop={async (e) => {
                                   e.preventDefault();
+                                  if (draggedEvent) {
+                                    const newStartDate = new Date(selectedDate);
+                                    newStartDate.setHours(hourValue, 30, 0, 0);
+
+                                    const duration = new Date(draggedEvent.end_date).getTime() - new Date(draggedEvent.start_date).getTime();
+                                    const newEndDate = new Date(newStartDate.getTime() + duration);
+
+                                    const estimator = dbEstimators.find(e => e.name === estimatorName);
+
+                                    await updateCalendarEvent(draggedEvent.id, {
+                                      start_date: newStartDate.toISOString(),
+                                      end_date: newEndDate.toISOString(),
+                                      estimator_id: estimator?.id || null
+                                    });
+
+                                    setDraggedEvent(null);
+                                    loadCalendarData();
+                                  }
                                 }}
                                 onDragEnter={(e) => {
                                   if (draggedEvent) {
@@ -1061,6 +1076,11 @@ const DispatchingView = () => {
                       {/* Events */}
                       {estimatorEvents.map((event) => {
                         const position = calculatePosition(event.start_date);
+
+                        if (!position.visible) {
+                          return null;
+                        }
+
                         const colors = getStatusColor(event.status);
                         const displayTitle = event.quote_number || event.title;
                         const time = new Date(event.start_date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
