@@ -72,15 +72,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     setIsSubmitting(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-
       const { error } = await supabase.from("payments").insert({
         proposal_id: proposalId,
         date,
         payment_method: paymentMethod,
         deposit_type: depositType,
         amount: parseFloat(amount),
-        created_by: user?.id || null,
+        created_by: null,
       });
 
       if (error) throw error;

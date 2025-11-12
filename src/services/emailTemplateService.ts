@@ -32,8 +32,6 @@ export const emailTemplateService = {
   },
 
   async create(template: Partial<EmailTemplate>): Promise<EmailTemplate> {
-    const { data: { user } } = await supabase.auth.getUser();
-
     const { data, error } = await supabase
       .from('templates')
       .insert({
@@ -41,7 +39,7 @@ export const emailTemplateService = {
         category: 'email',
         is_active: true,
         usage_count: 0,
-        created_by: user?.id || null,
+        created_by: null,
       })
       .select()
       .single();

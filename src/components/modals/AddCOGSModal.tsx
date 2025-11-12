@@ -145,8 +145,6 @@ export const AddCOGSModal: React.FC<AddCOGSModalProps> = ({
     setError(null);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-
       const calculatedCost = formData.type === 'labor'
         ? parseFloat(formData.rate) * parseFloat(formData.hours)
         : parseFloat(formData.cost);
@@ -177,7 +175,7 @@ export const AddCOGSModal: React.FC<AddCOGSModalProps> = ({
           .insert({
             ...cogsData,
             proposal_id: proposalId,
-            created_by: user?.id || '00000000-0000-0000-0000-000000000000'
+            created_by: null
           });
 
         if (insertError) throw insertError;
