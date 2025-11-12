@@ -691,11 +691,19 @@ const DispatchingView = () => {
   const loadCalendarData = async () => {
     setLoading(true);
     try {
-      const startOfDay = new Date(selectedDate);
-      startOfDay.setHours(0, 0, 0, 0);
+      const startOfDay = new Date(Date.UTC(
+        selectedDate.getUTCFullYear(),
+        selectedDate.getUTCMonth(),
+        selectedDate.getUTCDate(),
+        0, 0, 0, 0
+      ));
 
-      const endOfDay = new Date(selectedDate);
-      endOfDay.setHours(23, 59, 59, 999);
+      const endOfDay = new Date(Date.UTC(
+        selectedDate.getUTCFullYear(),
+        selectedDate.getUTCMonth(),
+        selectedDate.getUTCDate(),
+        23, 59, 59, 999
+      ));
 
       const [eventsData, estimatorsData] = await Promise.all([
         fetchCalendarEvents(startOfDay, endOfDay),
@@ -812,11 +820,11 @@ const DispatchingView = () => {
     const endDateTime = new Date(endDate);
 
     // Use UTC for date-only comparisons to avoid timezone issues
-    const viewDateOnly = new Date(Date.UTC(viewDate.getFullYear(), viewDate.getMonth(), viewDate.getDate()));
+    const viewDateOnly = new Date(Date.UTC(viewDate.getUTCFullYear(), viewDate.getUTCMonth(), viewDate.getUTCDate()));
 
-    const startDateOnly = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+    const startDateOnly = new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 
-    const endDateOnly = new Date(Date.UTC(endDateTime.getFullYear(), endDateTime.getMonth(), endDateTime.getDate()));
+    const endDateOnly = new Date(Date.UTC(endDateTime.getUTCFullYear(), endDateTime.getUTCMonth(), endDateTime.getUTCDate()));
 
     // Check if this event should be visible on this day
     if (viewDateOnly.getTime() < startDateOnly.getTime() || viewDateOnly.getTime() > endDateOnly.getTime()) {
@@ -1348,12 +1356,13 @@ const DispatchingView = () => {
                         }
 
                         const maxLayer = eventLayers.size > 0 ? Math.max(...Array.from(eventLayers.values())) : 0;
-                        const eventHeight = 32;
-                        const eventSpacing = 4;
+                        const eventHeight = 28;
+                        const eventSpacing = 2;
                         const rowHeight = 56;
                         const availableHeight = rowHeight - 16;
+                        const minHeight = 20;
                         const heightPerEvent = maxLayer > 0
-                          ? Math.min(eventHeight, (availableHeight - (maxLayer * eventSpacing)) / (maxLayer + 1))
+                          ? Math.max(minHeight, Math.min(eventHeight, (availableHeight - (maxLayer * eventSpacing)) / (maxLayer + 1)))
                           : eventHeight;
 
                         return estimatorEvents.map((event) => {
@@ -1418,11 +1427,17 @@ const DispatchingView = () => {
                               backgroundColor: colors.bg,
                               border: position.isMultiDay ? `2px dashed ${colors.border}` : `2px solid ${colors.border}`,
                               borderRadius,
-                              padding: '4px 6px',
+                              padding: heightPerEvent < 24 ? '2px 4px' : '4px 6px',
                               cursor: draggedEvent?.id === event.id ? 'grabbing' : 'grab',
                               transition: resizingEvent?.event.id === event.id ? 'none' : 'all 0.15s ease',
-                              zIndex: 1,
-                              opacity: draggedEvent?.id === event.id ? 0.5 : 1
+                              zIndex: layer + 1,
+                              opacity: draggedEvent?.id === event.id ? 0.5 : 1,
+                              fontSize: heightPerEvent < 24 ? '0.7rem' : '0.75rem',
+                              lineHeight: '1.2',
+                              overflow: 'hidden',
+                              display: 'flex',
+                              alignItems: 'center',
+                              boxShadow: layer > 0 ? '0 1px 3px rgba(0,0,0,0.12)' : 'none'
                             }}
                             onMouseEnter={(e) => {
                               if (!draggedEvent) {
@@ -1436,12 +1451,20 @@ const DispatchingView = () => {
                             }}
                             title={`${time}\n${displayTitle}\n${event.contact_name || ''}\n\nDrag to reschedule or click to edit`}
                           >
-                            <div style={{ fontSize: '0.75rem', fontWeight: '700', color: colors.text, marginBottom: '1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.1' }}>
-                              {displayTitle}
-                            </div>
-                            <div style={{ fontSize: '0.68rem', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.1' }}>
-                              {event.contact_name}
-                            </div>
+                            {heightPerEvent < 24 ? (
+                              <div style={{ fontSize: '0.7rem', fontWeight: '600', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%' }}>
+                                {displayTitle}
+                              </div>
+                            ) : (
+                              <>
+                                <div style={{ fontSize: '0.75rem', fontWeight: '700', color: colors.text, marginBottom: '1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.1' }}>
+                                  {displayTitle}
+                                </div>
+                                <div style={{ fontSize: '0.68rem', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.1' }}>
+                                  {event.contact_name}
+                                </div>
+                              </>
+                            )}
                             {/* Resize Handle - only show on single day events or end of multi-day events */}
                             {(!position.isMultiDay || position.dayType === 'end') && (
                               <div
