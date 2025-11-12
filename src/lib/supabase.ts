@@ -73,9 +73,9 @@ export interface MeetingWithSubcontractors extends Meeting {
 export interface EmailTemplate {
   id: string;
   name: string;
-  subject?: string;
-  contact_type?: string;
-  exclude_client?: boolean;
+  subject: string;
+  contact_type: string;
+  exclude_client: boolean;
   content: string;
   category: string;
   description?: string;
@@ -85,11 +85,6 @@ export interface EmailTemplate {
   usage_count: number;
   last_used_at?: string;
   created_by?: string;
-  additional_emails?: string;
-  bcc_email?: string;
-  select_token?: string;
-  protect_from_overwriting?: boolean;
-  protect_from_sharing?: boolean;
   created_at: string;
   updated_at: string;
 }

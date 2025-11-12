@@ -39,7 +39,6 @@ export const emailTemplateService = {
         category: 'email',
         is_active: true,
         usage_count: 0,
-        created_by: null,
       })
       .select()
       .single();
