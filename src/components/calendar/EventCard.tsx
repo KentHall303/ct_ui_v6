@@ -1,14 +1,16 @@
 import React from 'react';
 import { CalendarEventWithEstimator } from '../../services/calendarService';
 import { formatTime, formatCurrency, isEventStart, isEventEnd, isEventMiddle } from '../../utils/dateUtils';
+import { Edit } from 'lucide-react';
 
 interface EventCardProps {
   event: CalendarEventWithEstimator;
   date: Date;
   onClick?: (event: CalendarEventWithEstimator) => void;
+  onEditClick?: (event: CalendarEventWithEstimator) => void;
 }
 
-export const EventCard: React.FC<EventCardProps> = ({ event, date, onClick }) => {
+export const EventCard: React.FC<EventCardProps> = ({ event, date, onClick, onEditClick }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
@@ -45,6 +47,19 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onClick }) =>
   const displayTitle = event.quote_number || event.title;
   const displayAmount = event.amount ? formatCurrency(event.amount) : '';
 
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onEditClick?.(event);
+  };
+
+  const handleCardClick = () => {
+    if (onEditClick) {
+      onEditClick(event);
+    } else {
+      onClick?.(event);
+    }
+  };
+
   return (
     <div
       className={`${colors.bg} bg-opacity-10 ${colors.text} border ${colors.border} px-2 py-1`}
@@ -59,7 +74,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onClick }) =>
           borderRight: isEnd ? undefined : 'none',
         })
       }}
-      onClick={() => onClick?.(event)}
+      onClick={handleCardClick}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'scale(1.02)';
         e.currentTarget.style.zIndex = '10';
@@ -70,10 +85,46 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onClick }) =>
       }}
       title={`${displayTitle}\n${event.contact_name || ''}\n${displayTime}\n${displayAmount}${isMultiDay ? '\nMulti-day event' : ''}`}
     >
+      {/* Edit Icon Button */}
+      {isStart && onEditClick && (
+        <button
+          onClick={handleEditClick}
+          style={{
+            position: 'absolute',
+            top: '2px',
+            right: '2px',
+            background: 'rgba(255, 255, 255, 0.9)',
+            border: 'none',
+            borderRadius: '3px',
+            padding: '2px 4px',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'all 0.15s ease',
+            zIndex: 2,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 1)';
+            e.currentTarget.style.transform = 'scale(1.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.9)';
+            e.currentTarget.style.transform = 'scale(1)';
+          }}
+          title="Edit appointment"
+          className={colors.text}
+        >
+          <Edit size={10} />
+        </button>
+      )}
+
       {isStart && (
         <>
           <div className="fw-semibold text-truncate">{displayTime}</div>
-          <div className="text-truncate fw-bold">{displayTitle}</div>
+          <div className="text-truncate fw-bold" style={{ paddingRight: onEditClick ? '16px' : '0' }}>
+            {displayTitle}
+          </div>
           {event.contact_name && (
             <div className="text-truncate opacity-75">{event.contact_name}</div>
           )}

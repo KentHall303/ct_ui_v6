@@ -7,8 +7,10 @@ import { Search as SearchIcon, RefreshCw as RefreshCwIcon, Settings as SettingsI
 import { AddCOGSModal } from "../../components/modals/AddCOGSModal";
 import { GrossMarginModal } from "../../components/modals/GrossMarginModal";
 import { JobsReportsFSModal } from "../../components/modals/JobsReportsFSModal";
+import { EditAppointmentModal } from "../../components/modals/EditAppointmentModal";
 import { supabase } from "../../lib/supabase";
 import { sampleCalendarEvents, CalendarEvent, isEventStart, isEventEnd, isEventMiddle } from "../../data/sampleCalendarData";
+import { fetchCalendarEvents, fetchEstimators, CalendarEventWithEstimator } from "../../services/calendarService";
 
 const actionButtons = [
   { label: "New Quote", variant: "default", icon: PlusIcon },
@@ -662,9 +664,13 @@ const TableView = () => {
 const DispatchingView = () => {
   const [selectedDate, setSelectedDate] = React.useState(new Date(2025, 8, 15)); // Sept 15, 2025
   const [selectedEstimators, setSelectedEstimators] = React.useState<string[]>(['Test_Account Owner', 'Sara Joe', 'Jeanette Standards']);
-  const [events, setEvents] = React.useState<CalendarEvent[]>(sampleCalendarEvents);
-  const [draggedEvent, setDraggedEvent] = React.useState<CalendarEvent | null>(null);
+  const [events, setEvents] = React.useState<CalendarEventWithEstimator[]>([]);
+  const [draggedEvent, setDraggedEvent] = React.useState<CalendarEventWithEstimator | null>(null);
   const [viewMode, setViewMode] = React.useState<'timeline' | 'map'>('timeline');
+  const [showEditModal, setShowEditModal] = React.useState(false);
+  const [selectedEvent, setSelectedEvent] = React.useState<CalendarEventWithEstimator | null>(null);
+  const [dbEstimators, setDbEstimators] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
 
   const estimators = [
     { name: 'Test_Account Owner', color: '#3b82f6' },
@@ -675,6 +681,34 @@ const DispatchingView = () => {
     { name: 'Absolute Nugget', color: '#06b6d4' },
     { name: 'Frank Team', color: '#84cc16' },
   ];
+
+  // Load calendar events from database
+  React.useEffect(() => {
+    loadCalendarData();
+  }, [selectedDate]);
+
+  const loadCalendarData = async () => {
+    setLoading(true);
+    try {
+      const startOfDay = new Date(selectedDate);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(selectedDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      const [eventsData, estimatorsData] = await Promise.all([
+        fetchCalendarEvents(startOfDay, endOfDay),
+        fetchEstimators()
+      ]);
+
+      setEvents(eventsData);
+      setDbEstimators(estimatorsData);
+    } catch (error) {
+      console.error('Error loading calendar data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const toggleEstimator = (estimatorName: string) => {
     setSelectedEstimators(prev =>
@@ -712,10 +746,7 @@ const DispatchingView = () => {
 
   // Get events for selected date and estimator
   const getEventsForEstimator = (estimatorName: string) => {
-    const dateString = `${selectedDate.getFullYear()}-${String(selectedDate.getMonth() + 1).padStart(2, '0')}-${String(selectedDate.getDate()).padStart(2, '0')}`;
-    return events.filter(event =>
-      event.estimator === estimatorName && event.date === dateString
-    );
+    return events.filter(event => event.estimator?.name === estimatorName);
   };
 
   const parseTime = (timeStr: string): number => {
@@ -743,8 +774,12 @@ const DispatchingView = () => {
     return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
   };
 
-  const calculatePosition = (time: string): { left: string; width: string } => {
-    const startHour = parseTime(time);
+  const calculatePosition = (startDate: string): { left: string; width: string } => {
+    const date = new Date(startDate);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const startHour = hours + minutes / 60;
+
     const gridStart = 7;
     const gridEnd = 21;
     const totalHours = gridEnd - gridStart;
@@ -777,7 +812,7 @@ const DispatchingView = () => {
     }
   };
 
-  const handleDragStart = (e: React.DragEvent, event: CalendarEvent) => {
+  const handleDragStart = (e: React.DragEvent, event: CalendarEventWithEstimator) => {
     setDraggedEvent(event);
     e.dataTransfer.effectAllowed = 'move';
   };
@@ -785,6 +820,26 @@ const DispatchingView = () => {
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleEventClick = (event: CalendarEventWithEstimator) => {
+    setSelectedEvent(event);
+    setShowEditModal(true);
+  };
+
+  const handleModalClose = () => {
+    setShowEditModal(false);
+    setSelectedEvent(null);
+  };
+
+  const handleEventSave = () => {
+    loadCalendarData();
+    handleModalClose();
+  };
+
+  const handleEventDelete = (eventId: string) => {
+    loadCalendarData();
+    handleModalClose();
   };
 
   return (
@@ -1005,14 +1060,17 @@ const DispatchingView = () => {
 
                       {/* Events */}
                       {estimatorEvents.map((event) => {
-                        const position = calculatePosition(event.time);
+                        const position = calculatePosition(event.start_date);
                         const colors = getStatusColor(event.status);
+                        const displayTitle = event.quote_number || event.title;
+                        const time = new Date(event.start_date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
 
                         return (
                           <div
                             key={event.id}
                             draggable
                             onDragStart={(e) => handleDragStart(e, event)}
+                            onClick={() => handleEventClick(event)}
                             className="position-absolute"
                             style={{
                               left: position.left,
@@ -1023,7 +1081,7 @@ const DispatchingView = () => {
                               border: `2px solid ${colors.border}`,
                               borderRadius: '4px',
                               padding: '4px 6px',
-                              cursor: draggedEvent?.id === event.id ? 'grabbing' : 'grab',
+                              cursor: draggedEvent?.id === event.id ? 'grabbing' : 'pointer',
                               transition: 'all 0.15s ease',
                               zIndex: 1,
                               opacity: draggedEvent?.id === event.id ? 0.5 : 1
@@ -1038,13 +1096,13 @@ const DispatchingView = () => {
                               e.currentTarget.style.transform = 'translateY(0)';
                               e.currentTarget.style.boxShadow = 'none';
                             }}
-                            title={`${event.time}\n${event.quoteNumber}\n${event.contactName}`}
+                            title={`${time}\n${displayTitle}\n${event.contact_name || ''}\n\nClick to edit`}
                           >
                             <div style={{ fontSize: '0.75rem', fontWeight: '700', color: colors.text, marginBottom: '1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.1' }}>
-                              {event.quoteNumber}
+                              {displayTitle}
                             </div>
                             <div style={{ fontSize: '0.68rem', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.1' }}>
-                              {event.contactName}
+                              {event.contact_name}
                             </div>
                           </div>
                         );
@@ -1229,6 +1287,15 @@ const DispatchingView = () => {
           )}
         </div>
       </div>
+
+      {/* Edit Appointment Modal */}
+      <EditAppointmentModal
+        show={showEditModal}
+        onHide={handleModalClose}
+        event={selectedEvent}
+        onSave={handleEventSave}
+        onDelete={handleEventDelete}
+      />
     </div>
   );
 };
