@@ -774,7 +774,7 @@ const DispatchingView = () => {
     return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
   };
 
-  const calculatePosition = (startDate: string): { left: string; width: string; visible: boolean } => {
+  const calculatePosition = (startDate: string, endDate?: string): { left: string; width: string; visible: boolean } => {
     const date = new Date(startDate);
     const hours = date.getHours();
     const minutes = date.getMinutes();
@@ -789,7 +789,16 @@ const DispatchingView = () => {
     }
 
     const left = ((startHour - gridStart) / totalHours) * 100;
-    const width = (2 / totalHours) * 100; // 2-hour default width
+
+    // Calculate width based on actual event duration
+    let durationHours = 1; // Default to 1 hour if no end date
+    if (endDate) {
+      const endDateTime = new Date(endDate);
+      const durationMs = endDateTime.getTime() - date.getTime();
+      durationHours = durationMs / (1000 * 60 * 60); // Convert milliseconds to hours
+    }
+
+    const width = (durationHours / totalHours) * 100;
 
     return {
       left: `${left}%`,
@@ -1112,7 +1121,7 @@ const DispatchingView = () => {
 
                       {/* Events */}
                       {estimatorEvents.map((event) => {
-                        const position = calculatePosition(event.start_date);
+                        const position = calculatePosition(event.start_date, event.end_date);
 
                         if (!position.visible) {
                           return null;
