@@ -5,6 +5,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '.
 import { Plus } from 'lucide-react';
 import { emailTemplateService } from '../../services/emailTemplateService';
 import { EmailTemplate } from '../../lib/supabase';
+import { AddEmailTemplateModal } from '../../components/modals/AddEmailTemplateModal';
 
 type EmailTemplateDisplay = {
   id: string;
@@ -22,6 +23,7 @@ const EmailTemplates = (): JSX.Element => {
     key: string;
     direction: 'asc' | 'desc';
   } | null>({ key: 'name', direction: 'asc' });
+  const [showAddModal, setShowAddModal] = React.useState(false);
 
   React.useEffect(() => {
     const fetchTemplates = async () => {
@@ -134,6 +136,7 @@ const EmailTemplates = (): JSX.Element => {
             className="d-flex align-items-center gap-2 text-decoration-none p-0 border-0"
             title="Add new template"
             style={{ fontSize: '0.875rem' }}
+            onClick={() => setShowAddModal(true)}
           >
             <div
               className="rounded-circle bg-success d-flex align-items-center justify-content-center"
@@ -272,6 +275,11 @@ const EmailTemplates = (): JSX.Element => {
           </div>
         </div>
       </div>
+
+      <AddEmailTemplateModal
+        show={showAddModal}
+        onHide={() => setShowAddModal(false)}
+      />
     </div>
   );
 };
