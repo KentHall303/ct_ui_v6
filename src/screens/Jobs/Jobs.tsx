@@ -775,36 +775,110 @@ const DispatchingView = () => {
     return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
   };
 
-  const calculatePosition = (startDate: string, endDate?: string): { left: string; width: string; visible: boolean } => {
+  const isMultiDayEvent = (startDate: string, endDate: string): boolean => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    start.setHours(0, 0, 0, 0);
+    end.setHours(0, 0, 0, 0);
+    return end.getTime() > start.getTime();
+  };
+
+  const getEventDayType = (event: CalendarEventWithEstimator, viewDate: Date): 'single' | 'start' | 'middle' | 'end' => {
+    const startDate = new Date(event.start_date);
+    const endDate = new Date(event.end_date);
+    const viewDateOnly = new Date(viewDate);
+
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(0, 0, 0, 0);
+    viewDateOnly.setHours(0, 0, 0, 0);
+
+    if (!isMultiDayEvent(event.start_date, event.end_date)) {
+      return 'single';
+    }
+
+    if (viewDateOnly.getTime() === startDate.getTime()) {
+      return 'start';
+    } else if (viewDateOnly.getTime() === endDate.getTime()) {
+      return 'end';
+    } else if (viewDateOnly.getTime() > startDate.getTime() && viewDateOnly.getTime() < endDate.getTime()) {
+      return 'middle';
+    }
+
+    return 'single';
+  };
+
+  const calculatePosition = (startDate: string, endDate: string, viewDate: Date): { left: string; width: string; visible: boolean; isMultiDay: boolean; dayType: 'single' | 'start' | 'middle' | 'end' } => {
     const date = new Date(startDate);
-    const hours = date.getHours();
-    const minutes = date.getMinutes();
-    const startHour = hours + minutes / 60;
+    const endDateTime = new Date(endDate);
+
+    const viewDateOnly = new Date(viewDate);
+    viewDateOnly.setHours(0, 0, 0, 0);
+
+    const startDateOnly = new Date(startDate);
+    startDateOnly.setHours(0, 0, 0, 0);
+
+    const endDateOnly = new Date(endDateTime);
+    endDateOnly.setHours(0, 0, 0, 0);
+
+    // Check if this event should be visible on this day
+    if (viewDateOnly.getTime() < startDateOnly.getTime() || viewDateOnly.getTime() > endDateOnly.getTime()) {
+      return { left: '0%', width: '0%', visible: false, isMultiDay: false, dayType: 'single' };
+    }
+
+    const isMultiDay = isMultiDayEvent(startDate, endDate);
+    let dayType: 'single' | 'start' | 'middle' | 'end' = 'single';
+
+    if (isMultiDay) {
+      if (viewDateOnly.getTime() === startDateOnly.getTime()) {
+        dayType = 'start';
+      } else if (viewDateOnly.getTime() === endDateOnly.getTime()) {
+        dayType = 'end';
+      } else {
+        dayType = 'middle';
+      }
+    }
 
     const gridStart = 7;
     const gridEnd = 21;
     const totalHours = gridEnd - gridStart;
 
-    if (startHour < gridStart || startHour >= gridEnd) {
-      return { left: '0%', width: '0%', visible: false };
+    let startHour: number;
+    let durationHours: number;
+
+    if (dayType === 'middle') {
+      // Full day on intermediate days
+      startHour = gridStart;
+      durationHours = totalHours;
+    } else if (dayType === 'start') {
+      // From actual start time to end of day
+      startHour = date.getHours() + date.getMinutes() / 60;
+      if (startHour < gridStart) startHour = gridStart;
+      durationHours = gridEnd - startHour;
+    } else if (dayType === 'end') {
+      // From start of day to actual end time
+      startHour = gridStart;
+      const endHour = endDateTime.getHours() + endDateTime.getMinutes() / 60;
+      durationHours = Math.min(endHour, gridEnd) - gridStart;
+    } else {
+      // Single day event
+      startHour = date.getHours() + date.getMinutes() / 60;
+      if (startHour < gridStart || startHour >= gridEnd) {
+        return { left: '0%', width: '0%', visible: false, isMultiDay: false, dayType: 'single' };
+      }
+
+      const durationMs = endDateTime.getTime() - date.getTime();
+      durationHours = durationMs / (1000 * 60 * 60);
     }
 
     const left = ((startHour - gridStart) / totalHours) * 100;
-
-    // Calculate width based on actual event duration
-    let durationHours = 1; // Default to 1 hour if no end date
-    if (endDate) {
-      const endDateTime = new Date(endDate);
-      const durationMs = endDateTime.getTime() - date.getTime();
-      durationHours = durationMs / (1000 * 60 * 60); // Convert milliseconds to hours
-    }
-
     const width = (durationHours / totalHours) * 100;
 
     return {
       left: `${left}%`,
       width: `${Math.min(width, 100 - left)}%`,
-      visible: true
+      visible: true,
+      isMultiDay,
+      dayType
     };
   };
 
@@ -1225,7 +1299,7 @@ const DispatchingView = () => {
 
                       {/* Events */}
                       {estimatorEvents.map((event) => {
-                        const position = calculatePosition(event.start_date, event.end_date);
+                        const position = calculatePosition(event.start_date, event.end_date, selectedDate);
 
                         if (!position.visible) {
                           return null;
@@ -1234,6 +1308,18 @@ const DispatchingView = () => {
                         const colors = getStatusColor(event.status);
                         const displayTitle = event.quote_number || event.title;
                         const time = new Date(event.start_date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+                        // Determine border radius based on day type
+                        let borderRadius = '4px';
+                        if (position.isMultiDay) {
+                          if (position.dayType === 'start') {
+                            borderRadius = '4px 0 0 4px';
+                          } else if (position.dayType === 'end') {
+                            borderRadius = '0 4px 4px 0';
+                          } else if (position.dayType === 'middle') {
+                            borderRadius = '0';
+                          }
+                        }
 
                         return (
                           <div
@@ -1270,8 +1356,8 @@ const DispatchingView = () => {
                               top: '8px',
                               height: '32px',
                               backgroundColor: colors.bg,
-                              border: `2px solid ${colors.border}`,
-                              borderRadius: '4px',
+                              border: position.isMultiDay ? `2px dashed ${colors.border}` : `2px solid ${colors.border}`,
+                              borderRadius,
                               padding: '4px 6px',
                               cursor: draggedEvent?.id === event.id ? 'grabbing' : 'grab',
                               transition: resizingEvent?.event.id === event.id ? 'none' : 'all 0.15s ease',
@@ -1296,27 +1382,29 @@ const DispatchingView = () => {
                             <div style={{ fontSize: '0.68rem', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.1' }}>
                               {event.contact_name}
                             </div>
-                            {/* Resize Handle */}
-                            <div
-                              className="resize-handle"
-                              onMouseDown={(e) => handleResizeStart(e, event)}
-                              style={{
-                                position: 'absolute',
-                                right: '-2px',
-                                top: 0,
-                                bottom: 0,
-                                width: '8px',
-                                cursor: 'ew-resize',
-                                backgroundColor: 'transparent',
-                                zIndex: 2
-                              }}
-                              onMouseEnter={(e) => {
-                                e.currentTarget.style.backgroundColor = colors.border;
-                              }}
-                              onMouseLeave={(e) => {
-                                e.currentTarget.style.backgroundColor = 'transparent';
-                              }}
-                            />
+                            {/* Resize Handle - only show on single day events or end of multi-day events */}
+                            {(!position.isMultiDay || position.dayType === 'end') && (
+                              <div
+                                className="resize-handle"
+                                onMouseDown={(e) => handleResizeStart(e, event)}
+                                style={{
+                                  position: 'absolute',
+                                  right: '-2px',
+                                  top: 0,
+                                  bottom: 0,
+                                  width: '8px',
+                                  cursor: 'ew-resize',
+                                  backgroundColor: 'transparent',
+                                  zIndex: 2
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.currentTarget.style.backgroundColor = colors.border;
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.currentTarget.style.backgroundColor = 'transparent';
+                                }}
+                              />
+                            )}
                           </div>
                         );
                       })}
