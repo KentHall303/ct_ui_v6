@@ -1126,8 +1126,22 @@ const DispatchingView = () => {
                           <div
                             key={event.id}
                             draggable
-                            onDragStart={(e) => handleDragStart(e, event)}
-                            onDragEnd={handleDragEnd}
+                            onDragStart={(e) => {
+                              handleDragStart(e, event);
+                              // Hide the original element during drag to prevent interference
+                              setTimeout(() => {
+                                if (e.currentTarget instanceof HTMLElement) {
+                                  e.currentTarget.style.pointerEvents = 'none';
+                                }
+                              }, 0);
+                            }}
+                            onDragEnd={(e) => {
+                              handleDragEnd();
+                              // Restore pointer events
+                              if (e.currentTarget instanceof HTMLElement) {
+                                e.currentTarget.style.pointerEvents = 'auto';
+                              }
+                            }}
                             onClick={(e) => handleEventClick(event, e)}
                             className="position-absolute"
                             style={{
@@ -1142,8 +1156,7 @@ const DispatchingView = () => {
                               cursor: draggedEvent?.id === event.id ? 'grabbing' : 'grab',
                               transition: 'all 0.15s ease',
                               zIndex: 1,
-                              opacity: draggedEvent?.id === event.id ? 0.5 : 1,
-                              pointerEvents: draggedEvent?.id === event.id ? 'none' : 'auto'
+                              opacity: draggedEvent?.id === event.id ? 0.5 : 1
                             }}
                             onMouseEnter={(e) => {
                               if (!draggedEvent) {
