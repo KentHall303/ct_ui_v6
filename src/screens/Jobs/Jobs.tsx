@@ -823,9 +823,16 @@ const DispatchingView = () => {
     e.dataTransfer.dropEffect = 'move';
   };
 
-  const handleEventClick = (event: CalendarEventWithEstimator) => {
-    setSelectedEvent(event);
-    setShowEditModal(true);
+  const handleDragEnd = () => {
+    setDraggedEvent(null);
+  };
+
+  const handleEventClick = (event: CalendarEventWithEstimator, e: React.MouseEvent) => {
+    // Only open modal if not dragging
+    if (!draggedEvent) {
+      setSelectedEvent(event);
+      setShowEditModal(true);
+    }
   };
 
   const handleModalClose = () => {
@@ -1003,23 +1010,38 @@ const DispatchingView = () => {
                                 onDragOver={handleDragOver}
                                 onDrop={async (e) => {
                                   e.preventDefault();
+                                  e.stopPropagation();
+
                                   if (draggedEvent) {
-                                    const newStartDate = new Date(selectedDate);
-                                    newStartDate.setHours(hourValue, 0, 0, 0);
+                                    try {
+                                      const newStartDate = new Date(selectedDate);
+                                      newStartDate.setHours(hourValue, 0, 0, 0);
 
-                                    const duration = new Date(draggedEvent.end_date).getTime() - new Date(draggedEvent.start_date).getTime();
-                                    const newEndDate = new Date(newStartDate.getTime() + duration);
+                                      const duration = new Date(draggedEvent.end_date).getTime() - new Date(draggedEvent.start_date).getTime();
+                                      const newEndDate = new Date(newStartDate.getTime() + duration);
 
-                                    const estimator = dbEstimators.find(e => e.name === estimatorName);
+                                      const estimator = dbEstimators.find(est => est.name === estimatorName);
 
-                                    await updateCalendarEvent(draggedEvent.id, {
-                                      start_date: newStartDate.toISOString(),
-                                      end_date: newEndDate.toISOString(),
-                                      estimator_id: estimator?.id || null
-                                    });
+                                      console.log('Updating event:', {
+                                        id: draggedEvent.id,
+                                        newTime: newStartDate.toISOString(),
+                                        estimator: estimator?.name
+                                      });
 
-                                    setDraggedEvent(null);
-                                    loadCalendarData();
+                                      const result = await updateCalendarEvent(draggedEvent.id, {
+                                        start_date: newStartDate.toISOString(),
+                                        end_date: newEndDate.toISOString(),
+                                        estimator_id: estimator?.id || null
+                                      });
+
+                                      console.log('Update result:', result);
+
+                                      setDraggedEvent(null);
+                                      await loadCalendarData();
+                                    } catch (error) {
+                                      console.error('Error updating event:', error);
+                                      setDraggedEvent(null);
+                                    }
                                   }
                                 }}
                                 onDragEnter={(e) => {
@@ -1040,23 +1062,38 @@ const DispatchingView = () => {
                                 onDragOver={handleDragOver}
                                 onDrop={async (e) => {
                                   e.preventDefault();
+                                  e.stopPropagation();
+
                                   if (draggedEvent) {
-                                    const newStartDate = new Date(selectedDate);
-                                    newStartDate.setHours(hourValue, 30, 0, 0);
+                                    try {
+                                      const newStartDate = new Date(selectedDate);
+                                      newStartDate.setHours(hourValue, 30, 0, 0);
 
-                                    const duration = new Date(draggedEvent.end_date).getTime() - new Date(draggedEvent.start_date).getTime();
-                                    const newEndDate = new Date(newStartDate.getTime() + duration);
+                                      const duration = new Date(draggedEvent.end_date).getTime() - new Date(draggedEvent.start_date).getTime();
+                                      const newEndDate = new Date(newStartDate.getTime() + duration);
 
-                                    const estimator = dbEstimators.find(e => e.name === estimatorName);
+                                      const estimator = dbEstimators.find(est => est.name === estimatorName);
 
-                                    await updateCalendarEvent(draggedEvent.id, {
-                                      start_date: newStartDate.toISOString(),
-                                      end_date: newEndDate.toISOString(),
-                                      estimator_id: estimator?.id || null
-                                    });
+                                      console.log('Updating event (half hour):', {
+                                        id: draggedEvent.id,
+                                        newTime: newStartDate.toISOString(),
+                                        estimator: estimator?.name
+                                      });
 
-                                    setDraggedEvent(null);
-                                    loadCalendarData();
+                                      const result = await updateCalendarEvent(draggedEvent.id, {
+                                        start_date: newStartDate.toISOString(),
+                                        end_date: newEndDate.toISOString(),
+                                        estimator_id: estimator?.id || null
+                                      });
+
+                                      console.log('Update result:', result);
+
+                                      setDraggedEvent(null);
+                                      await loadCalendarData();
+                                    } catch (error) {
+                                      console.error('Error updating event:', error);
+                                      setDraggedEvent(null);
+                                    }
                                   }
                                 }}
                                 onDragEnter={(e) => {
@@ -1090,7 +1127,8 @@ const DispatchingView = () => {
                             key={event.id}
                             draggable
                             onDragStart={(e) => handleDragStart(e, event)}
-                            onClick={() => handleEventClick(event)}
+                            onDragEnd={handleDragEnd}
+                            onClick={(e) => handleEventClick(event, e)}
                             className="position-absolute"
                             style={{
                               left: position.left,
@@ -1101,7 +1139,7 @@ const DispatchingView = () => {
                               border: `2px solid ${colors.border}`,
                               borderRadius: '4px',
                               padding: '4px 6px',
-                              cursor: draggedEvent?.id === event.id ? 'grabbing' : 'pointer',
+                              cursor: draggedEvent?.id === event.id ? 'grabbing' : 'grab',
                               transition: 'all 0.15s ease',
                               zIndex: 1,
                               opacity: draggedEvent?.id === event.id ? 0.5 : 1
@@ -1116,7 +1154,7 @@ const DispatchingView = () => {
                               e.currentTarget.style.transform = 'translateY(0)';
                               e.currentTarget.style.boxShadow = 'none';
                             }}
-                            title={`${time}\n${displayTitle}\n${event.contact_name || ''}\n\nClick to edit`}
+                            title={`${time}\n${displayTitle}\n${event.contact_name || ''}\n\nDrag to reschedule or click to edit`}
                           >
                             <div style={{ fontSize: '0.75rem', fontWeight: '700', color: colors.text, marginBottom: '1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.1' }}>
                               {displayTitle}
