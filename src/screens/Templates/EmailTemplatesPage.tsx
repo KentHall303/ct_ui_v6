@@ -140,7 +140,10 @@ const EmailTemplates = (): JSX.Element => {
             className="d-flex align-items-center gap-2 text-decoration-none p-0 border-0"
             title="Add new template"
             style={{ fontSize: '0.875rem' }}
-            onClick={() => setShowAddModal(true)}
+            onClick={() => {
+              console.log('Add new button clicked, opening modal...');
+              setShowAddModal(true);
+            }}
           >
             <div
               className="rounded-circle bg-success d-flex align-items-center justify-content-center"
