@@ -912,7 +912,7 @@ const DispatchingView = () => {
                 const estimator = estimators.find(e => e.name === estimatorName);
 
                 return (
-                  <div key={index} className="d-flex border-bottom" style={{ minHeight: '48px' }}>
+                  <div key={index} className="d-flex border-bottom" style={{ minHeight: '56px' }}>
                     {/* Estimator Name */}
                     <div className="border-end d-flex align-items-center" style={{ width: '180px', flexShrink: 0, padding: '6px 12px', backgroundColor: '#fff' }}>
                       <div className="d-flex align-items-center gap-2">
@@ -1017,8 +1017,8 @@ const DispatchingView = () => {
                             style={{
                               left: position.left,
                               width: position.width,
-                              top: '4px',
-                              bottom: '4px',
+                              top: '8px',
+                              height: '32px',
                               backgroundColor: colors.bg,
                               border: `2px solid ${colors.border}`,
                               borderRadius: '4px',
@@ -1026,7 +1026,8 @@ const DispatchingView = () => {
                               cursor: 'grab',
                               transition: 'all 0.15s ease',
                               zIndex: 1,
-                              opacity: draggedEvent?.id === event.id ? 0.5 : 1
+                              opacity: draggedEvent?.id === event.id ? 0.5 : 1,
+                              pointerEvents: draggedEvent?.id === event.id ? 'none' : 'auto'
                             }}
                             onMouseEnter={(e) => {
                               if (!draggedEvent) {
@@ -1040,10 +1041,10 @@ const DispatchingView = () => {
                             }}
                             title={`${event.time}\n${event.quoteNumber}\n${event.contactName}`}
                           >
-                            <div style={{ fontSize: '0.75rem', fontWeight: '700', color: colors.text, marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: '700', color: colors.text, marginBottom: '1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.1' }}>
                               {event.quoteNumber}
                             </div>
-                            <div style={{ fontSize: '0.7rem', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <div style={{ fontSize: '0.68rem', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.1' }}>
                               {event.contactName}
                             </div>
                           </div>
