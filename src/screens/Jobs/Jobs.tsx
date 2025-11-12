@@ -671,6 +671,7 @@ const DispatchingView = () => {
   const [selectedEvent, setSelectedEvent] = React.useState<CalendarEventWithEstimator | null>(null);
   const [dbEstimators, setDbEstimators] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [resizingEvent, setResizingEvent] = React.useState<{ event: CalendarEventWithEstimator; startX: number; originalWidth: number } | null>(null);
 
   const estimators = [
     { name: 'Test_Account Owner', color: '#3b82f6' },
@@ -854,6 +855,109 @@ const DispatchingView = () => {
     handleModalClose();
   };
 
+  const handleResizeStart = (e: React.MouseEvent, event: CalendarEventWithEstimator) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const target = (e.currentTarget as HTMLElement).parentElement;
+    if (target) {
+      const rect = target.getBoundingClientRect();
+      setResizingEvent({
+        event,
+        startX: e.clientX,
+        originalWidth: rect.width
+      });
+    }
+  };
+
+  React.useEffect(() => {
+    if (!resizingEvent) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!resizingEvent) return;
+
+      const deltaX = e.clientX - resizingEvent.startX;
+      const timelineContainer = document.querySelector('.timeline-container');
+      if (!timelineContainer) return;
+
+      const containerRect = timelineContainer.getBoundingClientRect();
+      const containerWidth = containerRect.width;
+      const totalHours = 14; // 7am to 9pm
+      const hourWidth = containerWidth / totalHours;
+
+      // Calculate new duration based on drag distance
+      const deltaHours = deltaX / hourWidth;
+      const originalDuration = (new Date(resizingEvent.event.end_date).getTime() - new Date(resizingEvent.event.start_date).getTime()) / (1000 * 60 * 60);
+      const newDuration = Math.max(0.5, originalDuration + deltaHours); // Minimum 30 minutes
+
+      // Round to nearest 30 minutes
+      const roundedDuration = Math.round(newDuration * 2) / 2;
+
+      // Update the event end time temporarily
+      const newEndDate = new Date(resizingEvent.event.start_date);
+      newEndDate.setHours(newEndDate.getHours() + Math.floor(roundedDuration));
+      newEndDate.setMinutes(newEndDate.getMinutes() + (roundedDuration % 1) * 60);
+
+      // Visual feedback - update the element width
+      const eventElement = document.querySelector(`[data-event-id="${resizingEvent.event.id}"]`) as HTMLElement;
+      if (eventElement) {
+        const widthPercent = (roundedDuration / totalHours) * 100;
+        const startHour = new Date(resizingEvent.event.start_date).getHours() + new Date(resizingEvent.event.start_date).getMinutes() / 60;
+        const gridStart = 7;
+        const leftPercent = ((startHour - gridStart) / totalHours) * 100;
+        const maxWidth = 100 - leftPercent;
+        eventElement.style.width = `${Math.min(widthPercent, maxWidth)}%`;
+      }
+    };
+
+    const handleMouseUp = async () => {
+      if (!resizingEvent) return;
+
+      const eventElement = document.querySelector(`[data-event-id="${resizingEvent.event.id}"]`) as HTMLElement;
+      if (!eventElement) {
+        setResizingEvent(null);
+        return;
+      }
+
+      const timelineContainer = document.querySelector('.timeline-container');
+      if (!timelineContainer) {
+        setResizingEvent(null);
+        return;
+      }
+
+      const containerRect = timelineContainer.getBoundingClientRect();
+      const containerWidth = containerRect.width;
+      const totalHours = 14;
+      const hourWidth = containerWidth / totalHours;
+
+      const eventRect = eventElement.getBoundingClientRect();
+      const newDurationHours = (eventRect.width / hourWidth);
+      const roundedDuration = Math.round(newDurationHours * 2) / 2; // Round to nearest 30 minutes
+
+      const newEndDate = new Date(resizingEvent.event.start_date);
+      newEndDate.setHours(newEndDate.getHours() + Math.floor(roundedDuration));
+      newEndDate.setMinutes(newEndDate.getMinutes() + (roundedDuration % 1) * 60);
+
+      try {
+        await updateCalendarEvent(resizingEvent.event.id, {
+          end_date: newEndDate.toISOString()
+        });
+        await loadCalendarData();
+      } catch (error) {
+        console.error('Error resizing event:', error);
+      }
+
+      setResizingEvent(null);
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [resizingEvent]);
+
   const handleEventDelete = (eventId: string) => {
     loadCalendarData();
     handleModalClose();
@@ -1003,7 +1107,7 @@ const DispatchingView = () => {
 
                     {/* Timeline */}
                     <div
-                      className="position-relative flex-fill"
+                      className="position-relative flex-fill timeline-container"
                       style={{ backgroundColor: '#fafafa' }}
                     >
                       {/* Half-Hour Drop Zones */}
@@ -1134,7 +1238,8 @@ const DispatchingView = () => {
                         return (
                           <div
                             key={event.id}
-                            draggable
+                            data-event-id={event.id}
+                            draggable={!resizingEvent}
                             onDragStart={(e) => {
                               handleDragStart(e, event);
                               // Hide the original element during drag to prevent interference
@@ -1151,7 +1256,13 @@ const DispatchingView = () => {
                                 e.currentTarget.style.pointerEvents = 'auto';
                               }
                             }}
-                            onClick={(e) => handleEventClick(event, e)}
+                            onClick={(e) => {
+                              // Don't open modal if clicking on resize handle
+                              if ((e.target as HTMLElement).classList.contains('resize-handle')) {
+                                return;
+                              }
+                              handleEventClick(event, e);
+                            }}
                             className="position-absolute"
                             style={{
                               left: position.left,
@@ -1163,7 +1274,7 @@ const DispatchingView = () => {
                               borderRadius: '4px',
                               padding: '4px 6px',
                               cursor: draggedEvent?.id === event.id ? 'grabbing' : 'grab',
-                              transition: 'all 0.15s ease',
+                              transition: resizingEvent?.event.id === event.id ? 'none' : 'all 0.15s ease',
                               zIndex: 1,
                               opacity: draggedEvent?.id === event.id ? 0.5 : 1
                             }}
@@ -1185,6 +1296,27 @@ const DispatchingView = () => {
                             <div style={{ fontSize: '0.68rem', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.1' }}>
                               {event.contact_name}
                             </div>
+                            {/* Resize Handle */}
+                            <div
+                              className="resize-handle"
+                              onMouseDown={(e) => handleResizeStart(e, event)}
+                              style={{
+                                position: 'absolute',
+                                right: '-2px',
+                                top: 0,
+                                bottom: 0,
+                                width: '8px',
+                                cursor: 'ew-resize',
+                                backgroundColor: 'transparent',
+                                zIndex: 2
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.backgroundColor = colors.border;
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.backgroundColor = 'transparent';
+                              }}
+                            />
                           </div>
                         );
                       })}
