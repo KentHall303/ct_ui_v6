@@ -102,7 +102,128 @@ export const sampleCalendarEvents: CalendarEvent[] = [
     type: 'installation'
   },
   {
+    id: '8a',
+    quoteNumber: 'Quote #151',
+    contactName: 'Mark Thompson',
+    date: '2025-09-15',
+    time: '10:00 AM',
+    status: 'active',
+    estimator: 'Test_Account Owner',
+    amount: '$3,450.00',
+    type: 'quote'
+  },
+  {
+    id: '8b',
+    quoteNumber: 'Quote #153',
+    contactName: 'Nancy Clark',
+    date: '2025-09-15',
+    time: '1:00 PM',
+    status: 'pending',
+    estimator: 'Test_Account Owner',
+    amount: '$2,100.00',
+    type: 'inspection'
+  },
+  {
+    id: '8c',
+    quoteNumber: 'Quote #154',
+    contactName: 'Peter Wright',
+    date: '2025-09-15',
+    time: '3:30 PM',
+    status: 'active',
+    estimator: 'Test_Account Owner',
+    amount: '$4,680.00',
+    type: 'quote'
+  },
+  {
     id: '9',
+    quoteNumber: 'Quote #155',
+    contactName: 'Rachel Green',
+    date: '2025-09-15',
+    time: '7:30 AM',
+    status: 'active',
+    estimator: 'Sara Joe',
+    amount: '$1,890.00',
+    type: 'quote'
+  },
+  {
+    id: '9a',
+    quoteNumber: 'Quote #156',
+    contactName: 'Steven Parker',
+    date: '2025-09-15',
+    time: '9:30 AM',
+    status: 'pending',
+    estimator: 'Sara Joe',
+    amount: '$3,250.00',
+    type: 'installation'
+  },
+  {
+    id: '9b',
+    quoteNumber: 'Quote #157',
+    contactName: 'Teresa Hughes',
+    date: '2025-09-15',
+    time: '12:00 PM',
+    status: 'active',
+    estimator: 'Sara Joe',
+    amount: '$2,675.00',
+    type: 'quote'
+  },
+  {
+    id: '9c',
+    quoteNumber: 'Quote #158',
+    contactName: 'Victor Collins',
+    date: '2025-09-15',
+    time: '2:30 PM',
+    status: 'completed',
+    estimator: 'Sara Joe',
+    amount: '$1,425.00',
+    type: 'follow_up'
+  },
+  {
+    id: '9d',
+    quoteNumber: 'Quote #159',
+    contactName: 'Wendy Foster',
+    date: '2025-09-15',
+    time: '8:30 AM',
+    status: 'active',
+    estimator: 'Jeanette Standards',
+    amount: '$4,120.00',
+    type: 'quote'
+  },
+  {
+    id: '9e',
+    quoteNumber: 'Quote #160',
+    contactName: 'Xavier Brooks',
+    date: '2025-09-15',
+    time: '11:00 AM',
+    status: 'pending',
+    estimator: 'Jeanette Standards',
+    amount: '$2,890.00',
+    type: 'inspection'
+  },
+  {
+    id: '9f',
+    quoteNumber: 'Quote #161',
+    contactName: 'Yvonne Bell',
+    date: '2025-09-15',
+    time: '1:30 PM',
+    status: 'active',
+    estimator: 'Jeanette Standards',
+    amount: '$3,560.00',
+    type: 'installation'
+  },
+  {
+    id: '9g',
+    quoteNumber: 'Quote #162',
+    contactName: 'Zachary Reed',
+    date: '2025-09-15',
+    time: '3:00 PM',
+    status: 'pending',
+    estimator: 'Jeanette Standards',
+    amount: '$1,980.00',
+    type: 'quote'
+  },
+  {
+    id: '9h',
     quoteNumber: 'Quote #152',
     contactName: 'David Martinez',
     date: '2025-09-15',
