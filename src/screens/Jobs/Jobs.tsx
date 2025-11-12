@@ -778,9 +778,9 @@ const DispatchingView = () => {
   const isMultiDayEvent = (startDate: string, endDate: string): boolean => {
     const start = new Date(startDate);
     const end = new Date(endDate);
-    start.setHours(0, 0, 0, 0);
-    end.setHours(0, 0, 0, 0);
-    return end.getTime() > start.getTime();
+    const startOnly = new Date(Date.UTC(start.getFullYear(), start.getMonth(), start.getDate()));
+    const endOnly = new Date(Date.UTC(end.getFullYear(), end.getMonth(), end.getDate()));
+    return endOnly.getTime() > startOnly.getTime();
   };
 
   const getEventDayType = (event: CalendarEventWithEstimator, viewDate: Date): 'single' | 'start' | 'middle' | 'end' => {
@@ -811,14 +811,12 @@ const DispatchingView = () => {
     const date = new Date(startDate);
     const endDateTime = new Date(endDate);
 
-    const viewDateOnly = new Date(viewDate);
-    viewDateOnly.setHours(0, 0, 0, 0);
+    // Use UTC for date-only comparisons to avoid timezone issues
+    const viewDateOnly = new Date(Date.UTC(viewDate.getFullYear(), viewDate.getMonth(), viewDate.getDate()));
 
-    const startDateOnly = new Date(startDate);
-    startDateOnly.setHours(0, 0, 0, 0);
+    const startDateOnly = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
 
-    const endDateOnly = new Date(endDateTime);
-    endDateOnly.setHours(0, 0, 0, 0);
+    const endDateOnly = new Date(Date.UTC(endDateTime.getFullYear(), endDateTime.getMonth(), endDateTime.getDate()));
 
     // Check if this event should be visible on this day
     if (viewDateOnly.getTime() < startDateOnly.getTime() || viewDateOnly.getTime() > endDateOnly.getTime()) {
