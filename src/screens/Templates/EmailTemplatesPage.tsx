@@ -5,6 +5,7 @@ import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '.
 import { Plus } from 'lucide-react';
 import { emailTemplateService } from '../../services/emailTemplateService';
 import { EmailTemplate } from '../../lib/supabase';
+import { AddEmailTemplateModal } from '../../components/modals/AddEmailTemplateModal';
 
 type EmailTemplateDisplay = {
   id: string;
@@ -18,34 +19,39 @@ const EmailTemplates = (): JSX.Element => {
   const [templates, setTemplates] = React.useState<EmailTemplateDisplay[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = React.useState(false);
   const [sortConfig, setSortConfig] = React.useState<{
     key: string;
     direction: 'asc' | 'desc';
   } | null>({ key: 'name', direction: 'asc' });
 
-  React.useEffect(() => {
-    const fetchTemplates = async () => {
-      try {
-        setLoading(true);
-        const data = await emailTemplateService.getAll();
-        const displayTemplates: EmailTemplateDisplay[] = data.map(template => ({
-          id: template.id,
-          name: template.name,
-          subject: template.subject,
-          contactType: template.contact_type,
-          excludeClient: template.exclude_client
-        }));
-        setTemplates(displayTemplates);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load templates');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTemplates();
+  const fetchTemplates = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await emailTemplateService.getAll();
+      const displayTemplates: EmailTemplateDisplay[] = data.map(template => ({
+        id: template.id,
+        name: template.name,
+        subject: template.subject,
+        contactType: template.contact_type,
+        excludeClient: template.exclude_client
+      }));
+      setTemplates(displayTemplates);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load templates');
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  React.useEffect(() => {
+    fetchTemplates();
+  }, [fetchTemplates]);
+
+  const handleAddSuccess = () => {
+    fetchTemplates();
+  };
 
   const handleSort = (key: string) => {
     setSortConfig(current => {
@@ -134,6 +140,7 @@ const EmailTemplates = (): JSX.Element => {
             className="d-flex align-items-center gap-2 text-decoration-none p-0 border-0"
             title="Add new template"
             style={{ fontSize: '0.875rem' }}
+            onClick={() => setShowAddModal(true)}
           >
             <div
               className="rounded-circle bg-success d-flex align-items-center justify-content-center"
@@ -272,6 +279,12 @@ const EmailTemplates = (): JSX.Element => {
           </div>
         </div>
       </div>
+
+      <AddEmailTemplateModal
+        show={showAddModal}
+        onHide={() => setShowAddModal(false)}
+        onSuccess={handleAddSuccess}
+      />
     </div>
   );
 };

@@ -85,6 +85,11 @@ export interface EmailTemplate {
   usage_count: number;
   last_used_at?: string;
   created_by?: string;
+  additional_emails?: string;
+  bcc_email?: string;
+  select_token?: string;
+  protect_from_overwriting?: boolean;
+  protect_from_sharing?: boolean;
   created_at: string;
   updated_at: string;
 }
