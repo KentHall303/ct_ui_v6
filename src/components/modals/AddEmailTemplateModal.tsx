@@ -95,7 +95,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
         description: description.trim() || null,
         protect_from_overwriting: protectFromOverwriting,
         protect_from_sharing: protectFromSharing,
-        category: 'Email',
+        category: 'email',
         is_active: true
       };
 

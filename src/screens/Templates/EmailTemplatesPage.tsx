@@ -32,9 +32,9 @@ const EmailTemplates = (): JSX.Element => {
       const displayTemplates: EmailTemplateDisplay[] = data.map(template => ({
         id: template.id,
         name: template.name,
-        subject: template.subject,
-        contactType: template.contact_type,
-        excludeClient: template.exclude_client
+        subject: template.subject || '',
+        contactType: template.contact_type || 'All',
+        excludeClient: template.exclude_client || false
       }));
       setTemplates(displayTemplates);
       setError(null);
