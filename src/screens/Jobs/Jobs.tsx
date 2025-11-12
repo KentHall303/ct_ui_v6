@@ -1023,11 +1023,10 @@ const DispatchingView = () => {
                               border: `2px solid ${colors.border}`,
                               borderRadius: '4px',
                               padding: '4px 6px',
-                              cursor: 'grab',
+                              cursor: draggedEvent?.id === event.id ? 'grabbing' : 'grab',
                               transition: 'all 0.15s ease',
                               zIndex: 1,
-                              opacity: draggedEvent?.id === event.id ? 0.5 : 1,
-                              pointerEvents: draggedEvent?.id === event.id ? 'none' : 'auto'
+                              opacity: draggedEvent?.id === event.id ? 0.5 : 1
                             }}
                             onMouseEnter={(e) => {
                               if (!draggedEvent) {
