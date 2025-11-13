@@ -3,8 +3,6 @@ import { BodyLayout } from '../../components/layout/BodyLayout/BodyLayout';
 import { Button } from '../../components/bootstrap/Button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/bootstrap/Table';
 import { Plus } from 'lucide-react';
-import { emailTemplateService } from '../../services/emailTemplateService';
-import { EmailTemplate } from '../../lib/supabase';
 import { AddEmailTemplateModal } from '../../components/modals/AddEmailTemplateModal';
 
 type EmailTemplateDisplay = {
@@ -15,10 +13,88 @@ type EmailTemplateDisplay = {
   excludeClient: boolean;
 };
 
+const placeholderTemplates: EmailTemplateDisplay[] = [
+  {
+    id: '1',
+    name: 'I please provide missing Data',
+    subject: 'I Fill in form',
+    contactType: 'All',
+    excludeClient: false
+  },
+  {
+    id: '2',
+    name: '{{client.firstName}} signature process as promised',
+    subject: '{{client.firstName}} signature process as promised',
+    contactType: 'All',
+    excludeClient: false
+  },
+  {
+    id: '3',
+    name: 'I please provide missing Data',
+    subject: 'I Fill in form',
+    contactType: 'All',
+    excludeClient: false
+  },
+  {
+    id: '4',
+    name: '{{client.firstName}} signature process as promised',
+    subject: '{{client.firstName}} signature process as promised',
+    contactType: 'All',
+    excludeClient: false
+  },
+  {
+    id: '5',
+    name: 'I please provide missing Data',
+    subject: 'I Fill in form',
+    contactType: 'All',
+    excludeClient: false
+  },
+  {
+    id: '6',
+    name: '{{client.firstName}} signature process as promised',
+    subject: '{{client.firstName}} signature process as promised',
+    contactType: 'All',
+    excludeClient: false
+  },
+  {
+    id: '7',
+    name: 'I please provide missing Data',
+    subject: 'I Fill in form',
+    contactType: 'All',
+    excludeClient: false
+  },
+  {
+    id: '8',
+    name: '{{client.firstName}} signature process as promised',
+    subject: '{{client.firstName}} signature process as promised',
+    contactType: 'All',
+    excludeClient: false
+  },
+  {
+    id: '9',
+    name: 'I please provide missing Data',
+    subject: 'I Fill in form',
+    contactType: 'All',
+    excludeClient: false
+  },
+  {
+    id: '10',
+    name: '{{client.firstName}} signature process as promised',
+    subject: '{{client.firstName}} signature process as promised',
+    contactType: 'All',
+    excludeClient: false
+  },
+  {
+    id: '11',
+    name: 'I please provide missing Data',
+    subject: 'I Fill in form',
+    contactType: 'All',
+    excludeClient: false
+  }
+];
+
 const EmailTemplates = (): JSX.Element => {
-  const [templates, setTemplates] = React.useState<EmailTemplateDisplay[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
+  const [templates] = React.useState<EmailTemplateDisplay[]>(placeholderTemplates);
   const [sortConfig, setSortConfig] = React.useState<{
     key: string;
     direction: 'asc' | 'desc';
@@ -28,30 +104,6 @@ const EmailTemplates = (): JSX.Element => {
   React.useEffect(() => {
     console.log('EmailTemplates: showAddModal changed to:', showAddModal);
   }, [showAddModal]);
-
-  React.useEffect(() => {
-    const fetchTemplates = async () => {
-      try {
-        setLoading(true);
-        const data = await emailTemplateService.getAll();
-        const displayTemplates: EmailTemplateDisplay[] = data.map(template => ({
-          id: template.id,
-          name: template.name,
-          subject: template.subject,
-          contactType: template.contact_type,
-          excludeClient: template.exclude_client
-        }));
-        setTemplates(displayTemplates);
-        setError(null);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load templates');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTemplates();
-  }, []);
 
   const handleSort = (key: string) => {
     setSortConfig(current => {
@@ -100,36 +152,6 @@ const EmailTemplates = (): JSX.Element => {
     role: 'button',
     style: { cursor: 'pointer' }
   });
-
-  if (loading) {
-    return (
-      <div className="d-flex flex-column w-100">
-        <div className="px-3 pt-4 pb-3">
-          <h2 className="h2 fw-bold text-dark text-uppercase m-0 text-center" style={{ letterSpacing: '0.1em' }}>
-            EMAIL TEMPLATES
-          </h2>
-        </div>
-        <div className="px-3 pt-3 text-center">
-          <p>Loading templates...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="d-flex flex-column w-100">
-        <div className="px-3 pt-4 pb-3">
-          <h2 className="h2 fw-bold text-dark text-uppercase m-0 text-center" style={{ letterSpacing: '0.1em' }}>
-            EMAIL TEMPLATES
-          </h2>
-        </div>
-        <div className="px-3 pt-3 text-center">
-          <p className="text-danger">Error: {error}</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="d-flex flex-column w-100">
