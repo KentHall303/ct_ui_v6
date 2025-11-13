@@ -205,27 +205,39 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
             </Col>
           </Row>
 
-          <Form.Group className="d-flex align-items-center gap-2 mb-0">
-            <Form.Check
-              type="checkbox"
-              id="exclude-client"
-              checked={excludeClient}
-              onChange={(e) => setExcludeClient(e.target.checked)}
-              style={{ cursor: 'pointer' }}
-            />
-            <Form.Label
-              htmlFor="exclude-client"
-              className="mb-0 small"
-              style={{ cursor: 'pointer' }}
-            >
-              Exclude Client
-            </Form.Label>
-          </Form.Group>
+          <Row className="align-items-center">
+            <Col md={6}>
+              <div className="d-flex align-items-center gap-3">
+                <Form.Group className="d-flex align-items-center gap-2 mb-0">
+                  <Form.Check
+                    type="checkbox"
+                    id="exclude-client"
+                    checked={excludeClient}
+                    onChange={(e) => setExcludeClient(e.target.checked)}
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <Form.Label
+                    htmlFor="exclude-client"
+                    className="mb-0 small"
+                    style={{ cursor: 'pointer', whiteSpace: 'nowrap' }}
+                  >
+                    Exclude Client
+                  </Form.Label>
+                </Form.Group>
 
-          <div>
-            <div className="d-flex align-items-center justify-content-between mb-2">
-              <Form.Label className="small fw-medium mb-0">Description</Form.Label>
-              <div className="d-flex align-items-center gap-2">
+                <Form.Group className="flex-grow-1 mb-0">
+                  <Form.Control
+                    type="text"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Description"
+                    style={{ fontSize: '0.875rem' }}
+                  />
+                </Form.Group>
+              </div>
+            </Col>
+            <Col md={6}>
+              <div className="d-flex align-items-center justify-content-end gap-2">
                 <button
                   type="button"
                   className="btn btn-light border-0 p-2 d-flex align-items-center justify-content-center"
@@ -261,7 +273,10 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                   SAVE TEMPLATE
                 </Button>
               </div>
-            </div>
+            </Col>
+          </Row>
+
+          <div>
             <div className="border rounded" style={{ minHeight: '300px' }}>
               <div className="border-bottom d-flex align-items-center" style={{ backgroundColor: '#f8f9fa' }}>
                 <button
@@ -391,7 +406,6 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                       contentEditable
                       suppressContentEditableWarning
                     >
-                      {description}
                     </div>
                   </div>
                 )}
@@ -404,8 +418,6 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                   <Form.Control
                     as="textarea"
                     rows={8}
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
                     placeholder="Enter HTML code..."
                     style={{ fontFamily: 'monospace', fontSize: '0.875rem', resize: 'none' }}
                   />
