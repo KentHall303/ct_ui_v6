@@ -24,6 +24,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
   const [excludeClient, setExcludeClient] = useState(false);
   const [description, setDescription] = useState('');
   const [activeEditorTab, setActiveEditorTab] = useState<'sun' | 'block' | 'raw'>('block');
+  const [activeMainTab, setActiveMainTab] = useState<'preview' | 'editor'>('preview');
   const [contentTcpa, setContentTcpa] = useState('Promotional');
 
   const handleSaveTemplate = () => {
@@ -280,171 +281,203 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
               <div className="border-bottom d-flex align-items-center" style={{ backgroundColor: '#f8f9fa' }}>
                 <button
                   type="button"
-                  className={`btn border-0 px-3 py-2 small ${activeEditorTab === 'sun' ? 'fw-bold' : ''}`}
+                  className="btn border-0 px-3 py-2 small fw-semibold"
                   style={{
                     borderRadius: 0,
-                    backgroundColor: activeEditorTab === 'sun' ? 'white' : 'transparent',
-                    borderBottom: activeEditorTab === 'sun' ? '2px solid #0d6efd' : 'none'
+                    backgroundColor: activeMainTab === 'preview' ? '#cff4fc' : 'transparent',
+                    color: activeMainTab === 'preview' ? '#055160' : '#6c757d',
+                    transition: 'all 0.2s ease'
                   }}
-                  onClick={() => setActiveEditorTab('sun')}
+                  onClick={() => setActiveMainTab('preview')}
                 >
-                  SUN EDITOR
+                  PUBLISHED PREVIEW
                 </button>
                 <button
                   type="button"
-                  className={`btn border-0 px-3 py-2 small ${activeEditorTab === 'block' ? 'fw-bold' : ''}`}
+                  className="btn border-0 px-3 py-2 small fw-semibold"
                   style={{
                     borderRadius: 0,
-                    backgroundColor: activeEditorTab === 'block' ? 'white' : 'transparent',
-                    borderBottom: activeEditorTab === 'block' ? '2px solid #0d6efd' : 'none'
+                    backgroundColor: activeMainTab === 'editor' ? '#cff4fc' : 'transparent',
+                    color: activeMainTab === 'editor' ? '#055160' : '#6c757d',
+                    transition: 'all 0.2s ease'
                   }}
-                  onClick={() => setActiveEditorTab('block')}
+                  onClick={() => setActiveMainTab('editor')}
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="me-1">
-                    <rect x="3" y="3" width="7" height="7"></rect>
-                    <rect x="14" y="3" width="7" height="7"></rect>
-                    <rect x="14" y="14" width="7" height="7"></rect>
-                    <rect x="3" y="14" width="7" height="7"></rect>
-                  </svg>
-                  BLOCK EDITOR
-                </button>
-                <button
-                  type="button"
-                  className={`btn border-0 px-3 py-2 small ${activeEditorTab === 'raw' ? 'fw-bold' : ''}`}
-                  style={{
-                    borderRadius: 0,
-                    backgroundColor: activeEditorTab === 'raw' ? 'white' : 'transparent',
-                    borderBottom: activeEditorTab === 'raw' ? '2px solid #0d6efd' : 'none'
-                  }}
-                  onClick={() => setActiveEditorTab('raw')}
-                >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="me-1">
-                    <polyline points="16 18 22 12 16 6"></polyline>
-                    <polyline points="8 6 2 12 8 18"></polyline>
-                  </svg>
-                  RAW HTML
+                  EDITOR
                 </button>
               </div>
 
               <div className="p-3" style={{ minHeight: '250px', backgroundColor: 'white' }}>
-                {activeEditorTab === 'block' && (
+                {activeMainTab === 'preview' && (
                   <div>
-                    <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Align left"
-                        style={{ width: '36px', height: '36px' }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="17" y1="10" x2="3" y2="10"></line>
-                          <line x1="21" y1="6" x2="3" y2="6"></line>
-                          <line x1="21" y1="14" x2="3" y2="14"></line>
-                          <line x1="17" y1="18" x2="3" y2="18"></line>
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Align center"
-                        style={{ width: '36px', height: '36px' }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="18" y1="10" x2="6" y2="10"></line>
-                          <line x1="21" y1="6" x2="3" y2="6"></line>
-                          <line x1="21" y1="14" x2="3" y2="14"></line>
-                          <line x1="18" y1="18" x2="6" y2="18"></line>
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Align right"
-                        style={{ width: '36px', height: '36px' }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="21" y1="10" x2="7" y2="10"></line>
-                          <line x1="21" y1="6" x2="3" y2="6"></line>
-                          <line x1="21" y1="14" x2="3" y2="14"></line>
-                          <line x1="21" y1="18" x2="7" y2="18"></line>
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Justify"
-                        style={{ width: '36px', height: '36px' }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="21" y1="10" x2="3" y2="10"></line>
-                          <line x1="21" y1="6" x2="3" y2="6"></line>
-                          <line x1="21" y1="14" x2="3" y2="14"></line>
-                          <line x1="21" y1="18" x2="3" y2="18"></line>
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Insert image"
-                        style={{ width: '36px', height: '36px' }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <div
+                      className="border rounded d-flex align-items-center justify-content-center"
+                      style={{
+                        minHeight: '200px',
+                        backgroundColor: '#6c757d',
+                        color: '#dee2e6'
+                      }}
+                    >
+                      <div className="text-center">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
                           <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                           <circle cx="8.5" cy="8.5" r="1.5"></circle>
                           <polyline points="21 15 16 10 5 21"></polyline>
                         </svg>
+                      </div>
+                    </div>
+                    <div className="mt-2 text-center small text-muted">
+                      Publish Content
+                    </div>
+                  </div>
+                )}
+                {activeMainTab === 'editor' && (
+                  <div>
+                    <div className="border-bottom d-flex align-items-center mb-3" style={{ backgroundColor: '#f8f9fa' }}>
+                      <button
+                        type="button"
+                        className={`btn border-0 px-3 py-2 small ${activeEditorTab === 'sun' ? 'fw-bold' : ''}`}
+                        style={{
+                          borderRadius: 0,
+                          backgroundColor: activeEditorTab === 'sun' ? 'white' : 'transparent',
+                          borderBottom: activeEditorTab === 'sun' ? '2px solid #0d6efd' : 'none'
+                        }}
+                        onClick={() => setActiveEditorTab('sun')}
+                      >
+                        SUN EDITOR
+                      </button>
+                      <button
+                        type="button"
+                        className={`btn border-0 px-3 py-2 small ${activeEditorTab === 'block' ? 'fw-bold' : ''}`}
+                        style={{
+                          borderRadius: 0,
+                          backgroundColor: activeEditorTab === 'block' ? 'white' : 'transparent',
+                          borderBottom: activeEditorTab === 'block' ? '2px solid #0d6efd' : 'none'
+                        }}
+                        onClick={() => setActiveEditorTab('block')}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="me-1">
+                          <rect x="3" y="3" width="7" height="7"></rect>
+                          <rect x="14" y="3" width="7" height="7"></rect>
+                          <rect x="14" y="14" width="7" height="7"></rect>
+                          <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                        BLOCK EDITOR
+                      </button>
+                      <button
+                        type="button"
+                        className={`btn border-0 px-3 py-2 small ${activeEditorTab === 'raw' ? 'fw-bold' : ''}`}
+                        style={{
+                          borderRadius: 0,
+                          backgroundColor: activeEditorTab === 'raw' ? 'white' : 'transparent',
+                          borderBottom: activeEditorTab === 'raw' ? '2px solid #0d6efd' : 'none'
+                        }}
+                        onClick={() => setActiveEditorTab('raw')}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="me-1">
+                          <polyline points="16 18 22 12 16 6"></polyline>
+                          <polyline points="8 6 2 12 8 18"></polyline>
+                        </svg>
+                        RAW HTML
                       </button>
                     </div>
-                    <div
-                      className="border rounded p-3"
-                      style={{
-                        minHeight: '150px',
-                        backgroundColor: '#f8f9fa',
-                        cursor: 'text'
-                      }}
-                      contentEditable
-                      suppressContentEditableWarning
-                    >
-                    </div>
+                    {activeEditorTab === 'block' && (
+                      <div>
+                        <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
+                          <button
+                            type="button"
+                            className="btn btn-light border p-2"
+                            title="Align left"
+                            style={{ width: '36px', height: '36px' }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="17" y1="10" x2="3" y2="10"></line>
+                              <line x1="21" y1="6" x2="3" y2="6"></line>
+                              <line x1="21" y1="14" x2="3" y2="14"></line>
+                              <line x1="17" y1="18" x2="3" y2="18"></line>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-light border p-2"
+                            title="Align center"
+                            style={{ width: '36px', height: '36px' }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="18" y1="10" x2="6" y2="10"></line>
+                              <line x1="21" y1="6" x2="3" y2="6"></line>
+                              <line x1="21" y1="14" x2="3" y2="14"></line>
+                              <line x1="18" y1="18" x2="6" y2="18"></line>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-light border p-2"
+                            title="Align right"
+                            style={{ width: '36px', height: '36px' }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="21" y1="10" x2="7" y2="10"></line>
+                              <line x1="21" y1="6" x2="3" y2="6"></line>
+                              <line x1="21" y1="14" x2="3" y2="14"></line>
+                              <line x1="21" y1="18" x2="7" y2="18"></line>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-light border p-2"
+                            title="Justify"
+                            style={{ width: '36px', height: '36px' }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="21" y1="10" x2="3" y2="10"></line>
+                              <line x1="21" y1="6" x2="3" y2="6"></line>
+                              <line x1="21" y1="14" x2="3" y2="14"></line>
+                              <line x1="21" y1="18" x2="3" y2="18"></line>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-light border p-2"
+                            title="Insert image"
+                            style={{ width: '36px', height: '36px' }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                              <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                          </button>
+                        </div>
+                        <div
+                          className="border rounded p-3"
+                          style={{
+                            minHeight: '150px',
+                            backgroundColor: '#f8f9fa',
+                            cursor: 'text'
+                          }}
+                          contentEditable
+                          suppressContentEditableWarning
+                        >
+                        </div>
+                      </div>
+                    )}
+                    {activeEditorTab === 'sun' && (
+                      <div className="text-muted text-center py-5">
+                        SUN EDITOR content area
+                      </div>
+                    )}
+                    {activeEditorTab === 'raw' && (
+                      <Form.Control
+                        as="textarea"
+                        rows={8}
+                        placeholder="Enter HTML code..."
+                        style={{ fontFamily: 'monospace', fontSize: '0.875rem', resize: 'none' }}
+                      />
+                    )}
                   </div>
                 )}
-                {activeEditorTab === 'sun' && (
-                  <div className="text-muted text-center py-5">
-                    SUN EDITOR content area
-                  </div>
-                )}
-                {activeEditorTab === 'raw' && (
-                  <Form.Control
-                    as="textarea"
-                    rows={8}
-                    placeholder="Enter HTML code..."
-                    style={{ fontFamily: 'monospace', fontSize: '0.875rem', resize: 'none' }}
-                  />
-                )}
               </div>
-            </div>
-          </div>
-
-          <div>
-            <Form.Label className="small fw-medium mb-2">Preview</Form.Label>
-            <div
-              className="border rounded d-flex align-items-center justify-content-center"
-              style={{
-                minHeight: '200px',
-                backgroundColor: '#6c757d',
-                color: '#dee2e6'
-              }}
-            >
-              <div className="text-center">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                  <polyline points="21 15 16 10 5 21"></polyline>
-                </svg>
-              </div>
-            </div>
-            <div className="mt-2 text-center small text-muted">
-              Publish Content
             </div>
           </div>
 
