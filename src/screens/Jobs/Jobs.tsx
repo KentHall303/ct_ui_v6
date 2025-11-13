@@ -259,6 +259,103 @@ const JobsHeader = ({ currentView, onViewChange, onReportsClick }: { currentView
           </button>
         </li>
       </ul>
+
+      {/* Rate and Skills Filters - Only show for dispatching view */}
+      {currentView === 'dispatching' && onRateFilterChange && onSkillToggle && (
+        <div className="d-flex align-items-center gap-3 ms-auto">
+          {/* Rate Filter Dropdown */}
+          <div className="position-relative">
+            <select
+              className="form-select form-select-sm"
+              style={{ minWidth: '140px' }}
+              value={
+                rateFilter?.min === undefined && rateFilter?.max === undefined
+                  ? 'all'
+                  : rateFilter?.min === 0 && rateFilter?.max === 60
+                  ? '0-60'
+                  : rateFilter?.min === 60 && rateFilter?.max === 80
+                  ? '60-80'
+                  : rateFilter?.min === 80 && rateFilter?.max === 100
+                  ? '80-100'
+                  : rateFilter?.min === 100 && rateFilter?.max === undefined
+                  ? '100+'
+                  : 'all'
+              }
+              onChange={(e) => {
+                const value = e.target.value;
+                if (value === 'all') {
+                  onRateFilterChange({ min: undefined, max: undefined });
+                } else if (value === '0-60') {
+                  onRateFilterChange({ min: 0, max: 60 });
+                } else if (value === '60-80') {
+                  onRateFilterChange({ min: 60, max: 80 });
+                } else if (value === '80-100') {
+                  onRateFilterChange({ min: 80, max: 100 });
+                } else if (value === '100+') {
+                  onRateFilterChange({ min: 100, max: undefined });
+                }
+              }}
+            >
+              <option value="all">All Rates</option>
+              <option value="0-60">$0-$60/hr</option>
+              <option value="60-80">$60-$80/hr</option>
+              <option value="80-100">$80-$100/hr</option>
+              <option value="100+">$100+/hr</option>
+            </select>
+          </div>
+
+          {/* Skills Filter Dropdown */}
+          <div className="dropdown">
+            <button
+              className="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              Skills
+              {skillFilters && skillFilters.length > 0 && (
+                <span className="badge bg-primary rounded-pill">{skillFilters.length}</span>
+              )}
+            </button>
+            <div className="dropdown-menu dropdown-menu-end p-3" style={{ minWidth: '300px' }} onClick={(e) => e.stopPropagation()}>
+              <div className="d-flex flex-wrap gap-2">
+                {availableSkills?.map((skill) => (
+                  <button
+                    key={skill}
+                    type="button"
+                    className={`btn btn-sm ${
+                      skillFilters?.includes(skill)
+                        ? 'btn-success'
+                        : 'btn-outline-secondary'
+                    }`}
+                    style={{ fontSize: '0.75rem' }}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      onSkillToggle(skill);
+                    }}
+                  >
+                    {skill}
+                  </button>
+                ))}
+              </div>
+              {skillFilters && skillFilters.length > 0 && (
+                <div className="mt-3 pt-2 border-top">
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-danger w-100"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      skillFilters.forEach(skill => onSkillToggle(skill));
+                    }}
+                  >
+                    Clear All
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
 
     {/* Table View Controls - Only show for table view */}
@@ -1096,73 +1193,6 @@ const DispatchingView = () => {
               ))}
             </div>
           </div>
-
-          <div className="mb-3">
-            <h6 className="fw-bold text-dark mb-3">Rate Filter</h6>
-            <div className="d-flex flex-column gap-1">
-              {[
-                { label: 'All Rates', min: undefined, max: undefined },
-                { label: '$0-$60/hr', min: 0, max: 60 },
-                { label: '$60-$80/hr', min: 60, max: 80 },
-                { label: '$80-$100/hr', min: 80, max: 100 },
-                { label: '$100+/hr', min: 100, max: undefined }
-              ].map((range, index) => {
-                const isActive = rateFilter.min === range.min && rateFilter.max === range.max;
-                return (
-                  <button
-                    key={index}
-                    className={`btn btn-sm text-start ${
-                      isActive ? 'btn-primary' : 'btn-outline-secondary'
-                    }`}
-                    style={{ fontSize: '0.75rem', padding: '4px 8px' }}
-                    onClick={() => setRateFilter({ min: range.min, max: range.max })}
-                  >
-                    {range.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="mb-3">
-            <h6 className="fw-bold text-dark mb-3">Skills Filter</h6>
-            <div className="d-flex flex-wrap gap-1">
-              {availableSkills.map((skill) => (
-                <button
-                  key={skill}
-                  className={`btn btn-sm ${
-                    skillFilters.includes(skill) ? 'btn-success' : 'btn-outline-secondary'
-                  }`}
-                  style={{ fontSize: '0.7rem', padding: '2px 8px' }}
-                  onClick={() => {
-                    setSkillFilters(prev =>
-                      prev.includes(skill)
-                        ? prev.filter(s => s !== skill)
-                        : [...prev, skill]
-                    );
-                  }}
-                >
-                  {skill}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {(rateFilter.min !== undefined || rateFilter.max !== undefined || skillFilters.length > 0) && (
-            <div className="mb-3">
-              <Button
-                variant="outline-danger"
-                size="sm"
-                className="w-100 small"
-                onClick={() => {
-                  setRateFilter({});
-                  setSkillFilters([]);
-                }}
-              >
-                Clear All Filters
-              </Button>
-            </div>
-          )}
 
           <div>
             <h6 className="fw-bold text-dark mb-3">Quick Filters</h6>
