@@ -186,7 +186,7 @@ const EmailTemplates = (): JSX.Element => {
         </div>
       </div>
 
-      <div className="px-3 pb-3 flex-fill d-flex flex-column" style={{ minHeight: 0 }}>
+      <div className="px-3 pt-3 pb-3 flex-fill d-flex flex-column" style={{ minHeight: 0 }}>
         <div
           className="bg-white rounded-3 border shadow-sm d-flex flex-column h-100"
           style={{ overflow: 'hidden' }}
