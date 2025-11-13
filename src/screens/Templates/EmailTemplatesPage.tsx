@@ -8,88 +8,64 @@ import { AddEmailTemplateModal } from '../../components/modals/AddEmailTemplateM
 type EmailTemplateDisplay = {
   id: string;
   name: string;
-  subject: string;
   contactType: string;
-  excludeClient: boolean;
 };
 
 const placeholderTemplates: EmailTemplateDisplay[] = [
   {
     id: '1',
     name: 'I please provide missing Data',
-    subject: 'I Fill in form',
-    contactType: 'All',
-    excludeClient: false
+    contactType: 'All'
   },
   {
     id: '2',
     name: '{{client.firstName}} signature process as promised',
-    subject: '{{client.firstName}} signature process as promised',
-    contactType: 'All',
-    excludeClient: false
+    contactType: 'All'
   },
   {
     id: '3',
     name: 'I please provide missing Data',
-    subject: 'I Fill in form',
-    contactType: 'All',
-    excludeClient: false
+    contactType: 'All'
   },
   {
     id: '4',
     name: '{{client.firstName}} signature process as promised',
-    subject: '{{client.firstName}} signature process as promised',
-    contactType: 'All',
-    excludeClient: false
+    contactType: 'All'
   },
   {
     id: '5',
     name: 'I please provide missing Data',
-    subject: 'I Fill in form',
-    contactType: 'All',
-    excludeClient: false
+    contactType: 'All'
   },
   {
     id: '6',
     name: '{{client.firstName}} signature process as promised',
-    subject: '{{client.firstName}} signature process as promised',
-    contactType: 'All',
-    excludeClient: false
+    contactType: 'All'
   },
   {
     id: '7',
     name: 'I please provide missing Data',
-    subject: 'I Fill in form',
-    contactType: 'All',
-    excludeClient: false
+    contactType: 'All'
   },
   {
     id: '8',
     name: '{{client.firstName}} signature process as promised',
-    subject: '{{client.firstName}} signature process as promised',
-    contactType: 'All',
-    excludeClient: false
+    contactType: 'All'
   },
   {
     id: '9',
     name: 'I please provide missing Data',
-    subject: 'I Fill in form',
-    contactType: 'All',
-    excludeClient: false
+    contactType: 'All'
   },
   {
     id: '10',
     name: '{{client.firstName}} signature process as promised',
-    subject: '{{client.firstName}} signature process as promised',
-    contactType: 'All',
-    excludeClient: false
+    contactType: 'All'
   },
   {
     id: '11',
     name: 'I please provide missing Data',
-    subject: 'I Fill in form',
-    contactType: 'All',
-    excludeClient: false
+    contactType: 'All'
   }
 ];
 
@@ -203,35 +179,19 @@ const EmailTemplates = (): JSX.Element => {
                   scope="col"
                   {...getSortProps('name')}
                   aria-label={`Sort by name ${sortConfig?.key === 'name' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '30%' }}
+                  style={{ width: '50%' }}
                 >
                   Name{getSortIcon('name')}
                 </TableHead>
                 <TableHead
                   scope="col"
-                  {...getSortProps('subject')}
-                  aria-label={`Sort by subject ${sortConfig?.key === 'subject' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '25%' }}
-                >
-                  Subject{getSortIcon('subject')}
-                </TableHead>
-                <TableHead
-                  scope="col"
                   {...getSortProps('contactType')}
                   aria-label={`Sort by contact type ${sortConfig?.key === 'contactType' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '20%' }}
+                  style={{ width: '30%' }}
                 >
                   Contact Type{getSortIcon('contactType')}
                 </TableHead>
-                <TableHead
-                  scope="col"
-                  {...getSortProps('excludeClient')}
-                  aria-label={`Sort by exclude client ${sortConfig?.key === 'excludeClient' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '12%', textAlign: 'center' }}
-                >
-                  Exclude Client{getSortIcon('excludeClient')}
-                </TableHead>
-                <TableHead scope="col" style={{ width: '13%', textAlign: 'center' }}>
+                <TableHead scope="col" style={{ width: '20%', textAlign: 'center' }}>
                   Actions
                 </TableHead>
               </TableRow>
@@ -243,13 +203,14 @@ const EmailTemplates = (): JSX.Element => {
                   role="row"
                   aria-rowindex={index + 2}
                 >
-                  <TableCell role="gridcell" style={{ width: '30%', maxWidth: '30%' }}>
+                  <TableCell role="gridcell" style={{ width: '50%', maxWidth: '50%' }}>
                     <div
-                      className="text-dark small"
+                      className="text-dark"
                       style={{
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
+                        whiteSpace: 'nowrap',
+                        fontSize: '0.9375rem'
                       }}
                       title={template.name}
                     >
@@ -257,37 +218,11 @@ const EmailTemplates = (): JSX.Element => {
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell" style={{ width: '25%', maxWidth: '25%' }}>
-                    <div
-                      className="text-dark small"
-                      style={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                      }}
-                      title={template.subject}
-                    >
-                      {template.subject}
-                    </div>
+                  <TableCell role="gridcell" style={{ width: '30%', maxWidth: '30%' }}>
+                    <div className="text-dark" style={{ fontSize: '0.9375rem' }}>{template.contactType}</div>
                   </TableCell>
 
                   <TableCell role="gridcell" style={{ width: '20%', maxWidth: '20%' }}>
-                    <div className="text-dark small">{template.contactType}</div>
-                  </TableCell>
-
-                  <TableCell role="gridcell" style={{ width: '12%', maxWidth: '12%' }}>
-                    <div className="d-flex justify-content-center">
-                      <input
-                        type="checkbox"
-                        checked={template.excludeClient}
-                        readOnly
-                        className="form-check-input"
-                        style={{ cursor: 'default' }}
-                      />
-                    </div>
-                  </TableCell>
-
-                  <TableCell role="gridcell" style={{ width: '13%', maxWidth: '13%' }}>
                     <div className="d-flex gap-2 justify-content-center">
                       <button
                         className="btn btn-link p-0 border rounded-circle d-flex align-items-center justify-content-center"
