@@ -212,7 +212,25 @@ const getStatusBadge = (status: string) => {
   }
 };
 
-const JobsHeader = ({ currentView, onViewChange, onReportsClick }: { currentView: 'table' | 'calendar' | 'dispatching', onViewChange: (view: 'table' | 'calendar' | 'dispatching') => void, onReportsClick: () => void }) => (
+const JobsHeader = ({
+  currentView,
+  onViewChange,
+  onReportsClick,
+  rateFilter,
+  skillFilters,
+  availableSkills,
+  onRateFilterChange,
+  onSkillToggle
+}: {
+  currentView: 'table' | 'calendar' | 'dispatching',
+  onViewChange: (view: 'table' | 'calendar' | 'dispatching') => void,
+  onReportsClick: () => void,
+  rateFilter?: { min?: number; max?: number },
+  skillFilters?: string[],
+  availableSkills?: string[],
+  onRateFilterChange?: (filter: { min?: number; max?: number }) => void,
+  onSkillToggle?: (skill: string) => void
+}) => (
   <div className="px-3 pt-3">
     <div className="bg-white rounded-3 pt-2 pb-4 px-3 border shadow-sm">
     {/* Title Section - Following wireframe standards */}
