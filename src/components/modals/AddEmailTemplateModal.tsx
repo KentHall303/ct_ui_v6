@@ -224,20 +224,18 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
           </Row>
 
           <Row>
-            <Col md={6}>
-              <Form.Group>
-                <Form.Label className="small fw-medium">Description</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Description"
-                  style={{ fontSize: '0.875rem' }}
-                />
-              </Form.Group>
-            </Col>
-            <Col md={6}>
-              <div className="d-flex align-items-center justify-content-end gap-2">
+            <Col md={12}>
+              <div className="d-flex align-items-end gap-2">
+                <Form.Group className="flex-grow-1">
+                  <Form.Label className="small fw-medium">Description</Form.Label>
+                  <Form.Control
+                    type="text"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Description"
+                    style={{ fontSize: '0.875rem' }}
+                  />
+                </Form.Group>
                 <button
                   type="button"
                   className="btn btn-light border-0 p-2 d-flex align-items-center justify-content-center"
@@ -256,7 +254,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <polyline points="3 6 5 6 21 6"></polyline>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 4 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                   </svg>
                 </button>
                 <Button
@@ -336,11 +334,12 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                     <div className="border-bottom d-flex align-items-center mb-3" style={{ backgroundColor: '#f8f9fa' }}>
                       <button
                         type="button"
-                        className={`btn border-0 px-3 py-2 small ${activeEditorTab === 'sun' ? 'fw-bold' : ''}`}
+                        className="btn border-0 px-3 py-2 small fw-semibold"
                         style={{
                           borderRadius: 0,
-                          backgroundColor: activeEditorTab === 'sun' ? 'white' : 'transparent',
-                          borderBottom: activeEditorTab === 'sun' ? '2px solid #0d6efd' : 'none'
+                          backgroundColor: activeEditorTab === 'sun' ? '#cff4fc' : 'transparent',
+                          color: activeEditorTab === 'sun' ? '#055160' : '#6c757d',
+                          transition: 'all 0.2s ease'
                         }}
                         onClick={() => setActiveEditorTab('sun')}
                       >
@@ -348,11 +347,12 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                       </button>
                       <button
                         type="button"
-                        className={`btn border-0 px-3 py-2 small ${activeEditorTab === 'block' ? 'fw-bold' : ''}`}
+                        className="btn border-0 px-3 py-2 small fw-semibold"
                         style={{
                           borderRadius: 0,
-                          backgroundColor: activeEditorTab === 'block' ? 'white' : 'transparent',
-                          borderBottom: activeEditorTab === 'block' ? '2px solid #0d6efd' : 'none'
+                          backgroundColor: activeEditorTab === 'block' ? '#cff4fc' : 'transparent',
+                          color: activeEditorTab === 'block' ? '#055160' : '#6c757d',
+                          transition: 'all 0.2s ease'
                         }}
                         onClick={() => setActiveEditorTab('block')}
                       >
@@ -366,11 +366,12 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                       </button>
                       <button
                         type="button"
-                        className={`btn border-0 px-3 py-2 small ${activeEditorTab === 'raw' ? 'fw-bold' : ''}`}
+                        className="btn border-0 px-3 py-2 small fw-semibold"
                         style={{
                           borderRadius: 0,
-                          backgroundColor: activeEditorTab === 'raw' ? 'white' : 'transparent',
-                          borderBottom: activeEditorTab === 'raw' ? '2px solid #0d6efd' : 'none'
+                          backgroundColor: activeEditorTab === 'raw' ? '#cff4fc' : 'transparent',
+                          color: activeEditorTab === 'raw' ? '#055160' : '#6c757d',
+                          transition: 'all 0.2s ease'
                         }}
                         onClick={() => setActiveEditorTab('raw')}
                       >
@@ -460,20 +461,72 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                           suppressContentEditableWarning
                         >
                         </div>
+                        <div className="d-flex justify-content-end gap-2 mt-3">
+                          <Button
+                            variant="outline-secondary"
+                            onClick={handleSaveAsDraft}
+                            style={{ padding: '6px 20px', fontSize: '0.875rem' }}
+                          >
+                            SAVE AS A DRAFT ONLY
+                          </Button>
+                          <Button
+                            variant="primary"
+                            onClick={handlePublish}
+                            style={{ padding: '6px 32px', fontSize: '0.875rem' }}
+                          >
+                            PUBLISH
+                          </Button>
+                        </div>
                       </div>
                     )}
                     {activeEditorTab === 'sun' && (
-                      <div className="text-muted text-center py-5">
-                        SUN EDITOR content area
+                      <div>
+                        <div className="text-muted text-center py-5">
+                          SUN EDITOR content area
+                        </div>
+                        <div className="d-flex justify-content-end gap-2 mt-3">
+                          <Button
+                            variant="outline-secondary"
+                            onClick={handleSaveAsDraft}
+                            style={{ padding: '6px 20px', fontSize: '0.875rem' }}
+                          >
+                            SAVE AS A DRAFT ONLY
+                          </Button>
+                          <Button
+                            variant="primary"
+                            onClick={handlePublish}
+                            style={{ padding: '6px 32px', fontSize: '0.875rem' }}
+                          >
+                            PUBLISH
+                          </Button>
+                        </div>
                       </div>
                     )}
                     {activeEditorTab === 'raw' && (
-                      <Form.Control
-                        as="textarea"
-                        rows={8}
-                        placeholder="Enter HTML code..."
-                        style={{ fontFamily: 'monospace', fontSize: '0.875rem', resize: 'none' }}
-                      />
+                      <div>
+                        <Form.Control
+                          as="textarea"
+                          rows={8}
+                          placeholder="Enter HTML code..."
+                          style={{ fontFamily: 'monospace', fontSize: '0.875rem', resize: 'none' }}
+                        />
+                        <div className="d-flex justify-content-end gap-2 mt-3">
+                          <Button
+                            variant="outline-secondary"
+                            onClick={handleSaveAsDraft}
+                            style={{ padding: '6px 20px', fontSize: '0.875rem' }}
+                          >
+                            SAVE AS A DRAFT ONLY
+                          </Button>
+                          <Button
+                            variant="primary"
+                            onClick={handlePublish}
+                            style={{ padding: '6px 32px', fontSize: '0.875rem' }}
+                          >
+                            PUBLISH
+                          </Button>
+                        </div>
+                      </div>
                     )}
                   </div>
                 )}
@@ -481,38 +534,19 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
             </div>
           </div>
 
-          <div className="d-flex justify-content-between align-items-center mt-3">
-            <div className="d-flex align-items-center gap-2">
-              <Form.Group className="mb-0" style={{ minWidth: '200px' }}>
-                <Form.Label className="small fw-medium mb-1">Content TCPA</Form.Label>
-                <Form.Select
-                  value={contentTcpa}
-                  onChange={(e) => setContentTcpa(e.target.value)}
-                  style={{ fontSize: '0.875rem' }}
-                >
-                  <option value="Promotional">Promotional</option>
-                  <option value="Transactional">Transactional</option>
-                  <option value="Mixed">Mixed</option>
-                </Form.Select>
-              </Form.Group>
-            </div>
-
-            <div className="d-flex gap-2">
-              <Button
-                variant="outline-secondary"
-                onClick={handleSaveAsDraft}
-                style={{ padding: '6px 20px', fontSize: '0.875rem' }}
+          <div className="mt-3">
+            <Form.Group className="mb-0" style={{ maxWidth: '200px' }}>
+              <Form.Label className="small fw-medium mb-1">Content TCPA</Form.Label>
+              <Form.Select
+                value={contentTcpa}
+                onChange={(e) => setContentTcpa(e.target.value)}
+                style={{ fontSize: '0.875rem' }}
               >
-                SAVE AS A DRAFT ONLY
-              </Button>
-              <Button
-                variant="primary"
-                onClick={handlePublish}
-                style={{ padding: '6px 32px', fontSize: '0.875rem' }}
-              >
-                PUBLISH
-              </Button>
-            </div>
+                <option value="Promotional">Promotional</option>
+                <option value="Transactional">Transactional</option>
+                <option value="Mixed">Mixed</option>
+              </Form.Select>
+            </Form.Group>
           </div>
         </div>
       </Modal.Body>
