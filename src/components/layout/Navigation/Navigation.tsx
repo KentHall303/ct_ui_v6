@@ -125,6 +125,7 @@ const navigationItems: NavItem[] = [
     hasDropdown: true,
     subItems: [
       { id: "tp-email", label: "Email", path: "/templates/email" },
+      { id: "tp-email-modal-test", label: "Email Modal (Test)", path: "/templates/email-modal-test" },
       { id: "tp-task", label: "Task", path: "/templates/task" },
       { id: "tp-text", label: "Text", path: "/templates/text" },
       { id: "tp-appt-invites", label: "Appt Invites", path: "/templates/appt-invites" },

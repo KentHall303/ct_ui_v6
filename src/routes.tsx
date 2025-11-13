@@ -19,12 +19,13 @@ const ProposalSettingsPage = React.lazy(() => import('./screens/DesignHub/Propos
 const ProposalModalPage = React.lazy(() => import('./screens/DesignHub/ProposalModalPage').then(m => ({ default: m.ProposalModalPage })));
 const TableStandardsPage = React.lazy(() => import('./screens/DesignHub/TableStandardsPage').then(m => ({ default: m.TableStandardsPage })));
 const TemplatesPage = React.lazy(() => import('./screens/Templates/TemplatesPage').then(m => ({ default: m.TemplatesPage })));
-const EmailTemplatesPage = React.lazy(() => import('./components/EmailTemplatesDemo').then(m => ({ default: m.EmailTemplatesDemo })));
+const EmailTemplatesPage = React.lazy(() => import('./screens/Templates/EmailTemplatesPage').then(m => ({ default: m.EmailTemplatesPage })));
 const TaskTemplatesPage = React.lazy(() => import('./screens/Templates/TaskTemplatesPage').then(m => ({ default: m.TaskTemplatesPage })));
 const TextTemplatesPage = React.lazy(() => import('./screens/Templates/TextTemplatesPage').then(m => ({ default: m.TextTemplatesPage })));
 const ApptInvitesTemplatesPage = React.lazy(() => import('./screens/Templates/ApptInvitesTemplatesPage').then(m => ({ default: m.ApptInvitesTemplatesPage })));
 const NotesLogsTemplatesPage = React.lazy(() => import('./screens/Templates/NotesLogsTemplatesPage').then(m => ({ default: m.NotesLogsTemplatesPage })));
 const ExportListTemplatesPage = React.lazy(() => import('./screens/Templates/ExportListTemplatesPage').then(m => ({ default: m.ExportListTemplatesPage })));
+const EmailTemplateModalTestPage = React.lazy(() => import('./screens/Templates/EmailTemplateModalTestPage').then(m => ({ default: m.EmailTemplateModalTestPage })));
 
 const PlaceholderPage: React.FC<{ title: string; description: string }> = ({ title, description }) => (
   <div className="p-6">
@@ -157,6 +158,10 @@ export const routes: RouteObject[] = [
   {
     path: '/templates/export-list',
     element: <ExportListTemplatesPage />
+  },
+  {
+    path: '/templates/email-modal-test',
+    element: <EmailTemplateModalTestPage />
   },
   {
     path: '/design-hub',
