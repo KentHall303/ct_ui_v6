@@ -166,7 +166,24 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
             </Col>
             <Col md={6}>
               <div className="d-flex align-items-end h-100 pb-1">
-                <div className="d-flex align-items-center gap-4">
+                <div className="d-flex align-items-center gap-3">
+                  <Form.Group className="d-flex align-items-center gap-2 mb-0">
+                    <Form.Check
+                      type="checkbox"
+                      id="exclude-client"
+                      checked={excludeClient}
+                      onChange={(e) => setExcludeClient(e.target.checked)}
+                      style={{ cursor: 'pointer' }}
+                    />
+                    <Form.Label
+                      htmlFor="exclude-client"
+                      className="mb-0 small"
+                      style={{ cursor: 'pointer', whiteSpace: 'nowrap' }}
+                    >
+                      Exclude Client
+                    </Form.Label>
+                  </Form.Group>
+
                   <Form.Group className="d-flex align-items-center gap-2 mb-0">
                     <Form.Check
                       type="checkbox"
@@ -205,36 +222,18 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
             </Col>
           </Row>
 
-          <Row className="align-items-center">
+          <Row>
             <Col md={6}>
-              <div className="d-flex align-items-center gap-3">
-                <Form.Group className="d-flex align-items-center gap-2 mb-0">
-                  <Form.Check
-                    type="checkbox"
-                    id="exclude-client"
-                    checked={excludeClient}
-                    onChange={(e) => setExcludeClient(e.target.checked)}
-                    style={{ cursor: 'pointer' }}
-                  />
-                  <Form.Label
-                    htmlFor="exclude-client"
-                    className="mb-0 small"
-                    style={{ cursor: 'pointer', whiteSpace: 'nowrap' }}
-                  >
-                    Exclude Client
-                  </Form.Label>
-                </Form.Group>
-
-                <Form.Group className="flex-grow-1 mb-0">
-                  <Form.Control
-                    type="text"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Description"
-                    style={{ fontSize: '0.875rem' }}
-                  />
-                </Form.Group>
-              </div>
+              <Form.Group>
+                <Form.Label className="small fw-medium">Description</Form.Label>
+                <Form.Control
+                  type="text"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Description"
+                  style={{ fontSize: '0.875rem' }}
+                />
+              </Form.Group>
             </Col>
             <Col md={6}>
               <div className="d-flex align-items-center justify-content-end gap-2">
@@ -451,48 +450,18 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
 
           <div className="d-flex justify-content-between align-items-center mt-3">
             <div className="d-flex align-items-center gap-2">
-              <div className="dropdown">
-                <button
-                  className="btn btn-outline-secondary dropdown-toggle"
-                  type="button"
-                  id="contentTcpaDropdown"
-                  data-bs-toggle="dropdown"
-                  aria-expanded="false"
-                  style={{ fontSize: '0.875rem', padding: '6px 16px' }}
+              <Form.Group className="mb-0" style={{ minWidth: '200px' }}>
+                <Form.Label className="small fw-medium mb-1">Content TCPA</Form.Label>
+                <Form.Select
+                  value={contentTcpa}
+                  onChange={(e) => setContentTcpa(e.target.value)}
+                  style={{ fontSize: '0.875rem' }}
                 >
-                  CONTENT TCPA
-                </button>
-                <ul className="dropdown-menu" aria-labelledby="contentTcpaDropdown">
-                  <li>
-                    <button
-                      className="dropdown-item"
-                      type="button"
-                      onClick={() => setContentTcpa('Promotional')}
-                    >
-                      Promotional
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      className="dropdown-item"
-                      type="button"
-                      onClick={() => setContentTcpa('Transactional')}
-                    >
-                      Transactional
-                    </button>
-                  </li>
-                  <li>
-                    <button
-                      className="dropdown-item"
-                      type="button"
-                      onClick={() => setContentTcpa('Mixed')}
-                    >
-                      Mixed
-                    </button>
-                  </li>
-                </ul>
-              </div>
-              <span className="small text-muted">Selected: {contentTcpa}</span>
+                  <option value="Promotional">Promotional</option>
+                  <option value="Transactional">Transactional</option>
+                  <option value="Mixed">Mixed</option>
+                </Form.Select>
+              </Form.Group>
             </div>
 
             <div className="d-flex gap-2">

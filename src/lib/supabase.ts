@@ -87,4 +87,10 @@ export interface EmailTemplate {
   created_by?: string;
   created_at: string;
   updated_at: string;
+  content_tcpa?: 'Promotional' | 'Transactional' | 'Mixed';
+  additional_emails?: string;
+  bcc_email?: string;
+  select_token?: string;
+  protect_from_overwriting?: boolean;
+  protect_from_sharing?: boolean;
 }
