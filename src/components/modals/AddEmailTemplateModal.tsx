@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Modal, Form, Row, Col } from 'react-bootstrap';
 import { Button } from '../bootstrap/Button';
+import { FloatingInput, FloatingSelect, FloatingSelectOption } from '../bootstrap/FormControls';
 
 interface AddEmailTemplateModalProps {
   show: boolean;
@@ -18,7 +19,9 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
   const [additionalEmails, setAdditionalEmails] = useState('');
   const [bcc, setBcc] = useState('');
   const [selectedToken, setSelectedToken] = useState('Contact ID');
-  const [contactType, setContactType] = useState('All');
+  const [contactTypes, setContactTypes] = useState<string[]>(['All']);
+  const [isContactTypeOpen, setIsContactTypeOpen] = useState(false);
+  const contactTypeDropdownRef = useRef<HTMLDivElement>(null);
   const [protectFromOverwriting, setProtectFromOverwriting] = useState(false);
   const [protectFromSharing, setProtectFromSharing] = useState(false);
   const [excludeClient, setExcludeClient] = useState(false);
@@ -34,7 +37,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
       additionalEmails,
       bcc,
       selectedToken,
-      contactType,
+      contactTypes,
       protectFromOverwriting,
       protectFromSharing,
       excludeClient,
@@ -42,6 +45,44 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
       contentTcpa
     });
   };
+
+  const toggleContactTypeDropdown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsContactTypeOpen(!isContactTypeOpen);
+  };
+
+  const handleContactTypeToggle = (type: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContactTypes(prev =>
+      prev.includes(type)
+        ? prev.filter(t => t !== type)
+        : [...prev, type]
+    );
+  };
+
+  const removeContactType = (type: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContactTypes(prev => prev.filter(t => t !== type));
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (contactTypeDropdownRef.current && !contactTypeDropdownRef.current.contains(event.target as Node) && isContactTypeOpen) {
+        setIsContactTypeOpen(false);
+      }
+    };
+
+    if (isContactTypeOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isContactTypeOpen]);
 
   const handleSaveAsDraft = () => {
     console.log('Save as Draft clicked');
@@ -69,84 +110,128 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
         <div className="d-flex flex-column gap-3">
           <Row>
             <Col md={6}>
-              <Form.Group>
-                <Form.Label className="small fw-medium">Subject</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  placeholder="Add subject here..."
-                  style={{ fontSize: '0.875rem' }}
-                />
-              </Form.Group>
+              <FloatingInput
+                label="Subject"
+                type="text"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Add subject here..."
+              />
             </Col>
             <Col md={6}>
-              <Form.Group>
-                <Form.Label className="small fw-medium">Name</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Add name here..."
-                  style={{ fontSize: '0.875rem' }}
-                />
-              </Form.Group>
+              <FloatingInput
+                label="Name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Add name here..."
+              />
             </Col>
           </Row>
 
           <Row>
             <Col md={6}>
-              <Form.Group>
-                <Form.Label className="small fw-medium">Add'l Emails</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={additionalEmails}
-                  onChange={(e) => setAdditionalEmails(e.target.value)}
-                  placeholder="Add Email..."
-                  style={{ fontSize: '0.875rem' }}
-                />
-              </Form.Group>
+              <FloatingInput
+                label="Additional Emails"
+                type="text"
+                value={additionalEmails}
+                onChange={(e) => setAdditionalEmails(e.target.value)}
+                placeholder="Add Email..."
+              />
             </Col>
             <Col md={6}>
               <Row>
                 <Col md={6}>
-                  <Form.Group>
-                    <Form.Label className="small fw-medium">Select Token</Form.Label>
-                    <Form.Select
-                      value={selectedToken}
-                      onChange={(e) => setSelectedToken(e.target.value)}
-                      style={{ fontSize: '0.875rem' }}
-                    >
-                      <option>Contact ID</option>
-                      <option>Contact Name</option>
-                      <option>Contact Email</option>
-                      <option>Contact Phone</option>
-                    </Form.Select>
-                  </Form.Group>
+                  <FloatingSelect
+                    label="Select Token"
+                    value={selectedToken}
+                    onChange={(e) => setSelectedToken(e.target.value)}
+                  >
+                    <FloatingSelectOption value="Contact ID">Contact ID</FloatingSelectOption>
+                    <FloatingSelectOption value="Contact Name">Contact Name</FloatingSelectOption>
+                    <FloatingSelectOption value="Contact Email">Contact Email</FloatingSelectOption>
+                    <FloatingSelectOption value="Contact Phone">Contact Phone</FloatingSelectOption>
+                  </FloatingSelect>
                 </Col>
                 <Col md={6}>
-                  <Form.Group>
-                    <Form.Label className="small fw-medium">Contact Type</Form.Label>
-                    <div className="d-flex align-items-center gap-2">
-                      <Form.Select
-                        value={contactType}
-                        onChange={(e) => setContactType(e.target.value)}
-                        style={{ fontSize: '0.875rem' }}
-                      >
-                        <option>All</option>
-                        <option>Client</option>
-                        <option>Vendor</option>
-                        <option>Employee</option>
-                      </Form.Select>
+                  <div className="position-relative" ref={contactTypeDropdownRef}>
+                    <div className="form-floating-compact">
                       <div
-                        className="rounded-circle bg-light d-flex align-items-center justify-content-center"
-                        style={{ width: '32px', height: '32px', minWidth: '32px', cursor: 'not-allowed' }}
-                        title="Clear selection"
+                        className="form-control d-flex flex-wrap gap-1 align-items-center position-relative"
+                        style={{ minHeight: '38px', cursor: 'pointer', paddingRight: '2rem' }}
+                        onClick={toggleContactTypeDropdown}
                       >
-                        <span style={{ fontSize: '1rem', color: '#6c757d' }}>×</span>
+                        {contactTypes.map(type => (
+                          <span key={type} className="badge bg-primary d-flex align-items-center gap-1">
+                            {type}
+                            <button
+                              type="button"
+                              className="btn-close btn-close-white"
+                              style={{ fontSize: '0.6em' }}
+                              onClick={(e) => {
+                                removeContactType(type, e);
+                              }}
+                            ></button>
+                          </span>
+                        ))}
+                        {contactTypes.length === 0 && (
+                          <span className="text-muted">Click to select contact types</span>
+                        )}
+                        <svg
+                          className="position-absolute end-0 me-2"
+                          style={{
+                            transform: isContactTypeOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s ease',
+                            top: '50%',
+                            marginTop: '-8px'
+                          }}
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <polyline points="6,9 12,15 18,9"></polyline>
+                        </svg>
                       </div>
+                      <label>Contact Type</label>
                     </div>
-                  </Form.Group>
+                    {isContactTypeOpen && (
+                      <div className="position-absolute w-100 bg-white border rounded mt-1 shadow-sm" style={{ zIndex: 1050, maxHeight: '200px', overflowY: 'auto' }}>
+                        <div className="p-1">
+                          <div
+                            className="dropdown-item small py-1"
+                            style={{ cursor: 'pointer' }}
+                            onClick={(e) => handleContactTypeToggle('All', e)}
+                          >
+                            All {contactTypes.includes('All') && '✓'}
+                          </div>
+                          <div
+                            className="dropdown-item small py-1"
+                            style={{ cursor: 'pointer' }}
+                            onClick={(e) => handleContactTypeToggle('Client', e)}
+                          >
+                            Client {contactTypes.includes('Client') && '✓'}
+                          </div>
+                          <div
+                            className="dropdown-item small py-1"
+                            style={{ cursor: 'pointer' }}
+                            onClick={(e) => handleContactTypeToggle('Vendor', e)}
+                          >
+                            Vendor {contactTypes.includes('Vendor') && '✓'}
+                          </div>
+                          <div
+                            className="dropdown-item small py-1"
+                            style={{ cursor: 'pointer' }}
+                            onClick={(e) => handleContactTypeToggle('Employee', e)}
+                          >
+                            Employee {contactTypes.includes('Employee') && '✓'}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </Col>
               </Row>
             </Col>
@@ -154,16 +239,13 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
 
           <Row>
             <Col md={6}>
-              <Form.Group>
-                <Form.Label className="small fw-medium">BCC</Form.Label>
-                <Form.Control
-                  type="text"
-                  value={bcc}
-                  onChange={(e) => setBcc(e.target.value)}
-                  placeholder="Add BCC Email"
-                  style={{ fontSize: '0.875rem' }}
-                />
-              </Form.Group>
+              <FloatingInput
+                label="BCC"
+                type="text"
+                value={bcc}
+                onChange={(e) => setBcc(e.target.value)}
+                placeholder="Add BCC Email"
+              />
             </Col>
             <Col md={6}>
               <div className="d-flex align-items-end h-100 pb-1">
@@ -226,16 +308,15 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
           <Row>
             <Col md={12}>
               <div className="d-flex align-items-end gap-2">
-                <Form.Group className="flex-grow-1">
-                  <Form.Label className="small fw-medium">Description</Form.Label>
-                  <Form.Control
+                <div className="flex-grow-1">
+                  <FloatingInput
+                    label="Description"
                     type="text"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="Description"
-                    style={{ fontSize: '0.875rem' }}
                   />
-                </Form.Group>
+                </div>
                 <button
                   type="button"
                   className="btn btn-light border-0 p-2 d-flex align-items-center justify-content-center"
@@ -323,9 +404,6 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                           <polyline points="21 15 16 10 5 21"></polyline>
                         </svg>
                       </div>
-                    </div>
-                    <div className="mt-2 text-center small text-muted">
-                      Publish Content
                     </div>
                   </div>
                 )}
@@ -481,6 +559,72 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                     )}
                     {activeEditorTab === 'sun' && (
                       <div>
+                        <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
+                          <button
+                            type="button"
+                            className="btn btn-light border p-2"
+                            title="Align left"
+                            style={{ width: '36px', height: '36px' }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="17" y1="10" x2="3" y2="10"></line>
+                              <line x1="21" y1="6" x2="3" y2="6"></line>
+                              <line x1="21" y1="14" x2="3" y2="14"></line>
+                              <line x1="17" y1="18" x2="3" y2="18"></line>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-light border p-2"
+                            title="Align center"
+                            style={{ width: '36px', height: '36px' }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="18" y1="10" x2="6" y2="10"></line>
+                              <line x1="21" y1="6" x2="3" y2="6"></line>
+                              <line x1="21" y1="14" x2="3" y2="14"></line>
+                              <line x1="18" y1="18" x2="6" y2="18"></line>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-light border p-2"
+                            title="Align right"
+                            style={{ width: '36px', height: '36px' }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="21" y1="10" x2="7" y2="10"></line>
+                              <line x1="21" y1="6" x2="3" y2="6"></line>
+                              <line x1="21" y1="14" x2="3" y2="14"></line>
+                              <line x1="21" y1="18" x2="7" y2="18"></line>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-light border p-2"
+                            title="Justify"
+                            style={{ width: '36px', height: '36px' }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="21" y1="10" x2="3" y2="10"></line>
+                              <line x1="21" y1="6" x2="3" y2="6"></line>
+                              <line x1="21" y1="14" x2="3" y2="14"></line>
+                              <line x1="21" y1="18" x2="3" y2="18"></line>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-light border p-2"
+                            title="Insert image"
+                            style={{ width: '36px', height: '36px' }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                              <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                          </button>
+                        </div>
                         <div className="text-muted text-center py-5">
                           SUN EDITOR content area
                         </div>
@@ -504,6 +648,72 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                     )}
                     {activeEditorTab === 'raw' && (
                       <div>
+                        <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
+                          <button
+                            type="button"
+                            className="btn btn-light border p-2"
+                            title="Align left"
+                            style={{ width: '36px', height: '36px' }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="17" y1="10" x2="3" y2="10"></line>
+                              <line x1="21" y1="6" x2="3" y2="6"></line>
+                              <line x1="21" y1="14" x2="3" y2="14"></line>
+                              <line x1="17" y1="18" x2="3" y2="18"></line>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-light border p-2"
+                            title="Align center"
+                            style={{ width: '36px', height: '36px' }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="18" y1="10" x2="6" y2="10"></line>
+                              <line x1="21" y1="6" x2="3" y2="6"></line>
+                              <line x1="21" y1="14" x2="3" y2="14"></line>
+                              <line x1="18" y1="18" x2="6" y2="18"></line>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-light border p-2"
+                            title="Align right"
+                            style={{ width: '36px', height: '36px' }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="21" y1="10" x2="7" y2="10"></line>
+                              <line x1="21" y1="6" x2="3" y2="6"></line>
+                              <line x1="21" y1="14" x2="3" y2="14"></line>
+                              <line x1="21" y1="18" x2="7" y2="18"></line>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-light border p-2"
+                            title="Justify"
+                            style={{ width: '36px', height: '36px' }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <line x1="21" y1="10" x2="3" y2="10"></line>
+                              <line x1="21" y1="6" x2="3" y2="6"></line>
+                              <line x1="21" y1="14" x2="3" y2="14"></line>
+                              <line x1="21" y1="18" x2="3" y2="18"></line>
+                            </svg>
+                          </button>
+                          <button
+                            type="button"
+                            className="btn btn-light border p-2"
+                            title="Insert image"
+                            style={{ width: '36px', height: '36px' }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                              <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                              <polyline points="21 15 16 10 5 21"></polyline>
+                            </svg>
+                          </button>
+                        </div>
                         <Form.Control
                           as="textarea"
                           rows={8}
