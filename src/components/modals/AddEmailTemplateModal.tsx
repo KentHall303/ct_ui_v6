@@ -61,22 +61,8 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
     >
       <Modal.Header closeButton className="border-0 pb-2">
         <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 400 }}>
-          Add Email Template
+          Add / Edit Email Template
         </Modal.Title>
-        <Button
-          variant="success"
-          onClick={handleSaveTemplate}
-          className="ms-auto me-3"
-          style={{
-            backgroundColor: '#28a745',
-            border: 'none',
-            padding: '8px 24px',
-            fontSize: '0.875rem',
-            fontWeight: 500
-          }}
-        >
-          SAVE TEMPLATE
-        </Button>
       </Modal.Header>
       <Modal.Body className="pt-3 pb-4" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
         <div className="d-flex flex-column gap-3">
@@ -121,28 +107,47 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
               </Form.Group>
             </Col>
             <Col md={6}>
-              <Form.Group>
-                <Form.Label className="small fw-medium">Select Token</Form.Label>
-                <div className="d-flex align-items-center gap-2">
-                  <Form.Select
-                    value={selectedToken}
-                    onChange={(e) => setSelectedToken(e.target.value)}
-                    style={{ fontSize: '0.875rem' }}
-                  >
-                    <option>Contact ID</option>
-                    <option>Contact Name</option>
-                    <option>Contact Email</option>
-                    <option>Contact Phone</option>
-                  </Form.Select>
-                  <div
-                    className="rounded-circle bg-light d-flex align-items-center justify-content-center"
-                    style={{ width: '32px', height: '32px', minWidth: '32px', cursor: 'not-allowed' }}
-                    title="Clear selection"
-                  >
-                    <span style={{ fontSize: '1rem', color: '#6c757d' }}>×</span>
-                  </div>
-                </div>
-              </Form.Group>
+              <Row>
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label className="small fw-medium">Select Token</Form.Label>
+                    <Form.Select
+                      value={selectedToken}
+                      onChange={(e) => setSelectedToken(e.target.value)}
+                      style={{ fontSize: '0.875rem' }}
+                    >
+                      <option>Contact ID</option>
+                      <option>Contact Name</option>
+                      <option>Contact Email</option>
+                      <option>Contact Phone</option>
+                    </Form.Select>
+                  </Form.Group>
+                </Col>
+                <Col md={6}>
+                  <Form.Group>
+                    <Form.Label className="small fw-medium">Contact Type</Form.Label>
+                    <div className="d-flex align-items-center gap-2">
+                      <Form.Select
+                        value={contactType}
+                        onChange={(e) => setContactType(e.target.value)}
+                        style={{ fontSize: '0.875rem' }}
+                      >
+                        <option>All</option>
+                        <option>Client</option>
+                        <option>Vendor</option>
+                        <option>Employee</option>
+                      </Form.Select>
+                      <div
+                        className="rounded-circle bg-light d-flex align-items-center justify-content-center"
+                        style={{ width: '32px', height: '32px', minWidth: '32px', cursor: 'not-allowed' }}
+                        title="Clear selection"
+                      >
+                        <span style={{ fontSize: '1rem', color: '#6c757d' }}>×</span>
+                      </div>
+                    </div>
+                  </Form.Group>
+                </Col>
+              </Row>
             </Col>
           </Row>
 
@@ -160,28 +165,6 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
               </Form.Group>
             </Col>
             <Col md={6}>
-              <Form.Group>
-                <Form.Label className="small fw-medium">Contact Type</Form.Label>
-                <div className="d-flex align-items-center gap-2">
-                  <Form.Select
-                    value={contactType}
-                    onChange={(e) => setContactType(e.target.value)}
-                    style={{ fontSize: '0.875rem' }}
-                  >
-                    <option>All</option>
-                    <option>Client</option>
-                    <option>Vendor</option>
-                    <option>Employee</option>
-                  </Form.Select>
-                  <div
-                    className="rounded-circle bg-light d-flex align-items-center justify-content-center"
-                    style={{ width: '32px', height: '32px', minWidth: '32px', cursor: 'not-allowed' }}
-                    title="Clear selection"
-                  >
-                    <span style={{ fontSize: '1rem', color: '#6c757d' }}>×</span>
-                  </div>
-                </div>
-              </Form.Group>
             </Col>
           </Row>
 
@@ -244,6 +227,19 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                       <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                     </svg>
                   </button>
+                  <Button
+                    variant="success"
+                    onClick={handleSaveTemplate}
+                    style={{
+                      backgroundColor: '#28a745',
+                      border: 'none',
+                      padding: '8px 24px',
+                      fontSize: '0.875rem',
+                      fontWeight: 500
+                    }}
+                  >
+                    SAVE TEMPLATE
+                  </Button>
                 </div>
               </div>
             </Col>
@@ -267,7 +263,20 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
           </Form.Group>
 
           <div>
-            <Form.Label className="small fw-medium">Description</Form.Label>
+            <div className="d-flex align-items-center justify-content-between mb-2">
+              <Form.Label className="small fw-medium mb-0">Description</Form.Label>
+              <button
+                type="button"
+                className="btn btn-light border-0 p-2 d-flex align-items-center justify-content-center"
+                title="Delete"
+                style={{ width: '32px', height: '32px' }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
             <div className="border rounded" style={{ minHeight: '300px' }}>
               <div className="border-bottom d-flex align-items-center" style={{ backgroundColor: '#f8f9fa' }}>
                 <button
