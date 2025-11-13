@@ -100,10 +100,21 @@ const EmailTemplates = (): JSX.Element => {
     direction: 'asc' | 'desc';
   } | null>({ key: 'name', direction: 'asc' });
   const [showAddModal, setShowAddModal] = React.useState(false);
+  const [editingTemplate, setEditingTemplate] = React.useState<EmailTemplateDisplay | null>(null);
 
   React.useEffect(() => {
     console.log('EmailTemplates: showAddModal changed to:', showAddModal);
   }, [showAddModal]);
+
+  const handleEditTemplate = (template: EmailTemplateDisplay) => {
+    setEditingTemplate(template);
+    setShowAddModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowAddModal(false);
+    setEditingTemplate(null);
+  };
 
   const handleSort = (key: string) => {
     setSortConfig(current => {
@@ -155,30 +166,23 @@ const EmailTemplates = (): JSX.Element => {
 
   return (
     <div className="d-flex flex-column w-100 h-100">
-      <div className="px-3 pt-4 pb-3 flex-shrink-0">
-        <div className="d-flex align-items-center gap-3">
-          <Button
-            variant="link"
-            className="d-flex align-items-center gap-2 text-decoration-none p-0 border-0"
-            title="Add new template"
-            style={{ fontSize: '0.875rem' }}
-            onClick={() => {
-              console.log('Add new button clicked');
-              setShowAddModal(true);
-            }}
-          >
-            <div
-              className="rounded-circle bg-success d-flex align-items-center justify-content-center"
-              style={{ width: '32px', height: '32px' }}
+      <div className="px-3 pt-3 flex-shrink-0">
+        <div className="bg-white rounded-3 pt-3 pb-3 px-4 border shadow-sm">
+          <div className="d-flex align-items-center justify-content-between">
+            <h2 className="h2 fw-bold text-dark mb-0">Email Templates</h2>
+            <Button
+              variant="success"
+              className="rounded-pill d-flex align-items-center gap-2"
+              title="Add new template"
+              onClick={() => {
+                console.log('Add new button clicked');
+                setShowAddModal(true);
+              }}
             >
-              <Plus size={16} className="text-white" />
-            </div>
-            <span className="text-dark fw-medium">Add new</span>
-          </Button>
-          <h2 className="h2 fw-bold text-dark text-uppercase m-0 flex-grow-1 text-center" style={{ letterSpacing: '0.1em' }}>
-            EMAIL TEMPLATES
-          </h2>
-          <div style={{ width: '100px' }}></div>
+              <Plus size={16} />
+              <span>Add New</span>
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -207,7 +211,7 @@ const EmailTemplates = (): JSX.Element => {
                   scope="col"
                   {...getSortProps('subject')}
                   aria-label={`Sort by subject ${sortConfig?.key === 'subject' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '35%' }}
+                  style={{ width: '25%' }}
                 >
                   Subject{getSortIcon('subject')}
                 </TableHead>
@@ -215,7 +219,7 @@ const EmailTemplates = (): JSX.Element => {
                   scope="col"
                   {...getSortProps('contactType')}
                   aria-label={`Sort by contact type ${sortConfig?.key === 'contactType' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '15%' }}
+                  style={{ width: '20%' }}
                 >
                   Contact Type{getSortIcon('contactType')}
                 </TableHead>
@@ -223,11 +227,11 @@ const EmailTemplates = (): JSX.Element => {
                   scope="col"
                   {...getSortProps('excludeClient')}
                   aria-label={`Sort by exclude client ${sortConfig?.key === 'excludeClient' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '10%', textAlign: 'center' }}
+                  style={{ width: '12%', textAlign: 'center' }}
                 >
                   Exclude Client{getSortIcon('excludeClient')}
                 </TableHead>
-                <TableHead scope="col" style={{ width: '10%', textAlign: 'center' }}>
+                <TableHead scope="col" style={{ width: '13%', textAlign: 'center' }}>
                   Actions
                 </TableHead>
               </TableRow>
@@ -253,7 +257,7 @@ const EmailTemplates = (): JSX.Element => {
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell" style={{ width: '35%', maxWidth: '35%' }}>
+                  <TableCell role="gridcell" style={{ width: '25%', maxWidth: '25%' }}>
                     <div
                       className="text-dark small"
                       style={{
@@ -267,11 +271,11 @@ const EmailTemplates = (): JSX.Element => {
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell" style={{ width: '15%', maxWidth: '15%' }}>
+                  <TableCell role="gridcell" style={{ width: '20%', maxWidth: '20%' }}>
                     <div className="text-dark small">{template.contactType}</div>
                   </TableCell>
 
-                  <TableCell role="gridcell" style={{ width: '10%', maxWidth: '10%' }}>
+                  <TableCell role="gridcell" style={{ width: '12%', maxWidth: '12%' }}>
                     <div className="d-flex justify-content-center">
                       <input
                         type="checkbox"
@@ -283,7 +287,7 @@ const EmailTemplates = (): JSX.Element => {
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell" style={{ width: '10%', maxWidth: '10%' }}>
+                  <TableCell role="gridcell" style={{ width: '13%', maxWidth: '13%' }}>
                     <div className="d-flex gap-2 justify-content-center">
                       <button
                         className="btn btn-link p-0 border rounded-circle d-flex align-items-center justify-content-center"
@@ -295,6 +299,7 @@ const EmailTemplates = (): JSX.Element => {
                           color: '#6c757d',
                           backgroundColor: 'white'
                         }}
+                        onClick={() => handleEditTemplate(template)}
                       >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
@@ -327,10 +332,7 @@ const EmailTemplates = (): JSX.Element => {
 
       <AddEmailTemplateModal
         show={showAddModal}
-        onHide={() => {
-          console.log('Modal onHide called');
-          setShowAddModal(false);
-        }}
+        onHide={handleCloseModal}
       />
     </div>
   );
