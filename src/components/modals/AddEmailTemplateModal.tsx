@@ -744,20 +744,19 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
             </div>
           </div>
 
-          <div className="mt-3">
-            <Form.Group className="mb-0" style={{ maxWidth: '200px' }}>
-              <Form.Label className="small fw-medium mb-1">Content TCPA</Form.Label>
-              <Form.Select
+          <Row className="mt-3">
+            <Col md={3}>
+              <FloatingSelect
+                label="Content TCPA"
                 value={contentTcpa}
                 onChange={(e) => setContentTcpa(e.target.value)}
-                style={{ fontSize: '0.875rem' }}
               >
-                <option value="Promotional">Promotional</option>
-                <option value="Transactional">Transactional</option>
-                <option value="Mixed">Mixed</option>
-              </Form.Select>
-            </Form.Group>
-          </div>
+                <FloatingSelectOption value="Promotional">Promotional</FloatingSelectOption>
+                <FloatingSelectOption value="Transactional">Transactional</FloatingSelectOption>
+                <FloatingSelectOption value="Mixed">Mixed</FloatingSelectOption>
+              </FloatingSelect>
+            </Col>
+          </Row>
         </div>
       </Modal.Body>
     </Modal>
