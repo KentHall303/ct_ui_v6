@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Modal, Form, Row, Col } from 'react-bootstrap';
+import { Modal, Form, Row, Col, Card, Nav, Tab } from 'react-bootstrap';
 import { Button } from '../bootstrap/Button';
 import { FloatingInput, FloatingSelect, FloatingSelectOption } from '../bootstrap/FormControls';
+import { Eye, Edit, Sun, Grid3x3, Code } from 'lucide-react';
 
 interface AddEmailTemplateModalProps {
   show: boolean;
@@ -356,119 +357,99 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
           </Row>
 
           <div>
-            <div className="border rounded" style={{ minHeight: '300px' }}>
-              <div className="border-bottom d-flex align-items-center" style={{ backgroundColor: '#f8f9fa' }}>
-                <button
-                  type="button"
-                  className="btn border-0 px-3 py-2 small fw-semibold"
-                  style={{
-                    borderRadius: 0,
-                    backgroundColor: activeMainTab === 'preview' ? '#cff4fc' : 'transparent',
-                    color: activeMainTab === 'preview' ? '#055160' : '#6c757d',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onClick={() => setActiveMainTab('preview')}
-                >
-                  PUBLISHED PREVIEW
-                </button>
-                <button
-                  type="button"
-                  className="btn border-0 px-3 py-2 small fw-semibold"
-                  style={{
-                    borderRadius: 0,
-                    backgroundColor: activeMainTab === 'editor' ? '#cff4fc' : 'transparent',
-                    color: activeMainTab === 'editor' ? '#055160' : '#6c757d',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onClick={() => setActiveMainTab('editor')}
-                >
-                  EDITOR
-                </button>
-              </div>
+            <Card className="shadow-sm">
+              <Tab.Container
+                activeKey={activeMainTab}
+                onSelect={(k) => setActiveMainTab(k as 'preview' | 'editor')}
+              >
+                <Card.Header className="bg-white border-bottom-0 pb-0">
+                  <Nav variant="underline" className="nav-underline">
+                    <Nav.Item>
+                      <Nav.Link
+                        eventKey="preview"
+                        className="d-flex align-items-center gap-2"
+                      >
+                        <Eye size={16} />
+                        Published Content
+                      </Nav.Link>
+                    </Nav.Item>
+                    <Nav.Item>
+                      <Nav.Link
+                        eventKey="editor"
+                        className="d-flex align-items-center gap-2"
+                      >
+                        <Edit size={16} />
+                        Editor
+                      </Nav.Link>
+                    </Nav.Item>
+                  </Nav>
+                </Card.Header>
 
-              <div className="p-3" style={{ minHeight: '250px', backgroundColor: 'white' }}>
-                {activeMainTab === 'preview' && (
-                  <div>
-                    <div
-                      className="border rounded d-flex align-items-center justify-content-center"
-                      style={{
-                        minHeight: '200px',
-                        backgroundColor: '#6c757d',
-                        color: '#dee2e6'
-                      }}
-                    >
-                      <div className="text-center">
-                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                          <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                          <polyline points="21 15 16 10 5 21"></polyline>
-                        </svg>
+                <Card.Body>
+                  <Tab.Content>
+                    <Tab.Pane eventKey="preview">
+                      <div
+                        className="border rounded d-flex align-items-center justify-content-center"
+                        style={{
+                          minHeight: '200px',
+                          backgroundColor: '#6c757d',
+                          color: '#dee2e6'
+                        }}
+                      >
+                        <div className="text-center">
+                          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                          </svg>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                )}
-                {activeMainTab === 'editor' && (
-                  <div>
-                    <div className="border-bottom d-flex align-items-center mb-3" style={{ backgroundColor: '#f8f9fa' }}>
-                      <button
-                        type="button"
-                        className="btn border-0 px-3 py-2 small fw-semibold"
-                        style={{
-                          borderRadius: 0,
-                          backgroundColor: activeEditorTab === 'sun' ? '#cff4fc' : 'transparent',
-                          color: activeEditorTab === 'sun' ? '#055160' : '#6c757d',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onClick={() => setActiveEditorTab('sun')}
+                    </Tab.Pane>
+                    <Tab.Pane eventKey="editor">
+                      <Tab.Container
+                        activeKey={activeEditorTab}
+                        onSelect={(k) => setActiveEditorTab(k as 'sun' | 'block' | 'raw')}
                       >
-                        SUN EDITOR
-                      </button>
-                      <button
-                        type="button"
-                        className="btn border-0 px-3 py-2 small fw-semibold"
-                        style={{
-                          borderRadius: 0,
-                          backgroundColor: activeEditorTab === 'block' ? '#cff4fc' : 'transparent',
-                          color: activeEditorTab === 'block' ? '#055160' : '#6c757d',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onClick={() => setActiveEditorTab('block')}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="me-1">
-                          <rect x="3" y="3" width="7" height="7"></rect>
-                          <rect x="14" y="3" width="7" height="7"></rect>
-                          <rect x="14" y="14" width="7" height="7"></rect>
-                          <rect x="3" y="14" width="7" height="7"></rect>
-                        </svg>
-                        BLOCK EDITOR
-                      </button>
-                      <button
-                        type="button"
-                        className="btn border-0 px-3 py-2 small fw-semibold"
-                        style={{
-                          borderRadius: 0,
-                          backgroundColor: activeEditorTab === 'raw' ? '#cff4fc' : 'transparent',
-                          color: activeEditorTab === 'raw' ? '#055160' : '#6c757d',
-                          transition: 'all 0.2s ease'
-                        }}
-                        onClick={() => setActiveEditorTab('raw')}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="me-1">
-                          <polyline points="16 18 22 12 16 6"></polyline>
-                          <polyline points="8 6 2 12 8 18"></polyline>
-                        </svg>
-                        RAW HTML
-                      </button>
-                    </div>
-                    {activeEditorTab === 'block' && (
-                      <div>
-                        <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
-                          <button
-                            type="button"
-                            className="btn btn-light border p-2"
-                            title="Align left"
-                            style={{ width: '36px', height: '36px' }}
-                          >
+                        <Nav variant="underline" className="nav-underline mb-3">
+                          <Nav.Item>
+                            <Nav.Link
+                              eventKey="sun"
+                              className="d-flex align-items-center gap-2"
+                            >
+                              <Sun size={16} />
+                              Sun Editor
+                            </Nav.Link>
+                          </Nav.Item>
+                          <Nav.Item>
+                            <Nav.Link
+                              eventKey="block"
+                              className="d-flex align-items-center gap-2"
+                            >
+                              <Grid3x3 size={16} />
+                              Block Editor
+                            </Nav.Link>
+                          </Nav.Item>
+                          <Nav.Item>
+                            <Nav.Link
+                              eventKey="raw"
+                              className="d-flex align-items-center gap-2"
+                            >
+                              <Code size={16} />
+                              Raw HTML
+                            </Nav.Link>
+                          </Nav.Item>
+                        </Nav>
+
+                        <Tab.Content>
+                          <Tab.Pane eventKey="block">
+                            <div>
+                              <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
+                                <button
+                                  type="button"
+                                  className="btn btn-light border p-2"
+                                  title="Align left"
+                                  style={{ width: '36px', height: '36px' }}
+                                >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                               <line x1="17" y1="10" x2="3" y2="10"></line>
                               <line x1="21" y1="6" x2="3" y2="6"></line>
@@ -556,8 +537,8 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                           </Button>
                         </div>
                       </div>
-                    )}
-                    {activeEditorTab === 'sun' && (
+                        </Tab.Pane>
+                        <Tab.Pane eventKey="sun">
                       <div>
                         <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
                           <button
@@ -645,8 +626,8 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                           </Button>
                         </div>
                       </div>
-                    )}
-                    {activeEditorTab === 'raw' && (
+                        </Tab.Pane>
+                        <Tab.Pane eventKey="raw">
                       <div>
                         <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
                           <button
@@ -737,11 +718,14 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                           </Button>
                         </div>
                       </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </div>
+                        </Tab.Pane>
+                      </Tab.Content>
+                    </Tab.Container>
+                    </Tab.Pane>
+                  </Tab.Content>
+                </Card.Body>
+              </Tab.Container>
+            </Card>
           </div>
 
           <Row className="mt-3">
