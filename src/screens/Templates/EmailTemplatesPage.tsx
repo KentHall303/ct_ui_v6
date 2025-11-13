@@ -154,8 +154,8 @@ const EmailTemplates = (): JSX.Element => {
   });
 
   return (
-    <div className="d-flex flex-column w-100">
-      <div className="px-3 pt-4 pb-3">
+    <div className="d-flex flex-column w-100 h-100">
+      <div className="px-3 pt-4 pb-3 flex-shrink-0">
         <div className="d-flex align-items-center gap-3">
           <Button
             variant="link"
@@ -182,126 +182,146 @@ const EmailTemplates = (): JSX.Element => {
         </div>
       </div>
 
-      <div className="px-3 pt-3">
+      <div className="px-3 pb-3 flex-fill d-flex flex-column" style={{ minHeight: 0 }}>
         <div
-          className="bg-white rounded-3 overflow-auto border shadow-sm"
-          style={{ maxHeight: '500px' }}
+          className="bg-white rounded-3 border shadow-sm d-flex flex-column h-100"
+          style={{ overflow: 'hidden' }}
         >
-          <div style={{ minWidth: '1000px' }}>
-            <Table className="standard-table position-relative">
-              <caption className="visually-hidden">
-                Email templates table showing {templates.length} records.
-                Use arrow keys to navigate, Enter or Space to sort columns.
-                {sortConfig && ` Currently sorted by ${sortConfig.key} in ${sortConfig.direction}ending order.`}
-              </caption>
-              <TableHeader>
-                <TableRow>
-                  <TableHead
-                    scope="col"
-                    {...getSortProps('name')}
-                    aria-label={`Sort by name ${sortConfig?.key === 'name' ? sortConfig.direction : 'ascending'}`}
-                  >
-                    Name{getSortIcon('name')}
-                  </TableHead>
-                  <TableHead
-                    scope="col"
-                    {...getSortProps('subject')}
-                    aria-label={`Sort by subject ${sortConfig?.key === 'subject' ? sortConfig.direction : 'ascending'}`}
-                  >
-                    Subject{getSortIcon('subject')}
-                  </TableHead>
-                  <TableHead
-                    scope="col"
-                    {...getSortProps('contactType')}
-                    aria-label={`Sort by contact type ${sortConfig?.key === 'contactType' ? sortConfig.direction : 'ascending'}`}
-                  >
-                    Contact Type{getSortIcon('contactType')}
-                  </TableHead>
-                  <TableHead
-                    scope="col"
-                    {...getSortProps('excludeClient')}
-                    aria-label={`Sort by exclude client ${sortConfig?.key === 'excludeClient' ? sortConfig.direction : 'ascending'}`}
-                  >
-                    Exclude Client{getSortIcon('excludeClient')}
-                  </TableHead>
-                  <TableHead scope="col">
-                    Actions
-                  </TableHead>
+          <Table className="standard-table position-relative mb-0 h-100 d-flex flex-column">
+            <caption className="visually-hidden">
+              Email templates table showing {templates.length} records.
+              Use arrow keys to navigate, Enter or Space to sort columns.
+              {sortConfig && ` Currently sorted by ${sortConfig.key} in ${sortConfig.direction}ending order.`}
+            </caption>
+            <TableHeader className="flex-shrink-0">
+              <TableRow>
+                <TableHead
+                  scope="col"
+                  {...getSortProps('name')}
+                  aria-label={`Sort by name ${sortConfig?.key === 'name' ? sortConfig.direction : 'ascending'}`}
+                  style={{ width: '30%' }}
+                >
+                  Name{getSortIcon('name')}
+                </TableHead>
+                <TableHead
+                  scope="col"
+                  {...getSortProps('subject')}
+                  aria-label={`Sort by subject ${sortConfig?.key === 'subject' ? sortConfig.direction : 'ascending'}`}
+                  style={{ width: '35%' }}
+                >
+                  Subject{getSortIcon('subject')}
+                </TableHead>
+                <TableHead
+                  scope="col"
+                  {...getSortProps('contactType')}
+                  aria-label={`Sort by contact type ${sortConfig?.key === 'contactType' ? sortConfig.direction : 'ascending'}`}
+                  style={{ width: '15%' }}
+                >
+                  Contact Type{getSortIcon('contactType')}
+                </TableHead>
+                <TableHead
+                  scope="col"
+                  {...getSortProps('excludeClient')}
+                  aria-label={`Sort by exclude client ${sortConfig?.key === 'excludeClient' ? sortConfig.direction : 'ascending'}`}
+                  style={{ width: '10%', textAlign: 'center' }}
+                >
+                  Exclude Client{getSortIcon('excludeClient')}
+                </TableHead>
+                <TableHead scope="col" style={{ width: '10%', textAlign: 'center' }}>
+                  Actions
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody className="flex-fill" style={{ overflow: 'auto' }}>
+              {sortedTemplates.map((template, index) => (
+                <TableRow
+                  key={template.id}
+                  role="row"
+                  aria-rowindex={index + 2}
+                >
+                  <TableCell role="gridcell" style={{ width: '30%', maxWidth: '30%' }}>
+                    <div
+                      className="text-dark small"
+                      style={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}
+                      title={template.name}
+                    >
+                      {template.name}
+                    </div>
+                  </TableCell>
+
+                  <TableCell role="gridcell" style={{ width: '35%', maxWidth: '35%' }}>
+                    <div
+                      className="text-dark small"
+                      style={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap'
+                      }}
+                      title={template.subject}
+                    >
+                      {template.subject}
+                    </div>
+                  </TableCell>
+
+                  <TableCell role="gridcell" style={{ width: '15%', maxWidth: '15%' }}>
+                    <div className="text-dark small">{template.contactType}</div>
+                  </TableCell>
+
+                  <TableCell role="gridcell" style={{ width: '10%', maxWidth: '10%' }}>
+                    <div className="d-flex justify-content-center">
+                      <input
+                        type="checkbox"
+                        checked={template.excludeClient}
+                        readOnly
+                        className="form-check-input"
+                        style={{ cursor: 'default' }}
+                      />
+                    </div>
+                  </TableCell>
+
+                  <TableCell role="gridcell" style={{ width: '10%', maxWidth: '10%' }}>
+                    <div className="d-flex gap-2 justify-content-center">
+                      <button
+                        className="btn btn-link p-0 border rounded-circle d-flex align-items-center justify-content-center"
+                        title="Edit template"
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          borderColor: '#dee2e6',
+                          color: '#6c757d',
+                          backgroundColor: 'white'
+                        }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                        </svg>
+                      </button>
+                      <button
+                        className="btn btn-link p-0 border rounded-circle d-flex align-items-center justify-content-center"
+                        title="Copy template"
+                        style={{
+                          width: '32px',
+                          height: '32px',
+                          borderColor: '#dee2e6',
+                          color: '#6c757d',
+                          backgroundColor: 'white'
+                        }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                        </svg>
+                      </button>
+                    </div>
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedTemplates.map((template, index) => (
-                  <TableRow
-                    key={template.id}
-                    role="row"
-                    aria-rowindex={index + 2}
-                  >
-                    <TableCell role="gridcell">
-                      <div className="text-dark small">{template.name}</div>
-                    </TableCell>
-
-                    <TableCell role="gridcell">
-                      <div className="text-dark small">{template.subject}</div>
-                    </TableCell>
-
-                    <TableCell role="gridcell">
-                      <div className="text-dark small">{template.contactType}</div>
-                    </TableCell>
-
-                    <TableCell role="gridcell">
-                      <div className="d-flex justify-content-center">
-                        <input
-                          type="checkbox"
-                          checked={template.excludeClient}
-                          readOnly
-                          className="form-check-input"
-                          style={{ cursor: 'default' }}
-                        />
-                      </div>
-                    </TableCell>
-
-                    <TableCell role="gridcell">
-                      <div className="d-flex gap-2 justify-content-center">
-                        <button
-                          className="btn btn-link p-0 border rounded-circle d-flex align-items-center justify-content-center"
-                          title="Edit template"
-                          style={{
-                            width: '32px',
-                            height: '32px',
-                            borderColor: '#dee2e6',
-                            color: '#6c757d',
-                            backgroundColor: 'white'
-                          }}
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                            <line x1="9" y1="9" x2="15" y2="15"></line>
-                            <line x1="15" y1="9" x2="9" y2="15"></line>
-                          </svg>
-                        </button>
-                        <button
-                          className="btn btn-link p-0 border rounded-circle d-flex align-items-center justify-content-center"
-                          title="Copy template"
-                          style={{
-                            width: '32px',
-                            height: '32px',
-                            borderColor: '#dee2e6',
-                            color: '#6c757d',
-                            backgroundColor: 'white'
-                          }}
-                        >
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-                          </svg>
-                        </button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       </div>
 
