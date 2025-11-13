@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '../bootstrap/Button';
 import { Estimator } from '../../services/calendarService';
+import { EstimatorFilters } from './EstimatorFilters';
 
 interface CalendarSidebarProps {
   estimators: Estimator[];
@@ -9,6 +10,12 @@ interface CalendarSidebarProps {
   onSelectAll: () => void;
   onClearAll: () => void;
   collapsed: boolean;
+  rateFilter: { min?: number; max?: number };
+  skillFilters: string[];
+  availableSkills: string[];
+  onRateFilterChange: (filter: { min?: number; max?: number }) => void;
+  onSkillToggle: (skill: string) => void;
+  onClearAllFilters: () => void;
 }
 
 export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
@@ -17,7 +24,13 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   onToggleEstimator,
   onSelectAll,
   onClearAll,
-  collapsed
+  collapsed,
+  rateFilter,
+  skillFilters,
+  availableSkills,
+  onRateFilterChange,
+  onSkillToggle,
+  onClearAllFilters
 }) => {
   if (collapsed) {
     return null;
@@ -28,8 +41,18 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   const noneSelected = selectedEstimators.length === 0;
 
   return (
-    <div className="border-end bg-light" style={{ width: '280px', flexShrink: 0, overflowY: 'auto', maxHeight: '100%' }}>
+    <div className="border-end bg-light" style={{ width: '300px', flexShrink: 0, overflowY: 'auto', maxHeight: '100%' }}>
       <div className="p-3">
+        <EstimatorFilters
+          rateFilter={rateFilter}
+          skillFilters={skillFilters}
+          availableSkills={availableSkills}
+          onRateFilterChange={onRateFilterChange}
+          onSkillToggle={onSkillToggle}
+          onClearAll={onClearAllFilters}
+        />
+
+        <div className="border-top pt-3 mt-3" />
         <div className="d-flex align-items-center justify-content-between mb-3">
           <h6 className="fw-bold text-dark mb-0">Estimators</h6>
           {selectedEstimators.length > 0 && (

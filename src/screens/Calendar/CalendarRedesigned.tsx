@@ -88,6 +88,12 @@ export const CalendarRedesigned: React.FC = () => {
             onSelectAll={handleSelectAll}
             onClearAll={handleClearAll}
             collapsed={calendar.sidebarCollapsed}
+            rateFilter={calendar.rateFilter}
+            skillFilters={calendar.skillFilters}
+            availableSkills={calendar.availableSkills}
+            onRateFilterChange={calendar.setRateFilter}
+            onSkillToggle={calendar.toggleSkillFilter}
+            onClearAllFilters={calendar.clearAllFilters}
           />
 
           <div className="flex-fill d-flex flex-column" style={{ minHeight: 0, overflow: 'hidden' }}>

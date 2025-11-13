@@ -7,6 +7,8 @@ export interface Estimator {
   phone: string | null;
   is_active: boolean;
   color: string;
+  hourly_rate: number;
+  skills: string[];
   created_at: string;
   updated_at: string;
 }
@@ -36,12 +38,33 @@ export interface CalendarEventWithEstimator extends CalendarEvent {
   estimator?: Estimator;
 }
 
-export async function fetchEstimators(): Promise<Estimator[]> {
-  const { data, error } = await supabase
+export interface EstimatorFilters {
+  minRate?: number;
+  maxRate?: number;
+  skills?: string[];
+}
+
+export async function fetchEstimators(filters?: EstimatorFilters): Promise<Estimator[]> {
+  let query = supabase
     .from('estimators')
     .select('*')
-    .eq('is_active', true)
-    .order('name');
+    .eq('is_active', true);
+
+  if (filters?.minRate !== undefined) {
+    query = query.gte('hourly_rate', filters.minRate);
+  }
+
+  if (filters?.maxRate !== undefined) {
+    query = query.lte('hourly_rate', filters.maxRate);
+  }
+
+  if (filters?.skills && filters.skills.length > 0) {
+    query = query.overlaps('skills', filters.skills);
+  }
+
+  query = query.order('name');
+
+  const { data, error } = await query;
 
   if (error) {
     console.error('Error fetching estimators:', error);
@@ -49,6 +72,25 @@ export async function fetchEstimators(): Promise<Estimator[]> {
   }
 
   return data || [];
+}
+
+export async function getAllSkills(): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('estimators')
+    .select('skills')
+    .eq('is_active', true);
+
+  if (error) {
+    console.error('Error fetching skills:', error);
+    return [];
+  }
+
+  const allSkills = new Set<string>();
+  data?.forEach((estimator: any) => {
+    estimator.skills?.forEach((skill: string) => allSkills.add(skill));
+  });
+
+  return Array.from(allSkills).sort();
 }
 
 export async function fetchCalendarEvents(

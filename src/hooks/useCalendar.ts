@@ -2,7 +2,9 @@ import { useState, useCallback, useEffect } from 'react';
 import {
   fetchEstimators,
   fetchCalendarEvents,
+  getAllSkills,
   Estimator,
+  EstimatorFilters,
   CalendarEventWithEstimator
 } from '../services/calendarService';
 
@@ -13,15 +15,22 @@ export interface UseCalendarReturn {
   view: CalendarView;
   selectedEstimators: string[];
   estimators: Estimator[];
+  allEstimators: Estimator[];
   events: CalendarEventWithEstimator[];
   isLoading: boolean;
   searchTerm: string;
   sidebarCollapsed: boolean;
+  rateFilter: { min?: number; max?: number };
+  skillFilters: string[];
+  availableSkills: string[];
   setCurrentDate: (date: Date) => void;
   setView: (view: CalendarView) => void;
   toggleEstimator: (estimatorId: string) => void;
   setSearchTerm: (term: string) => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
+  setRateFilter: (filter: { min?: number; max?: number }) => void;
+  toggleSkillFilter: (skill: string) => void;
+  clearAllFilters: () => void;
   goToToday: () => void;
   goToPrevious: () => void;
   goToNext: () => void;
@@ -32,22 +41,51 @@ export function useCalendar(): UseCalendarReturn {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [view, setView] = useState<CalendarView>('month');
   const [selectedEstimators, setSelectedEstimators] = useState<string[]>([]);
+  const [allEstimators, setAllEstimators] = useState<Estimator[]>([]);
   const [estimators, setEstimators] = useState<Estimator[]>([]);
   const [events, setEvents] = useState<CalendarEventWithEstimator[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
+  const [rateFilter, setRateFilter] = useState<{ min?: number; max?: number }>({});
+  const [skillFilters, setSkillFilters] = useState<string[]>([]);
+  const [availableSkills, setAvailableSkills] = useState<string[]>([]);
+
+  useEffect(() => {
+    loadInitialData();
+  }, []);
 
   useEffect(() => {
     loadEstimators();
-  }, []);
+  }, [rateFilter, skillFilters]);
 
   useEffect(() => {
     loadEvents();
   }, [currentDate, view, selectedEstimators]);
 
+  const loadInitialData = async () => {
+    const [allEstimatorsData, skills] = await Promise.all([
+      fetchEstimators(),
+      getAllSkills()
+    ]);
+    setAllEstimators(allEstimatorsData);
+    setEstimators(allEstimatorsData);
+    setAvailableSkills(skills);
+  };
+
   const loadEstimators = async () => {
-    const data = await fetchEstimators();
+    const filters: EstimatorFilters = {};
+
+    if (rateFilter.min !== undefined || rateFilter.max !== undefined) {
+      filters.minRate = rateFilter.min;
+      filters.maxRate = rateFilter.max;
+    }
+
+    if (skillFilters.length > 0) {
+      filters.skills = skillFilters;
+    }
+
+    const data = await fetchEstimators(Object.keys(filters).length > 0 ? filters : undefined);
     setEstimators(data);
   };
 
@@ -73,6 +111,20 @@ export function useCalendar(): UseCalendarReturn {
         ? prev.filter(id => id !== estimatorId)
         : [...prev, estimatorId]
     );
+  }, []);
+
+  const toggleSkillFilter = useCallback((skill: string) => {
+    setSkillFilters(prev =>
+      prev.includes(skill)
+        ? prev.filter(s => s !== skill)
+        : [...prev, skill]
+    );
+  }, []);
+
+  const clearAllFilters = useCallback(() => {
+    setRateFilter({});
+    setSkillFilters([]);
+    setSelectedEstimators([]);
   }, []);
 
   const goToToday = useCallback(() => {
@@ -124,15 +176,22 @@ export function useCalendar(): UseCalendarReturn {
     view,
     selectedEstimators,
     estimators,
+    allEstimators,
     events,
     isLoading,
     searchTerm,
     sidebarCollapsed,
+    rateFilter,
+    skillFilters,
+    availableSkills,
     setCurrentDate,
     setView,
     toggleEstimator,
     setSearchTerm,
     setSidebarCollapsed,
+    setRateFilter,
+    toggleSkillFilter,
+    clearAllFilters,
     goToToday,
     goToPrevious,
     goToNext,

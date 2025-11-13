@@ -670,8 +670,12 @@ const DispatchingView = () => {
   const [showEditModal, setShowEditModal] = React.useState(false);
   const [selectedEvent, setSelectedEvent] = React.useState<CalendarEventWithEstimator | null>(null);
   const [dbEstimators, setDbEstimators] = React.useState<any[]>([]);
+  const [allDbEstimators, setAllDbEstimators] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [resizingEvent, setResizingEvent] = React.useState<{ event: CalendarEventWithEstimator; startX: number; originalWidth: number } | null>(null);
+  const [rateFilter, setRateFilter] = React.useState<{ min?: number; max?: number }>({});
+  const [skillFilters, setSkillFilters] = React.useState<string[]>([]);
+  const [availableSkills, setAvailableSkills] = React.useState<string[]>([]);
 
   const estimators = [
     { name: 'Test_Account Owner', color: '#3b82f6' },
@@ -686,7 +690,7 @@ const DispatchingView = () => {
   // Load calendar events from database
   React.useEffect(() => {
     loadCalendarData();
-  }, [selectedDate]);
+  }, [selectedDate, rateFilter, skillFilters]);
 
   const loadCalendarData = async () => {
     setLoading(true);
@@ -697,13 +701,26 @@ const DispatchingView = () => {
       const endOfDay = new Date(selectedDate);
       endOfDay.setHours(23, 59, 59, 999);
 
-      const [eventsData, estimatorsData] = await Promise.all([
+      const filters: any = {};
+      if (rateFilter.min !== undefined || rateFilter.max !== undefined) {
+        filters.minRate = rateFilter.min;
+        filters.maxRate = rateFilter.max;
+      }
+      if (skillFilters.length > 0) {
+        filters.skills = skillFilters;
+      }
+
+      const [eventsData, estimatorsData, allEstimatorsData, skillsData] = await Promise.all([
         fetchCalendarEvents(startOfDay, endOfDay),
-        fetchEstimators()
+        fetchEstimators(Object.keys(filters).length > 0 ? filters : undefined),
+        fetchEstimators(),
+        import('../../services/calendarService').then(m => m.getAllSkills())
       ]);
 
       setEvents(eventsData);
       setDbEstimators(estimatorsData);
+      setAllDbEstimators(allEstimatorsData);
+      setAvailableSkills(skillsData);
     } catch (error) {
       console.error('Error loading calendar data:', error);
     } finally {
@@ -1039,13 +1056,13 @@ const DispatchingView = () => {
     <div className="bg-white rounded-3 border shadow-sm" style={{ height: 'calc(100vh - 280px)' }}>
       <div className="d-flex h-100">
         {/* Left Sidebar */}
-        <div className="border-end bg-light p-3" style={{ width: '240px', flexShrink: 0, overflowY: 'auto' }}>
+        <div className="border-end bg-light p-3" style={{ width: '280px', flexShrink: 0, overflowY: 'auto' }}>
           <div className="mb-4">
             <h6 className="fw-bold text-dark mb-3">Estimators</h6>
             <div className="d-flex flex-column gap-2">
-              {estimators.map((estimator, index) => (
+              {dbEstimators.map((estimator) => (
                 <label
-                  key={index}
+                  key={estimator.id}
                   className="d-flex align-items-center gap-2 p-2 rounded"
                   style={{ cursor: 'pointer', transition: 'background-color 0.15s' }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
@@ -1058,13 +1075,94 @@ const DispatchingView = () => {
                     className="form-check-input mt-0"
                     style={{ cursor: 'pointer' }}
                   />
-                  <span className={`small ${selectedEstimators.includes(estimator.name) ? 'fw-semibold text-dark' : 'text-secondary'}`}>
-                    {estimator.name}
-                  </span>
+                  <div
+                    className="rounded"
+                    style={{
+                      width: '12px',
+                      height: '12px',
+                      backgroundColor: estimator.color,
+                      flexShrink: 0
+                    }}
+                  />
+                  <div className="d-flex flex-column flex-fill">
+                    <span className={`small ${selectedEstimators.includes(estimator.name) ? 'fw-semibold text-dark' : 'text-secondary'}`}>
+                      {estimator.name}
+                    </span>
+                    <span className="text-muted" style={{ fontSize: '0.65rem' }}>
+                      ${estimator.hourly_rate}/hr • {estimator.skills?.slice(0, 2).join(', ')}
+                    </span>
+                  </div>
                 </label>
               ))}
             </div>
           </div>
+
+          <div className="mb-3">
+            <h6 className="fw-bold text-dark mb-3">Rate Filter</h6>
+            <div className="d-flex flex-column gap-1">
+              {[
+                { label: 'All Rates', min: undefined, max: undefined },
+                { label: '$0-$60/hr', min: 0, max: 60 },
+                { label: '$60-$80/hr', min: 60, max: 80 },
+                { label: '$80-$100/hr', min: 80, max: 100 },
+                { label: '$100+/hr', min: 100, max: undefined }
+              ].map((range, index) => {
+                const isActive = rateFilter.min === range.min && rateFilter.max === range.max;
+                return (
+                  <button
+                    key={index}
+                    className={`btn btn-sm text-start ${
+                      isActive ? 'btn-primary' : 'btn-outline-secondary'
+                    }`}
+                    style={{ fontSize: '0.75rem', padding: '4px 8px' }}
+                    onClick={() => setRateFilter({ min: range.min, max: range.max })}
+                  >
+                    {range.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mb-3">
+            <h6 className="fw-bold text-dark mb-3">Skills Filter</h6>
+            <div className="d-flex flex-wrap gap-1">
+              {availableSkills.map((skill) => (
+                <button
+                  key={skill}
+                  className={`btn btn-sm ${
+                    skillFilters.includes(skill) ? 'btn-success' : 'btn-outline-secondary'
+                  }`}
+                  style={{ fontSize: '0.7rem', padding: '2px 8px' }}
+                  onClick={() => {
+                    setSkillFilters(prev =>
+                      prev.includes(skill)
+                        ? prev.filter(s => s !== skill)
+                        : [...prev, skill]
+                    );
+                  }}
+                >
+                  {skill}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {(rateFilter.min !== undefined || rateFilter.max !== undefined || skillFilters.length > 0) && (
+            <div className="mb-3">
+              <Button
+                variant="outline-danger"
+                size="sm"
+                className="w-100 small"
+                onClick={() => {
+                  setRateFilter({});
+                  setSkillFilters([]);
+                }}
+              >
+                Clear All Filters
+              </Button>
+            </div>
+          )}
 
           <div>
             <h6 className="fw-bold text-dark mb-3">Quick Filters</h6>
