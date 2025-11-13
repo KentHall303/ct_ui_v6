@@ -2081,6 +2081,17 @@ const CalendarView = () => {
 export const Jobs = (): JSX.Element => {
   const [currentView, setCurrentView] = React.useState<'table' | 'calendar' | 'dispatching'>('table');
   const [showReportsModal, setShowReportsModal] = React.useState(false);
+  const [rateFilter, setRateFilter] = React.useState<{ min?: number; max?: number }>({});
+  const [skillFilters, setSkillFilters] = React.useState<string[]>([]);
+  const [availableSkills, setAvailableSkills] = React.useState<string[]>([]);
+
+  const toggleSkillFilter = (skill: string) => {
+    setSkillFilters(prev =>
+      prev.includes(skill)
+        ? prev.filter(s => s !== skill)
+        : [...prev, skill]
+    );
+  };
 
   return (
     <>
@@ -2090,10 +2101,25 @@ export const Jobs = (): JSX.Element => {
             currentView={currentView}
             onViewChange={setCurrentView}
             onReportsClick={() => setShowReportsModal(true)}
+            rateFilter={rateFilter}
+            skillFilters={skillFilters}
+            availableSkills={availableSkills}
+            onRateFilterChange={setRateFilter}
+            onSkillToggle={toggleSkillFilter}
           />
         </div>
         <div className="px-3 pt-3">
-          {currentView === 'table' ? <TableView /> : currentView === 'calendar' ? <CalendarView /> : <DispatchingView />}
+          {currentView === 'table' ? (
+            <TableView />
+          ) : currentView === 'calendar' ? (
+            <CalendarView />
+          ) : (
+            <DispatchingView
+              rateFilter={rateFilter}
+              skillFilters={skillFilters}
+              onAvailableSkillsLoad={setAvailableSkills}
+            />
+          )}
         </div>
       </div>
 
