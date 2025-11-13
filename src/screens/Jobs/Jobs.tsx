@@ -232,7 +232,7 @@ const JobsHeader = ({
   onSkillToggle?: (skill: string) => void
 }) => (
   <div className="px-3 pt-3">
-    <div className="bg-white rounded-3 pt-2 pb-4 px-3 border shadow-sm">
+    <div className="bg-white rounded-3 pt-2 pb-2 px-3 border shadow-sm">
     {/* Title Section - Following wireframe standards */}
     <div className="d-flex align-items-baseline justify-content-between mb-0 pt-0">
       <div className="d-flex align-items-baseline gap-4">
@@ -247,7 +247,7 @@ const JobsHeader = ({
     </div>
 
     {/* View Toggle Buttons */}
-    <div className="d-flex align-items-center mb-3">
+    <div className="d-flex align-items-center mb-2">
       <ul className="nav nav-underline">
         <li className="nav-item">
           <button
@@ -280,12 +280,12 @@ const JobsHeader = ({
 
       {/* Rate and Skills Filters - Only show for dispatching view */}
       {currentView === 'dispatching' && onRateFilterChange && onSkillToggle && (
-        <div className="d-flex align-items-center gap-3 ms-auto">
+        <div className="d-flex align-items-center gap-3 ms-auto ps-3 border-start">
           {/* Rate Filter Dropdown */}
           <div className="position-relative">
             <select
-              className="form-select form-select-sm"
-              style={{ minWidth: '140px' }}
+              className="form-select form-select-sm bg-light"
+              style={{ minWidth: '140px', borderColor: '#dee2e6' }}
               value={
                 rateFilter?.min === undefined && rateFilter?.max === undefined
                   ? 'all'
@@ -325,7 +325,8 @@ const JobsHeader = ({
           {/* Skills Filter Dropdown */}
           <div className="dropdown">
             <button
-              className="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2"
+              className="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2 bg-light"
+              style={{ borderColor: '#dee2e6' }}
               type="button"
               data-bs-toggle="dropdown"
               aria-expanded="false"
@@ -785,6 +786,8 @@ const DispatchingView = ({
   skillFilters?: string[];
   onAvailableSkillsLoad?: (skills: string[]) => void;
 }) => {
+  const scrollRef = React.useRef<HTMLDivElement | null>(null);
+  const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
   const [selectedDate, setSelectedDate] = React.useState(new Date(2025, 8, 15)); // Sept 15, 2025
   const [selectedEstimators, setSelectedEstimators] = React.useState<string[]>(['Test_Account Owner', 'Sara Joe', 'Jeanette Standards']);
   const [events, setEvents] = React.useState<CalendarEventWithEstimator[]>([]);
@@ -796,6 +799,19 @@ const DispatchingView = ({
   const [allDbEstimators, setAllDbEstimators] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [resizingEvent, setResizingEvent] = React.useState<{ event: CalendarEventWithEstimator; startX: number; originalWidth: number } | null>(null);
+
+  React.useLayoutEffect(() => {
+    function computeHeight() {
+      if (!scrollRef.current) return;
+      const rect = scrollRef.current.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const h = Math.max(400, Math.floor(vh - rect.top - 16));
+      setMaxHeight(h);
+    }
+    computeHeight();
+    window.addEventListener("resize", computeHeight);
+    return () => window.removeEventListener("resize", computeHeight);
+  }, []);
 
   const estimators = [
     { name: 'Test_Account Owner', color: '#3b82f6' },
@@ -1175,8 +1191,12 @@ const DispatchingView = ({
   };
 
   return (
-    <div className="bg-white rounded-3 border shadow-sm" style={{ height: 'calc(100vh - 280px)' }}>
-      <div className="d-flex h-100">
+    <div
+      ref={scrollRef}
+      className="bg-white rounded-3 border shadow-sm"
+      style={{ maxHeight: maxHeight ?? undefined, display: 'flex', flexDirection: 'column' }}
+    >
+      <div className="d-flex flex-fill" style={{ minHeight: 0 }}>
         {/* Left Sidebar */}
         <div className="border-end bg-light p-3" style={{ width: '280px', flexShrink: 0, overflowY: 'auto' }}>
           <div className="mb-4">
@@ -2115,7 +2135,7 @@ export const Jobs = (): JSX.Element => {
             onSkillToggle={toggleSkillFilter}
           />
         </div>
-        <div className="px-3 pt-3">
+        <div className="px-3 pt-2 pb-3">
           {currentView === 'table' ? (
             <TableView />
           ) : currentView === 'calendar' ? (
