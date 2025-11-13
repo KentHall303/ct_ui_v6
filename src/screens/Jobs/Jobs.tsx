@@ -776,7 +776,15 @@ const TableView = () => {
   );
 };
 
-const DispatchingView = () => {
+const DispatchingView = ({
+  rateFilter = {},
+  skillFilters = [],
+  onAvailableSkillsLoad
+}: {
+  rateFilter?: { min?: number; max?: number };
+  skillFilters?: string[];
+  onAvailableSkillsLoad?: (skills: string[]) => void;
+}) => {
   const [selectedDate, setSelectedDate] = React.useState(new Date(2025, 8, 15)); // Sept 15, 2025
   const [selectedEstimators, setSelectedEstimators] = React.useState<string[]>(['Test_Account Owner', 'Sara Joe', 'Jeanette Standards']);
   const [events, setEvents] = React.useState<CalendarEventWithEstimator[]>([]);
@@ -788,9 +796,6 @@ const DispatchingView = () => {
   const [allDbEstimators, setAllDbEstimators] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [resizingEvent, setResizingEvent] = React.useState<{ event: CalendarEventWithEstimator; startX: number; originalWidth: number } | null>(null);
-  const [rateFilter, setRateFilter] = React.useState<{ min?: number; max?: number }>({});
-  const [skillFilters, setSkillFilters] = React.useState<string[]>([]);
-  const [availableSkills, setAvailableSkills] = React.useState<string[]>([]);
 
   const estimators = [
     { name: 'Test_Account Owner', color: '#3b82f6' },
@@ -835,7 +840,9 @@ const DispatchingView = () => {
       setEvents(eventsData);
       setDbEstimators(estimatorsData);
       setAllDbEstimators(allEstimatorsData);
-      setAvailableSkills(skillsData);
+      if (onAvailableSkillsLoad) {
+        onAvailableSkillsLoad(skillsData);
+      }
     } catch (error) {
       console.error('Error loading calendar data:', error);
     } finally {
