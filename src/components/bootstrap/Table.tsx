@@ -16,6 +16,7 @@ export const Table: React.FC<TableProps> = ({
       className={`standard-table ${className}`}
       role="grid"
       aria-label="Data table"
+      style={{ width: '100%', tableLayout: 'auto' }}
       {...props}
     >
       {children}

@@ -162,24 +162,23 @@ const EmailTemplates = (): JSX.Element => {
         </div>
       </div>
 
-      <div className="px-3 pt-3 pb-3 flex-fill d-flex flex-column" style={{ minHeight: 0 }}>
+      <div className="px-3 pt-3 pb-3 flex-fill" style={{ minHeight: 0, overflow: 'hidden' }}>
         <div
-          className="bg-white rounded-3 border shadow-sm d-flex flex-column h-100"
-          style={{ overflow: 'hidden' }}
+          className="bg-white rounded-3 border shadow-sm h-100"
+          style={{ overflow: 'auto' }}
         >
-          <Table className="standard-table position-relative mb-0 h-100 d-flex flex-column">
+          <Table className="standard-table mb-0">
             <caption className="visually-hidden">
               Email templates table showing {templates.length} records.
               Use arrow keys to navigate, Enter or Space to sort columns.
               {sortConfig && ` Currently sorted by ${sortConfig.key} in ${sortConfig.direction}ending order.`}
             </caption>
-            <TableHeader className="flex-shrink-0">
+            <TableHeader>
               <TableRow>
                 <TableHead
                   scope="col"
                   {...getSortProps('name')}
                   aria-label={`Sort by name ${sortConfig?.key === 'name' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '50%' }}
                 >
                   Name{getSortIcon('name')}
                 </TableHead>
@@ -187,23 +186,22 @@ const EmailTemplates = (): JSX.Element => {
                   scope="col"
                   {...getSortProps('contactType')}
                   aria-label={`Sort by contact type ${sortConfig?.key === 'contactType' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '30%' }}
                 >
                   Contact Type{getSortIcon('contactType')}
                 </TableHead>
-                <TableHead scope="col" style={{ width: '20%', textAlign: 'center' }}>
+                <TableHead scope="col" style={{ textAlign: 'center' }}>
                   Actions
                 </TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody className="flex-fill" style={{ overflow: 'auto' }}>
+            <TableBody>
               {sortedTemplates.map((template, index) => (
                 <TableRow
                   key={template.id}
                   role="row"
                   aria-rowindex={index + 2}
                 >
-                  <TableCell role="gridcell" style={{ width: '50%', maxWidth: '50%' }}>
+                  <TableCell role="gridcell">
                     <div
                       className="text-dark"
                       style={{
@@ -218,11 +216,11 @@ const EmailTemplates = (): JSX.Element => {
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell" style={{ width: '30%', maxWidth: '30%' }}>
+                  <TableCell role="gridcell">
                     <div className="text-dark" style={{ fontSize: '0.9375rem' }}>{template.contactType}</div>
                   </TableCell>
 
-                  <TableCell role="gridcell" style={{ width: '20%', maxWidth: '20%' }}>
+                  <TableCell role="gridcell">
                     <div className="d-flex gap-2 justify-content-center">
                       <button
                         className="btn btn-link p-0 border rounded-circle d-flex align-items-center justify-content-center"
