@@ -51,12 +51,16 @@ export const TableRow: React.FC<{ children: React.ReactNode; className?: string 
   </tr>
 );
 
-export const TableHead: React.FC<{ children: React.ReactNode; className?: string; style?: React.CSSProperties }> = ({
+interface TableHeadProps extends React.ThHTMLAttributes<HTMLTableCellElement> {
+  children: React.ReactNode;
+}
+
+export const TableHead: React.FC<TableHeadProps> = ({
   children,
   className = '',
-  style
+  ...props
 }) => (
-  <th className={className} style={style}>
+  <th className={className} {...props}>
     {children}
   </th>
 );

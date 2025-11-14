@@ -3,6 +3,7 @@ import { BodyLayout } from '../../components/layout/BodyLayout/BodyLayout';
 import { Button } from '../../components/bootstrap/Button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/bootstrap/Table';
 import { Plus, Copy } from 'lucide-react';
+import { formatDateTime } from '../../utils/dateUtils';
 import { AddEmailTemplateModal } from '../../components/modals/AddEmailTemplateModal';
 import { emailTemplateService } from '../../services/emailTemplateService';
 import { EmailTemplate } from '../../lib/supabase';
@@ -15,7 +16,7 @@ const EmailTemplates = (): JSX.Element => {
   const [sortConfig, setSortConfig] = React.useState<{
     key: string;
     direction: 'asc' | 'desc';
-  } | null>({ key: 'name', direction: 'asc' });
+  } | null>({ key: 'updated_at', direction: 'desc' });
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [editingTemplate, setEditingTemplate] = React.useState<EmailTemplate | null>(null);
 
@@ -82,6 +83,12 @@ const EmailTemplates = (): JSX.Element => {
     return [...templates].sort((a, b) => {
       let aVal = a[sortConfig.key as keyof EmailTemplate];
       let bVal = b[sortConfig.key as keyof EmailTemplate];
+
+      if (sortConfig.key === 'updated_at' || sortConfig.key === 'created_at') {
+        const aTime = aVal ? new Date(aVal as string).getTime() : 0;
+        const bTime = bVal ? new Date(bVal as string).getTime() : 0;
+        return sortConfig.direction === 'asc' ? aTime - bTime : bTime - aTime;
+      }
 
       const aStr = String(aVal || '').toLowerCase();
       const bStr = String(bVal || '').toLowerCase();
@@ -171,24 +178,19 @@ const EmailTemplates = (): JSX.Element => {
                   scope="col"
                   {...getSortProps('name')}
                   aria-label={`Sort by name ${sortConfig?.key === 'name' ? sortConfig.direction : 'ascending'}`}
+                  style={{ width: '60%' }}
                 >
                   Name{getSortIcon('name')}
                 </TableHead>
                 <TableHead
                   scope="col"
-                  {...getSortProps('subject')}
-                  aria-label={`Sort by subject ${sortConfig?.key === 'subject' ? sortConfig.direction : 'ascending'}`}
+                  {...getSortProps('updated_at')}
+                  aria-label={`Sort by last updated ${sortConfig?.key === 'updated_at' ? sortConfig.direction : 'ascending'}`}
+                  style={{ width: '30%' }}
                 >
-                  Subject{getSortIcon('subject')}
+                  Last Updated{getSortIcon('updated_at')}
                 </TableHead>
-                <TableHead
-                  scope="col"
-                  {...getSortProps('contact_type')}
-                  aria-label={`Sort by contact type ${sortConfig?.key === 'contact_type' ? sortConfig.direction : 'ascending'}`}
-                >
-                  Contact Type{getSortIcon('contact_type')}
-                </TableHead>
-                <TableHead scope="col" style={{ textAlign: 'center' }}>
+                <TableHead scope="col" style={{ textAlign: 'center', width: '10%' }}>
                   Actions
                 </TableHead>
               </TableRow>
@@ -216,22 +218,9 @@ const EmailTemplates = (): JSX.Element => {
                   </TableCell>
 
                   <TableCell role="gridcell">
-                    <div
-                      className="text-dark"
-                      style={{
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        fontSize: '0.9375rem'
-                      }}
-                      title={template.subject || ''}
-                    >
-                      {template.subject || '-'}
+                    <div className="text-dark" style={{ fontSize: '0.9375rem' }}>
+                      {formatDateTime(template.updated_at)}
                     </div>
-                  </TableCell>
-
-                  <TableCell role="gridcell">
-                    <div className="text-dark" style={{ fontSize: '0.9375rem' }}>{template.contact_type || 'All'}</div>
                   </TableCell>
 
                   <TableCell role="gridcell">
