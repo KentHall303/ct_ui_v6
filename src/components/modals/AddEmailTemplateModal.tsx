@@ -3,17 +3,23 @@ import { Modal, Form, Row, Col, Card, Nav, Tab } from 'react-bootstrap';
 import { Button } from '../bootstrap/Button';
 import { FloatingInput, FloatingSelect, FloatingSelectOption } from '../bootstrap/FormControls';
 import { Eye, Edit, Sun, Grid3x3, Code } from 'lucide-react';
+import { EmailTemplate } from '../../lib/supabase';
+import { emailTemplateService } from '../../services/emailTemplateService';
 
 interface AddEmailTemplateModalProps {
   show: boolean;
   onHide: () => void;
+  template?: EmailTemplate | null;
+  onSave?: () => void;
 }
 
 export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
   show,
-  onHide
+  onHide,
+  template = null,
+  onSave
 }) => {
-  console.log('AddEmailTemplateModal rendered with show:', show);
+  console.log('AddEmailTemplateModal rendered with show:', show, 'template:', template);
 
   const [subject, setSubject] = useState('');
   const [name, setName] = useState('');
@@ -30,21 +36,91 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
   const [activeEditorTab, setActiveEditorTab] = useState<'sun' | 'block' | 'raw'>('block');
   const [activeMainTab, setActiveMainTab] = useState<'preview' | 'editor'>('preview');
   const [contentTcpa, setContentTcpa] = useState('Promotional');
+  const [content, setContent] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSaveTemplate = () => {
-    console.log('Save Template clicked', {
-      subject,
-      name,
-      additionalEmails,
-      bcc,
-      selectedToken,
-      contactTypes,
-      protectFromOverwriting,
-      protectFromSharing,
-      excludeClient,
-      description,
-      contentTcpa
-    });
+  const isEditMode = !!template;
+
+  useEffect(() => {
+    if (show && template) {
+      setName(template.name || '');
+      setSubject(template.subject || '');
+      setAdditionalEmails(template.additional_emails || '');
+      setBcc(template.bcc_email || '');
+      setSelectedToken(template.select_token || 'Contact ID');
+      setContactTypes(template.contact_type ? template.contact_type.split(',').map(t => t.trim()) : ['All']);
+      setProtectFromOverwriting(template.protect_from_overwriting || false);
+      setProtectFromSharing(template.protect_from_sharing || false);
+      setExcludeClient(template.exclude_client || false);
+      setDescription(template.description || '');
+      setContentTcpa(template.content_tcpa || 'Promotional');
+      setContent(template.content || '');
+    } else if (show && !template) {
+      setName('');
+      setSubject('');
+      setAdditionalEmails('');
+      setBcc('');
+      setSelectedToken('Contact ID');
+      setContactTypes(['All']);
+      setProtectFromOverwriting(false);
+      setProtectFromSharing(false);
+      setExcludeClient(false);
+      setDescription('');
+      setContentTcpa('Promotional');
+      setContent('');
+      setActiveEditorTab('block');
+      setActiveMainTab('preview');
+    }
+  }, [show, template]);
+
+  const handleSaveTemplate = async () => {
+    try {
+      setError(null);
+      setSaving(true);
+
+      if (!name.trim()) {
+        setError('Template name is required');
+        return;
+      }
+
+      if (!subject.trim()) {
+        setError('Subject is required');
+        return;
+      }
+
+      const templateData: Partial<EmailTemplate> = {
+        name: name.trim(),
+        subject: subject.trim(),
+        contact_type: contactTypes.join(', '),
+        additional_emails: additionalEmails.trim() || undefined,
+        bcc_email: bcc.trim() || undefined,
+        select_token: selectedToken,
+        exclude_client: excludeClient,
+        protect_from_overwriting: protectFromOverwriting,
+        protect_from_sharing: protectFromSharing,
+        description: description.trim() || undefined,
+        content_tcpa: contentTcpa as 'Promotional' | 'Transactional' | 'Mixed',
+        content: content || 'Template content',
+      };
+
+      if (isEditMode && template) {
+        await emailTemplateService.update(template.id, templateData);
+      } else {
+        await emailTemplateService.create(templateData);
+      }
+
+      if (onSave) {
+        onSave();
+      }
+
+      onHide();
+    } catch (err) {
+      console.error('Error saving template:', err);
+      setError(err instanceof Error ? err.message : 'Failed to save template');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const toggleContactTypeDropdown = (e: React.MouseEvent) => {
@@ -104,11 +180,16 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
     >
       <Modal.Header closeButton className="border-0 pb-2">
         <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 400 }}>
-          Add / Edit Email Template
+          {isEditMode ? 'Edit Email Template' : 'Add Email Template'}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body className="pt-3 pb-4" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
         <div className="d-flex flex-column gap-3">
+          {error && (
+            <div className="alert alert-danger mb-0" role="alert">
+              {error}
+            </div>
+          )}
           <Row>
             <Col md={6}>
               <FloatingInput
@@ -342,15 +423,17 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                 <Button
                   variant="success"
                   onClick={handleSaveTemplate}
+                  disabled={saving}
                   style={{
                     backgroundColor: '#28a745',
                     border: 'none',
                     padding: '8px 24px',
                     fontSize: '0.875rem',
-                    fontWeight: 500
+                    fontWeight: 500,
+                    opacity: saving ? 0.6 : 1
                   }}
                 >
-                  SAVE TEMPLATE
+                  {saving ? 'SAVING...' : 'SAVE TEMPLATE'}
                 </Button>
               </div>
             </Col>
@@ -518,6 +601,8 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                           }}
                           contentEditable
                           suppressContentEditableWarning
+                          onInput={(e) => setContent(e.currentTarget.textContent || '')}
+                          dangerouslySetInnerHTML={{ __html: content }}
                         >
                         </div>
                         <div className="d-flex justify-content-end gap-2 mt-3">
@@ -700,6 +785,8 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                           rows={8}
                           placeholder="Enter HTML code..."
                           style={{ fontFamily: 'monospace', fontSize: '0.875rem', resize: 'none' }}
+                          value={content}
+                          onChange={(e) => setContent(e.target.value)}
                         />
                         <div className="d-flex justify-content-end gap-2 mt-3">
                           <Button

@@ -280,6 +280,8 @@ const EmailTemplates = (): JSX.Element => {
       <AddEmailTemplateModal
         show={showAddModal}
         onHide={handleCloseModal}
+        template={editingTemplate}
+        onSave={loadTemplates}
       />
     </div>
   );
