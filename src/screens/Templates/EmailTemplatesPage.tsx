@@ -2,89 +2,57 @@ import React from 'react';
 import { BodyLayout } from '../../components/layout/BodyLayout/BodyLayout';
 import { Button } from '../../components/bootstrap/Button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/bootstrap/Table';
-import { Plus } from 'lucide-react';
+import { Plus, Copy } from 'lucide-react';
 import { AddEmailTemplateModal } from '../../components/modals/AddEmailTemplateModal';
-
-type EmailTemplateDisplay = {
-  id: string;
-  name: string;
-  contactType: string;
-};
-
-const placeholderTemplates: EmailTemplateDisplay[] = [
-  {
-    id: '1',
-    name: 'I please provide missing Data',
-    contactType: 'All'
-  },
-  {
-    id: '2',
-    name: '{{client.firstName}} signature process as promised',
-    contactType: 'All'
-  },
-  {
-    id: '3',
-    name: 'I please provide missing Data',
-    contactType: 'All'
-  },
-  {
-    id: '4',
-    name: '{{client.firstName}} signature process as promised',
-    contactType: 'All'
-  },
-  {
-    id: '5',
-    name: 'I please provide missing Data',
-    contactType: 'All'
-  },
-  {
-    id: '6',
-    name: '{{client.firstName}} signature process as promised',
-    contactType: 'All'
-  },
-  {
-    id: '7',
-    name: 'I please provide missing Data',
-    contactType: 'All'
-  },
-  {
-    id: '8',
-    name: '{{client.firstName}} signature process as promised',
-    contactType: 'All'
-  },
-  {
-    id: '9',
-    name: 'I please provide missing Data',
-    contactType: 'All'
-  },
-  {
-    id: '10',
-    name: '{{client.firstName}} signature process as promised',
-    contactType: 'All'
-  },
-  {
-    id: '11',
-    name: 'I please provide missing Data',
-    contactType: 'All'
-  }
-];
+import { emailTemplateService } from '../../services/emailTemplateService';
+import { EmailTemplate } from '../../lib/supabase';
 
 const EmailTemplates = (): JSX.Element => {
-  const [templates] = React.useState<EmailTemplateDisplay[]>(placeholderTemplates);
+  const [templates, setTemplates] = React.useState<EmailTemplate[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+  const [duplicating, setDuplicating] = React.useState<string | null>(null);
   const [sortConfig, setSortConfig] = React.useState<{
     key: string;
     direction: 'asc' | 'desc';
   } | null>({ key: 'name', direction: 'asc' });
   const [showAddModal, setShowAddModal] = React.useState(false);
-  const [editingTemplate, setEditingTemplate] = React.useState<EmailTemplateDisplay | null>(null);
+  const [editingTemplate, setEditingTemplate] = React.useState<EmailTemplate | null>(null);
 
   React.useEffect(() => {
-    console.log('EmailTemplates: showAddModal changed to:', showAddModal);
-  }, [showAddModal]);
+    loadTemplates();
+  }, []);
 
-  const handleEditTemplate = (template: EmailTemplateDisplay) => {
+  const loadTemplates = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await emailTemplateService.getAll();
+      setTemplates(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load templates');
+      console.error('Error loading templates:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEditTemplate = (template: EmailTemplate) => {
     setEditingTemplate(template);
     setShowAddModal(true);
+  };
+
+  const handleDuplicateTemplate = async (template: EmailTemplate) => {
+    try {
+      setDuplicating(template.id);
+      await emailTemplateService.duplicate(template.id);
+      await loadTemplates();
+    } catch (err) {
+      console.error('Error duplicating template:', err);
+      alert('Failed to duplicate template. Please try again.');
+    } finally {
+      setDuplicating(null);
+    }
   };
 
   const handleCloseModal = () => {
@@ -112,11 +80,11 @@ const EmailTemplates = (): JSX.Element => {
     if (!sortConfig) return templates;
 
     return [...templates].sort((a, b) => {
-      let aVal = a[sortConfig.key as keyof EmailTemplateDisplay];
-      let bVal = b[sortConfig.key as keyof EmailTemplateDisplay];
+      let aVal = a[sortConfig.key as keyof EmailTemplate];
+      let bVal = b[sortConfig.key as keyof EmailTemplate];
 
-      const aStr = String(aVal).toLowerCase();
-      const bStr = String(bVal).toLowerCase();
+      const aStr = String(aVal || '').toLowerCase();
+      const bStr = String(bVal || '').toLowerCase();
 
       if (aStr < bStr) return sortConfig.direction === 'asc' ? -1 : 1;
       if (aStr > bStr) return sortConfig.direction === 'asc' ? 1 : -1;
@@ -139,6 +107,30 @@ const EmailTemplates = (): JSX.Element => {
     role: 'button',
     style: { cursor: 'pointer' }
   });
+
+  if (loading) {
+    return (
+      <div className="d-flex flex-column w-100 h-100 align-items-center justify-content-center">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p className="mt-3 text-muted">Loading templates...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="d-flex flex-column w-100 h-100 align-items-center justify-content-center">
+        <div className="alert alert-danger" role="alert">
+          <strong>Error:</strong> {error}
+        </div>
+        <button className="btn btn-primary" onClick={loadTemplates}>
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="d-flex flex-column w-100 h-100">
@@ -184,10 +176,17 @@ const EmailTemplates = (): JSX.Element => {
                 </TableHead>
                 <TableHead
                   scope="col"
-                  {...getSortProps('contactType')}
-                  aria-label={`Sort by contact type ${sortConfig?.key === 'contactType' ? sortConfig.direction : 'ascending'}`}
+                  {...getSortProps('subject')}
+                  aria-label={`Sort by subject ${sortConfig?.key === 'subject' ? sortConfig.direction : 'ascending'}`}
                 >
-                  Contact Type{getSortIcon('contactType')}
+                  Subject{getSortIcon('subject')}
+                </TableHead>
+                <TableHead
+                  scope="col"
+                  {...getSortProps('contact_type')}
+                  aria-label={`Sort by contact type ${sortConfig?.key === 'contact_type' ? sortConfig.direction : 'ascending'}`}
+                >
+                  Contact Type{getSortIcon('contact_type')}
                 </TableHead>
                 <TableHead scope="col" style={{ textAlign: 'center' }}>
                   Actions
@@ -217,7 +216,22 @@ const EmailTemplates = (): JSX.Element => {
                   </TableCell>
 
                   <TableCell role="gridcell">
-                    <div className="text-dark" style={{ fontSize: '0.9375rem' }}>{template.contactType}</div>
+                    <div
+                      className="text-dark"
+                      style={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        fontSize: '0.9375rem'
+                      }}
+                      title={template.subject || ''}
+                    >
+                      {template.subject || '-'}
+                    </div>
+                  </TableCell>
+
+                  <TableCell role="gridcell">
+                    <div className="text-dark" style={{ fontSize: '0.9375rem' }}>{template.contact_type || 'All'}</div>
                   </TableCell>
 
                   <TableCell role="gridcell">
@@ -240,19 +254,19 @@ const EmailTemplates = (): JSX.Element => {
                       </button>
                       <button
                         className="btn btn-link p-0 border rounded-circle d-flex align-items-center justify-content-center"
-                        title="Copy template"
+                        title="Duplicate template"
                         style={{
                           width: '32px',
                           height: '32px',
                           borderColor: '#dee2e6',
                           color: '#6c757d',
-                          backgroundColor: 'white'
+                          backgroundColor: 'white',
+                          opacity: duplicating === template.id ? 0.5 : 1
                         }}
+                        onClick={() => handleDuplicateTemplate(template)}
+                        disabled={duplicating === template.id}
                       >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
-                          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
-                        </svg>
+                        <Copy size={16} />
                       </button>
                     </div>
                   </TableCell>

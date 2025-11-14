@@ -92,4 +92,32 @@ export const emailTemplateService = {
       console.warn('Failed to increment usage count:', error.message);
     }
   },
+
+  async duplicate(id: string): Promise<EmailTemplate> {
+    const original = await this.getById(id);
+
+    if (!original) {
+      throw new Error('Template not found');
+    }
+
+    const duplicatedTemplate: Partial<EmailTemplate> = {
+      name: `${original.name} (copy)`,
+      subject: original.subject,
+      contact_type: original.contact_type,
+      exclude_client: original.exclude_client,
+      content: original.content,
+      category: original.category,
+      description: original.description,
+      variables: original.variables,
+      tags: original.tags,
+      content_tcpa: original.content_tcpa,
+      additional_emails: original.additional_emails,
+      bcc_email: original.bcc_email,
+      select_token: original.select_token,
+      protect_from_overwriting: original.protect_from_overwriting,
+      protect_from_sharing: original.protect_from_sharing,
+    };
+
+    return await this.create(duplicatedTemplate);
+  },
 };
