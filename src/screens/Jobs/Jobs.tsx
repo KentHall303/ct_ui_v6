@@ -230,7 +230,27 @@ const JobsHeader = ({
   availableSkills?: string[],
   onRateFilterChange?: (filter: { min?: number; max?: number }) => void,
   onSkillToggle?: (skill: string) => void
-}) => (
+}) => {
+  const [skillsDropdownOpen, setSkillsDropdownOpen] = React.useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setSkillsDropdownOpen(false);
+      }
+    };
+
+    if (skillsDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [skillsDropdownOpen]);
+
+  return (
   <div className="px-3 pt-3">
     <div className="bg-white rounded-3 pt-2 pb-2 px-3 border shadow-sm">
     {/* Title Section - Following wireframe standards */}
@@ -323,20 +343,20 @@ const JobsHeader = ({
           </div>
 
           {/* Skills Filter Dropdown */}
-          <div className="dropdown">
+          <div className="dropdown" ref={dropdownRef}>
             <button
               className="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2 bg-light"
               style={{ borderColor: '#dee2e6' }}
               type="button"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
+              onClick={() => setSkillsDropdownOpen(!skillsDropdownOpen)}
+              aria-expanded={skillsDropdownOpen}
             >
               Skills
               {skillFilters && skillFilters.length > 0 && (
                 <span className="badge bg-primary rounded-pill">{skillFilters.length}</span>
               )}
             </button>
-            <div className="dropdown-menu dropdown-menu-end p-3" style={{ minWidth: '300px' }} onClick={(e) => e.stopPropagation()}>
+            <div className={`dropdown-menu dropdown-menu-end p-3 ${skillsDropdownOpen ? 'show' : ''}`} style={{ minWidth: '300px' }} onClick={(e) => e.stopPropagation()}>
               <div className="d-flex flex-wrap gap-2">
                 {availableSkills?.map((skill) => (
                   <button
@@ -517,7 +537,8 @@ const JobsHeader = ({
     )}
     </div>
   </div>
-);
+  );
+};
 
 const TableView = () => {
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
