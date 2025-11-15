@@ -9,7 +9,10 @@
     "dev": "vite",
     "start": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:check": "node scripts/setup-database.js --check",
+    "db:status": "node scripts/setup-database.js --check",
+    "postinstall": "node scripts/setup-database.js --check || true"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.1",
