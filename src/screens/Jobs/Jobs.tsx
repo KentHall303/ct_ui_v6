@@ -343,7 +343,7 @@ const JobsHeader = ({
           </div>
 
           {/* Skills Filter Dropdown */}
-          <div className="dropdown" ref={dropdownRef}>
+          <div className="position-relative" ref={dropdownRef}>
             <button
               className="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2 bg-light"
               style={{ borderColor: '#dee2e6' }}
@@ -356,7 +356,20 @@ const JobsHeader = ({
                 <span className="badge bg-primary rounded-pill">{skillFilters.length}</span>
               )}
             </button>
-            <div className={`dropdown-menu dropdown-menu-end p-3 ${skillsDropdownOpen ? 'show' : ''}`} style={{ minWidth: '300px' }} onClick={(e) => e.stopPropagation()}>
+            <div
+              className={`dropdown-menu p-3 ${skillsDropdownOpen ? 'show' : ''}`}
+              style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                left: 'auto',
+                minWidth: '320px',
+                maxWidth: '400px',
+                marginTop: '0.25rem',
+                zIndex: 1000
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
               <div className="d-flex flex-wrap gap-2">
                 {availableSkills?.map((skill) => (
                   <button
