@@ -2,6 +2,8 @@
 
 A comprehensive construction management platform for tracking jobs, managing calendars, handling sales pipelines, and coordinating team activities.
 
+> **👋 New to coding?** Check out [EASY_SETUP.md](./EASY_SETUP.md) for a super simple, step-by-step guide!
+
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
@@ -45,6 +47,13 @@ npm run db:check
 ```
 
 This command will show you the current status of your database tables and sample data.
+
+**If you see missing tables or data:**
+```bash
+npm run db:setup
+```
+
+This will give you easy-to-follow instructions for setting up your database through the Supabase Dashboard (no CLI needed!).
 
 ### 4. Start Development Server
 
@@ -101,6 +110,7 @@ This sample data helps you immediately understand the UI/UX without having to cr
 - `npm run dev` - Start the development server
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build locally
+- `npm run db:setup` - Get step-by-step database setup instructions
 - `npm run db:check` - Check database connection and status
 - `npm run db:status` - Same as db:check (alias)
 
@@ -235,7 +245,8 @@ Migrations are applied through Supabase and shared across all team members via t
 
 ## Additional Documentation
 
-### For Team Members
+### For Everyone
+- **EASY_SETUP.md** - Super simple guide for non-technical users (start here!)
 - **README.md** (this file) - Complete setup and usage guide
 - **QUICK_START_MIGRATIONS.md** - Fast migration setup reference
 
