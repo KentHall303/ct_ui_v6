@@ -371,24 +371,47 @@ const JobsHeader = ({
               onClick={(e) => e.stopPropagation()}
             >
               <div className="d-flex flex-wrap gap-2">
-                {availableSkills?.map((skill) => (
-                  <button
-                    key={skill}
-                    type="button"
-                    className={`btn btn-sm ${
-                      skillFilters?.includes(skill)
-                        ? 'btn-success'
-                        : 'btn-outline-secondary'
-                    }`}
-                    style={{ fontSize: '0.75rem' }}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      onSkillToggle(skill);
-                    }}
-                  >
-                    {skill}
-                  </button>
-                ))}
+                {availableSkills?.map((skill) => {
+                  const isSelected = skillFilters?.includes(skill);
+                  return (
+                    <button
+                      key={skill}
+                      type="button"
+                      className={`btn btn-sm ${
+                        isSelected
+                          ? 'btn-success'
+                          : 'btn-outline-secondary'
+                      }`}
+                      style={{
+                        fontSize: '0.75rem',
+                        ...(isSelected ? {} : {
+                          color: '#6c757d',
+                          borderColor: '#6c757d'
+                        })
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.backgroundColor = '#6c757d';
+                          e.currentTarget.style.borderColor = '#6c757d';
+                          e.currentTarget.style.color = '#fff';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSelected) {
+                          e.currentTarget.style.backgroundColor = 'transparent';
+                          e.currentTarget.style.borderColor = '#6c757d';
+                          e.currentTarget.style.color = '#6c757d';
+                        }
+                      }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        onSkillToggle(skill);
+                      }}
+                    >
+                      {skill}
+                    </button>
+                  );
+                })}
               </div>
               {skillFilters && skillFilters.length > 0 && (
                 <div className="mt-3 pt-2 border-top">
