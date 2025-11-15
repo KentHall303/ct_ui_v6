@@ -346,7 +346,18 @@ const JobsHeader = ({
           <div className="position-relative" ref={dropdownRef}>
             <button
               className="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2 bg-light"
-              style={{ borderColor: '#dee2e6' }}
+              style={{
+                borderColor: '#dee2e6',
+                color: '#6c757d'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#e9ecef';
+                e.currentTarget.style.color = '#495057';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#f8f9fa';
+                e.currentTarget.style.color = '#6c757d';
+              }}
               type="button"
               onClick={() => setSkillsDropdownOpen(!skillsDropdownOpen)}
               aria-expanded={skillsDropdownOpen}
