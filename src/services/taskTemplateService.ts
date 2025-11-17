@@ -39,6 +39,7 @@ export const taskTemplateService = {
         category: 'task',
         is_active: true,
         usage_count: 0,
+        content: template.detail || '',
       })
       .select()
       .single();
@@ -51,12 +52,18 @@ export const taskTemplateService = {
   },
 
   async update(id: string, template: Partial<TaskTemplate>): Promise<TaskTemplate> {
+    const updateData: any = {
+      ...template,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (template.detail !== undefined) {
+      updateData.content = template.detail;
+    }
+
     const { data, error } = await supabase
       .from('templates')
-      .update({
-        ...template,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();

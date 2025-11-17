@@ -100,6 +100,7 @@ export interface TaskTemplate {
   name: string;
   title: string;
   detail: string;
+  content?: string;
   due_in_days: number;
   assignee_type: 'account_owner' | 'assigned_user' | 'specific_user';
   priority: string;
