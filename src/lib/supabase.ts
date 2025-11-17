@@ -113,3 +113,21 @@ export interface TaskTemplate {
   created_at: string;
   updated_at: string;
 }
+
+export interface TextTemplate {
+  id: string;
+  name: string;
+  contact_type: string;
+  content: string;
+  select_token?: string;
+  content_tcpa?: 'Promotional' | 'Transactional' | 'Mixed';
+  protect_from_overwriting?: boolean;
+  protect_from_sharing?: boolean;
+  category: string;
+  is_active: boolean;
+  usage_count: number;
+  last_used_at?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+}
