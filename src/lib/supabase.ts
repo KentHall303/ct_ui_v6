@@ -94,3 +94,21 @@ export interface EmailTemplate {
   protect_from_overwriting?: boolean;
   protect_from_sharing?: boolean;
 }
+
+export interface TaskTemplate {
+  id: string;
+  name: string;
+  title: string;
+  detail: string;
+  due_in_days: number;
+  assignee_type: 'account_owner' | 'assigned_user' | 'specific_user';
+  priority: string;
+  select_token?: string;
+  category: string;
+  is_active: boolean;
+  usage_count: number;
+  last_used_at?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+}
