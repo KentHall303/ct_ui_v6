@@ -128,7 +128,7 @@ const navigationItems: NavItem[] = [
       { id: "tp-email-modal-test", label: "Email Modal (Test)", path: "/templates/email-modal-test" },
       { id: "tp-task", label: "Task", path: "/templates/task" },
       { id: "tp-text", label: "Text", path: "/templates/text" },
-      { id: "tp-appt-invites", label: "Appt Invites", path: "/templates/appt-invites" },
+      { id: "tp-appt-invites", label: "Appointment Invites", path: "/templates/appt-invites" },
       { id: "tp-notes-logs", label: "Notes/Logs", path: "/templates/notes-logs" },
       { id: "tp-export-list", label: "Export List for Review", path: "/templates/export-list" },
     ]

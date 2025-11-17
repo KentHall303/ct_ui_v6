@@ -131,3 +131,26 @@ export interface TextTemplate {
   created_at: string;
   updated_at: string;
 }
+
+export interface ApptInviteTemplate {
+  id: string;
+  name: string;
+  subject: string;
+  contact_type: string;
+  additional_emails?: string;
+  calendar_title?: string;
+  external_calendar_title?: string;
+  select_token?: string;
+  content: string;
+  protect_from_overwriting?: boolean;
+  category: string;
+  description?: string;
+  variables?: Record<string, any>;
+  tags?: string[];
+  is_active: boolean;
+  usage_count: number;
+  last_used_at?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+}
