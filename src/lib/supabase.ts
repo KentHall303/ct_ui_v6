@@ -154,3 +154,19 @@ export interface ApptInviteTemplate {
   created_at: string;
   updated_at: string;
 }
+
+export interface NotesLogsTemplate {
+  id: string;
+  name: string;
+  content: string;
+  category: string;
+  description?: string;
+  variables?: Record<string, any>;
+  tags?: string[];
+  is_active: boolean;
+  usage_count: number;
+  last_used_at?: string;
+  created_by?: string;
+  created_at: string;
+  updated_at: string;
+}
