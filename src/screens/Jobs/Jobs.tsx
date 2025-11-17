@@ -11,6 +11,7 @@ import { EditAppointmentModal } from "../../components/modals/EditAppointmentMod
 import { supabase } from "../../lib/supabase";
 import { sampleCalendarEvents, CalendarEvent, isEventStart, isEventEnd, isEventMiddle } from "../../data/sampleCalendarData";
 import { fetchCalendarEvents, fetchEstimators, CalendarEventWithEstimator, updateCalendarEvent } from "../../services/calendarService";
+import { fetchSubcontractors, Subcontractor } from "../../services/subcontractorService";
 
 const actionButtons = [
   { label: "New Quote", variant: "default", icon: PlusIcon },
@@ -175,16 +176,7 @@ const quotesData = [
   }
 ];
 
-const estimators = [
-  { name: "Test_Account Owner", checked: true },
-  { name: "Standard Kent", checked: false },
-  { name: "Sara Joe", checked: false },
-  { name: "Jeanette Standards", checked: false },
-  { name: "Sara Admin", checked: false },
-  { name: "Absolute Nugget", checked: false },
-  { name: "Frank Team", checked: false },
-  { name: "Sara Admin Team", checked: false },
-];
+// Subcontractors are loaded from database
 
 const getButtonVariantClass = (variant: string) => {
   switch (variant) {
@@ -857,7 +849,8 @@ const DispatchingView = ({
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
   const [selectedDate, setSelectedDate] = React.useState(new Date(2025, 8, 15)); // Sept 15, 2025
-  const [selectedEstimators, setSelectedEstimators] = React.useState<string[]>(['Test_Account Owner', 'Sara Joe', 'Jeanette Standards']);
+  const [selectedSubcontractors, setSelectedSubcontractors] = React.useState<string[]>([]);
+  const [subcontractors, setSubcontractors] = React.useState<Subcontractor[]>([]);
   const [events, setEvents] = React.useState<CalendarEventWithEstimator[]>([]);
   const [draggedEvent, setDraggedEvent] = React.useState<CalendarEventWithEstimator | null>(null);
   const [viewMode, setViewMode] = React.useState<'timeline' | 'map'>('timeline');
@@ -881,15 +874,25 @@ const DispatchingView = ({
     return () => window.removeEventListener("resize", computeHeight);
   }, []);
 
-  const estimators = [
-    { name: 'Test_Account Owner', color: '#3b82f6' },
-    { name: 'Standard Kent', color: '#10b981' },
-    { name: 'Sara Joe', color: '#8b5cf6' },
-    { name: 'Jeanette Standards', color: '#f59e0b' },
-    { name: 'Sara Admin', color: '#ec4899' },
-    { name: 'Absolute Nugget', color: '#06b6d4' },
-    { name: 'Frank Team', color: '#84cc16' },
-  ];
+  // Generate colors for subcontractors
+  const colors = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#06b6d4', '#84cc16', '#ef4444', '#8b5cf6', '#14b8a6', '#f97316', '#a855f7', '#22c55e', '#eab308', '#06b6d4'];
+  const subcontractorsWithColors = subcontractors.map((sub, idx) => ({
+    ...sub,
+    color: colors[idx % colors.length]
+  }));
+
+  // Load subcontractors from database
+  React.useEffect(() => {
+    const loadSubcontractors = async () => {
+      const data = await fetchSubcontractors({ isActive: true });
+      setSubcontractors(data);
+      // Pre-select first 3 subcontractors
+      if (data.length > 0 && selectedSubcontractors.length === 0) {
+        setSelectedSubcontractors(data.slice(0, 3).map(s => s.name));
+      }
+    };
+    loadSubcontractors();
+  }, []);
 
   // Load calendar events from database
   React.useEffect(() => {
@@ -934,11 +937,11 @@ const DispatchingView = ({
     }
   };
 
-  const toggleEstimator = (estimatorName: string) => {
-    setSelectedEstimators(prev =>
-      prev.includes(estimatorName)
-        ? prev.filter(e => e !== estimatorName)
-        : [...prev, estimatorName]
+  const toggleSubcontractor = (subcontractorName: string) => {
+    setSelectedSubcontractors(prev =>
+      prev.includes(subcontractorName)
+        ? prev.filter(e => e !== subcontractorName)
+        : [...prev, subcontractorName]
     );
   };
 
@@ -969,8 +972,8 @@ const DispatchingView = ({
   });
 
   // Get events for selected date and estimator
-  const getEventsForEstimator = (estimatorName: string) => {
-    return events.filter(event => event.estimator?.name === estimatorName);
+  const getEventsForEstimator = (subcontractorName: string) => {
+    return events.filter(event => event.estimator?.name === subcontractorName);
   };
 
   const parseTime = (timeStr: string): number => {
@@ -1268,11 +1271,11 @@ const DispatchingView = ({
         {/* Left Sidebar */}
         <div className="border-end bg-light p-3" style={{ width: '280px', flexShrink: 0, overflowY: 'auto' }}>
           <div className="mb-4">
-            <h6 className="fw-bold text-dark mb-3">Estimators</h6>
+            <h6 className="fw-bold text-dark mb-3">Subcontractors</h6>
             <div className="d-flex flex-column gap-2">
-              {dbEstimators.map((estimator) => (
+              {subcontractorsWithColors.map((subcontractor) => (
                 <label
-                  key={estimator.id}
+                  key={subcontractor.id}
                   className="d-flex align-items-center gap-2 p-2 rounded"
                   style={{ cursor: 'pointer', transition: 'background-color 0.15s' }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
@@ -1280,8 +1283,8 @@ const DispatchingView = ({
                 >
                   <input
                     type="checkbox"
-                    checked={selectedEstimators.includes(estimator.name)}
-                    onChange={() => toggleEstimator(estimator.name)}
+                    checked={selectedSubcontractors.includes(subcontractor.name)}
+                    onChange={() => toggleSubcontractor(subcontractor.name)}
                     className="form-check-input mt-0"
                     style={{ cursor: 'pointer' }}
                   />
@@ -1290,16 +1293,16 @@ const DispatchingView = ({
                     style={{
                       width: '12px',
                       height: '12px',
-                      backgroundColor: estimator.color,
+                      backgroundColor: subcontractor.color,
                       flexShrink: 0
                     }}
                   />
                   <div className="d-flex flex-column flex-fill">
-                    <span className={`small ${selectedEstimators.includes(estimator.name) ? 'fw-semibold text-dark' : 'text-secondary'}`}>
-                      {estimator.name}
+                    <span className={`small ${selectedSubcontractors.includes(subcontractor.name) ? 'fw-semibold text-dark' : 'text-secondary'}`}>
+                      {subcontractor.name}
                     </span>
                     <span className="text-muted" style={{ fontSize: '0.65rem' }}>
-                      ${estimator.hourly_rate}/hr • {estimator.skills?.slice(0, 2).join(', ')}
+                      {subcontractor.specialty || 'General'}
                     </span>
                   </div>
                 </label>
@@ -1395,13 +1398,13 @@ const DispatchingView = ({
                 </div>
               </div>
 
-              {/* Estimator Rows */}
-              {selectedEstimators.map((estimatorName, index) => {
-                const estimatorEvents = getEventsForEstimator(estimatorName);
-                const estimator = estimators.find(e => e.name === estimatorName);
+              {/* Subcontractor Rows */}
+              {selectedSubcontractors.map((subcontractorName, index) => {
+                const subcontractorEvents = getEventsForEstimator(subcontractorName);
+                const subcontractor = subcontractorsWithColors.find(e => e.name === subcontractorName);
 
                 // Calculate the maximum number of overlapping events for this estimator to determine row height
-                const visibleEventsForRow = estimatorEvents
+                const visibleEventsForRow = subcontractorEvents
                   .map(event => ({
                     event,
                     position: calculatePosition(event.start_date, event.end_date, selectedDate)
@@ -1470,11 +1473,11 @@ const DispatchingView = ({
                           style={{
                             width: '6px',
                             height: '6px',
-                            backgroundColor: estimator?.color || '#9ca3af',
+                            backgroundColor: subcontractor?.color || '#9ca3af',
                             flexShrink: 0
                           }}
                         />
-                        <span style={{ fontSize: '0.8rem', fontWeight: '500' }} className="text-dark">{estimatorName}</span>
+                        <span style={{ fontSize: '0.8rem', fontWeight: '500' }} className="text-dark">{subcontractorName}</span>
                       </div>
                     </div>
 
@@ -1506,12 +1509,12 @@ const DispatchingView = ({
                                       const duration = new Date(draggedEvent.end_date).getTime() - new Date(draggedEvent.start_date).getTime();
                                       const newEndDate = new Date(newStartDate.getTime() + duration);
 
-                                      const estimator = dbEstimators.find(est => est.name === estimatorName);
+                                      const subcontractor = subcontractorsWithColors.find(est => est.name === subcontractorName);
 
                                       console.log('Updating event:', {
                                         id: draggedEvent.id,
                                         newTime: newStartDate.toISOString(),
-                                        estimator: estimator?.name
+                                        subcontractor: subcontractor?.name
                                       });
 
                                       const result = await updateCalendarEvent(draggedEvent.id, {
@@ -1558,12 +1561,12 @@ const DispatchingView = ({
                                       const duration = new Date(draggedEvent.end_date).getTime() - new Date(draggedEvent.start_date).getTime();
                                       const newEndDate = new Date(newStartDate.getTime() + duration);
 
-                                      const estimator = dbEstimators.find(est => est.name === estimatorName);
+                                      const subcontractor = subcontractorsWithColors.find(est => est.name === subcontractorName);
 
                                       console.log('Updating event (half hour):', {
                                         id: draggedEvent.id,
                                         newTime: newStartDate.toISOString(),
-                                        estimator: estimator?.name
+                                        subcontractor: subcontractor?.name
                                       });
 
                                       const result = await updateCalendarEvent(draggedEvent.id, {
@@ -1602,7 +1605,7 @@ const DispatchingView = ({
                         const standardEventHeight = 40;
                         const eventSpacing = 6;
 
-                        return estimatorEvents.map((event) => {
+                        return subcontractorEvents.map((event) => {
                           const position = calculatePosition(event.start_date, event.end_date, selectedDate);
 
                           if (!position.visible) {
@@ -1735,12 +1738,12 @@ const DispatchingView = ({
                 </div>
 
                 {/* User Pins and Routes */}
-                {selectedEstimators.map((estimatorName, index) => {
-                  const estimator = estimators.find(e => e.name === estimatorName);
-                  const estimatorEvents = events.filter(e => e.estimator === estimatorName);
+                {selectedSubcontractors.map((subcontractorName, index) => {
+                  const estimator = estimators.find(e => e.name === subcontractorName);
+                  const subcontractorEvents = events.filter(e => e.estimator === subcontractorName);
 
                   return (
-                    <div key={estimatorName}>
+                    <div key={subcontractorName}>
                       {/* User Pin */}
                       <div
                         className="position-absolute"
@@ -1756,14 +1759,14 @@ const DispatchingView = ({
                             style={{
                               width: '40px',
                               height: '40px',
-                              backgroundColor: estimator?.color || '#9ca3af',
+                              backgroundColor: subcontractor?.color || '#9ca3af',
                               fontSize: '0.75rem'
                             }}
                           >
-                            {estimatorName.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                            {subcontractorName.split(' ').map(n => n[0]).join('').slice(0, 2)}
                           </div>
                           <div className="mt-1 px-2 py-1 bg-white rounded shadow-sm" style={{ fontSize: '0.7rem', fontWeight: '600' }}>
-                            {estimatorName}
+                            {subcontractorName}
                           </div>
                         </div>
                       </div>
@@ -1783,7 +1786,7 @@ const DispatchingView = ({
                         <path
                           d={`M ${115 + index * 80} ${140 + index * 150} Q ${300 + index * 100} ${200 + index * 80} ${400 + index * 120} ${180 + index * 100}`}
                           fill="none"
-                          stroke={estimator?.color || '#9ca3af'}
+                          stroke={subcontractor?.color || '#9ca3af'}
                           strokeWidth="3"
                           strokeDasharray="5,5"
                           opacity="0.6"
@@ -1791,7 +1794,7 @@ const DispatchingView = ({
                       </svg>
 
                       {/* Appointment Pins */}
-                      {estimatorEvents.slice(0, 3).map((event, eventIndex) => (
+                      {subcontractorEvents.slice(0, 3).map((event, eventIndex) => (
                         <div
                           key={event.id}
                           className="position-absolute"
@@ -1809,14 +1812,14 @@ const DispatchingView = ({
                                 width: '32px',
                                 height: '32px',
                                 backgroundColor: 'white',
-                                border: `3px solid ${estimator?.color || '#9ca3af'}`
+                                border: `3px solid ${subcontractor?.color || '#9ca3af'}`
                               }}
                             >
                               <div
                                 style={{
                                   width: '8px',
                                   height: '8px',
-                                  backgroundColor: estimator?.color || '#9ca3af',
+                                  backgroundColor: subcontractor?.color || '#9ca3af',
                                   borderRadius: '50%'
                                 }}
                               />
@@ -1832,7 +1835,7 @@ const DispatchingView = ({
                                 whiteSpace: 'nowrap'
                               }}
                             >
-                              <div className="fw-bold" style={{ color: estimator?.color }}>{event.time}</div>
+                              <div className="fw-bold" style={{ color: subcontractor?.color }}>{event.time}</div>
                               <div className="fw-semibold text-dark">{event.quoteNumber}</div>
                               <div className="text-muted" style={{ fontSize: '0.6rem' }}>{event.contactName}</div>
                             </div>
@@ -1847,9 +1850,9 @@ const DispatchingView = ({
               {/* Timeline Strip at Bottom */}
               <div className="border-top bg-white p-3" style={{ position: 'sticky', bottom: 0 }}>
                 <div className="d-flex gap-3" style={{ overflowX: 'auto' }}>
-                  {selectedEstimators.map((estimatorName) => {
-                    const estimator = estimators.find(e => e.name === estimatorName);
-                    const estimatorEvents = events.filter(e => e.estimator === estimatorName).sort((a, b) => {
+                  {selectedSubcontractors.map((subcontractorName) => {
+                    const estimator = estimators.find(e => e.name === subcontractorName);
+                    const subcontractorEvents = events.filter(e => e.estimator === subcontractorName).sort((a, b) => {
                       const parseTime = (time: string) => {
                         const [timePart, period] = time.split(' ');
                         let [hours, minutes] = timePart.split(':').map(Number);
@@ -1861,28 +1864,28 @@ const DispatchingView = ({
                     });
 
                     return (
-                      <div key={estimatorName} className="d-flex align-items-center gap-2 bg-light rounded p-2" style={{ minWidth: '200px' }}>
+                      <div key={subcontractorName} className="d-flex align-items-center gap-2 bg-light rounded p-2" style={{ minWidth: '200px' }}>
                         <div
                           className="rounded-circle"
                           style={{
                             width: '8px',
                             height: '8px',
-                            backgroundColor: estimator?.color || '#9ca3af',
+                            backgroundColor: subcontractor?.color || '#9ca3af',
                             flexShrink: 0
                           }}
                         />
                         <div className="flex-fill">
                           <div style={{ fontSize: '0.75rem', fontWeight: '600' }} className="text-dark mb-1">
-                            {estimatorName}
+                            {subcontractorName}
                           </div>
                           <div className="d-flex gap-1" style={{ fontSize: '0.65rem' }}>
-                            {estimatorEvents.slice(0, 4).map((event, idx) => (
+                            {subcontractorEvents.slice(0, 4).map((event, idx) => (
                               <span key={event.id} className="text-muted">
-                                {event.time}{idx < Math.min(estimatorEvents.length, 4) - 1 ? ' →' : ''}
+                                {event.time}{idx < Math.min(subcontractorEvents.length, 4) - 1 ? ' →' : ''}
                               </span>
                             ))}
-                            {estimatorEvents.length > 4 && (
-                              <span className="text-muted">+{estimatorEvents.length - 4}</span>
+                            {subcontractorEvents.length > 4 && (
+                              <span className="text-muted">+{subcontractorEvents.length - 4}</span>
                             )}
                           </div>
                         </div>
@@ -1911,7 +1914,20 @@ const DispatchingView = ({
 const CalendarView = () => {
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
-  const [selectedEstimators, setSelectedEstimators] = React.useState<string[]>(['Test_Account Owner']);
+  const [selectedSubcontractors, setSelectedSubcontractors] = React.useState<string[]>([]);
+  const [subcontractors, setSubcontractors] = React.useState<Subcontractor[]>([]);
+
+  // Load subcontractors from database
+  React.useEffect(() => {
+    const loadSubcontractors = async () => {
+      const data = await fetchSubcontractors({ isActive: true });
+      setSubcontractors(data);
+      if (data.length > 0 && selectedSubcontractors.length === 0) {
+        setSelectedSubcontractors([data[0].name]);
+      }
+    };
+    loadSubcontractors();
+  }, []);
 
   React.useLayoutEffect(() => {
     function computeHeight() {
@@ -1926,18 +1942,18 @@ const CalendarView = () => {
     return () => window.removeEventListener("resize", computeHeight);
   }, []);
 
-  const toggleEstimator = (estimatorName: string) => {
-    setSelectedEstimators(prev =>
-      prev.includes(estimatorName)
-        ? prev.filter(e => e !== estimatorName)
-        : [...prev, estimatorName]
+  const toggleSubcontractor = (subcontractorName: string) => {
+    setSelectedSubcontractors(prev =>
+      prev.includes(subcontractorName)
+        ? prev.filter(e => e !== subcontractorName)
+        : [...prev, subcontractorName]
     );
   };
 
   const getEventsByDate = (date: string): CalendarEvent[] => {
     return sampleCalendarEvents.filter(event => {
       const matchesDate = event.date === date;
-      const matchesEstimator = selectedEstimators.length === 0 || selectedEstimators.includes(event.estimator);
+      const matchesEstimator = selectedSubcontractors.length === 0 || selectedSubcontractors.includes(event.estimator);
       return matchesDate && matchesEstimator;
     });
   };
@@ -1989,14 +2005,14 @@ const CalendarView = () => {
       style={{ maxHeight: maxHeight ?? undefined, display: 'flex', flexDirection: 'column' }}
     >
       <div className="d-flex flex-fill" style={{ minHeight: 0 }}>
-        {/* Left Sidebar - Estimators */}
+        {/* Left Sidebar - Subcontractors */}
         <div className="border-end bg-light p-3" style={{ width: '240px', flexShrink: 0, overflowY: 'auto' }}>
           <div className="mb-4">
-            <h6 className="fw-bold text-dark mb-3">Estimators</h6>
+            <h6 className="fw-bold text-dark mb-3">Subcontractors</h6>
             <div className="d-flex flex-column gap-2">
-              {estimators.map((estimator, index) => (
+              {subcontractors.map((subcontractor, index) => (
                 <label
-                  key={index}
+                  key={subcontractor.id}
                   className="d-flex align-items-center gap-2 p-2 rounded"
                   style={{ cursor: 'pointer', transition: 'background-color 0.15s' }}
                   onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
@@ -2004,13 +2020,13 @@ const CalendarView = () => {
                 >
                   <input
                     type="checkbox"
-                    checked={selectedEstimators.includes(estimator.name)}
-                    onChange={() => toggleEstimator(estimator.name)}
+                    checked={selectedSubcontractors.includes(subcontractor.name)}
+                    onChange={() => toggleSubcontractor(subcontractor.name)}
                     className="form-check-input mt-0"
                     style={{ cursor: 'pointer' }}
                   />
-                  <span className={`small ${selectedEstimators.includes(estimator.name) ? 'fw-semibold text-dark' : 'text-secondary'}`}>
-                    {estimator.name}
+                  <span className={`small ${selectedSubcontractors.includes(subcontractor.name) ? 'fw-semibold text-dark' : 'text-secondary'}`}>
+                    {subcontractor.name}
                   </span>
                 </label>
               ))}
