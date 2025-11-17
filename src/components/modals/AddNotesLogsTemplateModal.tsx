@@ -23,16 +23,27 @@ export const AddNotesLogsTemplateModal: React.FC<AddNotesLogsTemplateModalProps>
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const editorRef = useRef<HTMLDivElement>(null);
+  const isInitializingRef = useRef(false);
 
   const isEditMode = !!template;
 
   useEffect(() => {
-    if (show && template) {
-      setName(template.name || '');
-      setContent(template.content || '');
-    } else if (show && !template) {
-      setName('');
-      setContent('');
+    if (show && editorRef.current) {
+      isInitializingRef.current = true;
+
+      if (template) {
+        setName(template.name || '');
+        setContent(template.content || '');
+        editorRef.current.innerHTML = template.content || '';
+      } else {
+        setName('');
+        setContent('');
+        editorRef.current.innerHTML = '';
+      }
+
+      setTimeout(() => {
+        isInitializingRef.current = false;
+      }, 0);
     }
   }, [show, template]);
 
@@ -425,8 +436,11 @@ export const AddNotesLogsTemplateModal: React.FC<AddNotesLogsTemplateModalProps>
                 }}
                 contentEditable
                 suppressContentEditableWarning
-                onInput={(e) => setContent(e.currentTarget.innerHTML)}
-                dangerouslySetInnerHTML={{ __html: content }}
+                onInput={(e) => {
+                  if (!isInitializingRef.current) {
+                    setContent(e.currentTarget.innerHTML);
+                  }
+                }}
               />
             </div>
           </div>

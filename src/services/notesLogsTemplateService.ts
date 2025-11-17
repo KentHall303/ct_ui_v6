@@ -5,7 +5,7 @@ export const notesLogsTemplateService = {
     const { data, error } = await supabase
       .from('templates')
       .select('*')
-      .eq('category', 'notes-logs')
+      .eq('category', 'notes_logs')
       .eq('is_active', true)
       .order('created_at', { ascending: false });
 
@@ -21,7 +21,7 @@ export const notesLogsTemplateService = {
       .from('templates')
       .select('*')
       .eq('id', id)
-      .eq('category', 'notes-logs')
+      .eq('category', 'notes_logs')
       .maybeSingle();
 
     if (error) {
@@ -36,7 +36,7 @@ export const notesLogsTemplateService = {
       .from('templates')
       .insert({
         ...template,
-        category: 'notes-logs',
+        category: 'notes_logs',
         is_active: true,
         usage_count: 0,
       })
