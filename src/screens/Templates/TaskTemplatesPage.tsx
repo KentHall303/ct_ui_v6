@@ -3,7 +3,6 @@ import { BodyLayout } from '../../components/layout/BodyLayout/BodyLayout';
 import { Button } from '../../components/bootstrap/Button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/bootstrap/Table';
 import { Plus, Copy } from 'lucide-react';
-import { formatDateTime } from '../../utils/dateUtils';
 import { AddTaskTemplateModal } from '../../components/modals/AddTaskTemplateModal';
 import { taskTemplateService } from '../../services/taskTemplateService';
 import { TaskTemplate } from '../../lib/supabase';
@@ -16,7 +15,7 @@ const TaskTemplates = (): JSX.Element => {
   const [sortConfig, setSortConfig] = React.useState<{
     key: string;
     direction: 'asc' | 'desc';
-  } | null>({ key: 'updated_at', direction: 'desc' });
+  } | null>({ key: 'title', direction: 'asc' });
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [editingTemplate, setEditingTemplate] = React.useState<TaskTemplate | null>(null);
 
@@ -96,18 +95,6 @@ const TaskTemplates = (): JSX.Element => {
     return [...templates].sort((a, b) => {
       let aVal = a[sortConfig.key as keyof TaskTemplate];
       let bVal = b[sortConfig.key as keyof TaskTemplate];
-
-      if (sortConfig.key === 'updated_at' || sortConfig.key === 'created_at') {
-        const aTime = aVal ? new Date(aVal as string).getTime() : 0;
-        const bTime = bVal ? new Date(bVal as string).getTime() : 0;
-        return sortConfig.direction === 'asc' ? aTime - bTime : bTime - aTime;
-      }
-
-      if (sortConfig.key === 'due_in_days') {
-        const aNum = Number(aVal) || 0;
-        const bNum = Number(bVal) || 0;
-        return sortConfig.direction === 'asc' ? aNum - bNum : bNum - aNum;
-      }
 
       const aStr = String(aVal || '').toLowerCase();
       const bStr = String(bVal || '').toLowerCase();
@@ -196,23 +183,15 @@ const TaskTemplates = (): JSX.Element => {
                   scope="col"
                   {...getSortProps('title')}
                   aria-label={`Sort by title ${sortConfig?.key === 'title' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '30%' }}
+                  style={{ width: '50%' }}
                 >
                   Title{getSortIcon('title')}
                 </TableHead>
                 <TableHead
                   scope="col"
-                  {...getSortProps('due_in_days')}
-                  aria-label={`Sort by due in days ${sortConfig?.key === 'due_in_days' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '15%' }}
-                >
-                  Due In Days{getSortIcon('due_in_days')}
-                </TableHead>
-                <TableHead
-                  scope="col"
                   {...getSortProps('assignee_type')}
                   aria-label={`Sort by assignee ${sortConfig?.key === 'assignee_type' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '20%' }}
+                  style={{ width: '25%' }}
                 >
                   Assignee{getSortIcon('assignee_type')}
                 </TableHead>
@@ -224,15 +203,7 @@ const TaskTemplates = (): JSX.Element => {
                 >
                   Priority{getSortIcon('priority')}
                 </TableHead>
-                <TableHead
-                  scope="col"
-                  {...getSortProps('updated_at')}
-                  aria-label={`Sort by last updated ${sortConfig?.key === 'updated_at' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '15%' }}
-                >
-                  Last Updated{getSortIcon('updated_at')}
-                </TableHead>
-                <TableHead scope="col" style={{ textAlign: 'center', width: '5%' }}>
+                <TableHead scope="col" style={{ textAlign: 'center', width: '10%' }}>
                   Actions
                 </TableHead>
               </TableRow>
@@ -261,12 +232,6 @@ const TaskTemplates = (): JSX.Element => {
 
                   <TableCell role="gridcell">
                     <div className="text-dark" style={{ fontSize: '0.9375rem' }}>
-                      {template.due_in_days}
-                    </div>
-                  </TableCell>
-
-                  <TableCell role="gridcell">
-                    <div className="text-dark" style={{ fontSize: '0.9375rem' }}>
                       {getAssigneeLabel(template.assignee_type)}
                     </div>
                   </TableCell>
@@ -274,12 +239,6 @@ const TaskTemplates = (): JSX.Element => {
                   <TableCell role="gridcell">
                     <div className="text-dark" style={{ fontSize: '0.9375rem' }}>
                       {template.priority || '-'}
-                    </div>
-                  </TableCell>
-
-                  <TableCell role="gridcell">
-                    <div className="text-dark" style={{ fontSize: '0.9375rem' }}>
-                      {formatDateTime(template.updated_at)}
                     </div>
                   </TableCell>
 
