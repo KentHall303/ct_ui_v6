@@ -137,7 +137,7 @@ const ApptInviteTemplates = (): JSX.Element => {
       <div className="px-3 pt-3 flex-shrink-0">
         <div className="bg-white rounded-3 pt-3 pb-3 px-4 border shadow-sm">
           <div className="d-flex align-items-center justify-content-between">
-            <h2 className="h2 fw-bold text-dark mb-0">App Invite Templates</h2>
+            <h2 className="h2 fw-bold text-dark mb-0">Appointment Invite Templates</h2>
             <Button
               variant="success"
               className="rounded-pill d-flex align-items-center gap-2"
