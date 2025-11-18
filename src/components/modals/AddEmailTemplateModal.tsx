@@ -33,8 +33,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
   const [protectFromSharing, setProtectFromSharing] = useState(false);
   const [excludeClient, setExcludeClient] = useState(false);
   const [description, setDescription] = useState('');
-  const [activeEditorTab, setActiveEditorTab] = useState<'sun' | 'block' | 'raw'>('block');
-  const [activeMainTab, setActiveMainTab] = useState<'preview' | 'editor'>('preview');
+  const [activeTab, setActiveTab] = useState<'preview' | 'sun' | 'block' | 'raw'>('preview');
   const [contentTcpa, setContentTcpa] = useState('Promotional');
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
@@ -69,8 +68,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
       setDescription('');
       setContentTcpa('Promotional');
       setContent('');
-      setActiveEditorTab('block');
-      setActiveMainTab('preview');
+      setActiveTab('preview');
     }
   }, [show, template]);
 
@@ -441,377 +439,375 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
 
           <div>
             <Card className="shadow-sm">
-              <Tab.Container
-                activeKey={activeMainTab}
-                onSelect={(k) => setActiveMainTab(k as 'preview' | 'editor')}
-              >
-                <Card.Header className="bg-white border-bottom-0 pb-0">
-                  <Nav variant="underline" className="nav-underline">
-                    <Nav.Item>
-                      <Nav.Link
-                        eventKey="preview"
-                        className="d-flex align-items-center gap-2"
-                      >
-                        <Eye size={16} />
-                        Published Content
-                      </Nav.Link>
-                    </Nav.Item>
-                    <Nav.Item>
-                      <Nav.Link
-                        eventKey="editor"
-                        className="d-flex align-items-center gap-2"
-                      >
-                        <Edit size={16} />
-                        Editor
-                      </Nav.Link>
-                    </Nav.Item>
-                  </Nav>
-                </Card.Header>
-
-                <Card.Body>
-                  <Tab.Content>
-                    <Tab.Pane eventKey="preview">
-                      <div
-                        className="border rounded d-flex align-items-center justify-content-center"
-                        style={{
-                          minHeight: '200px',
-                          backgroundColor: '#6c757d',
-                          color: '#dee2e6'
-                        }}
-                      >
-                        <div className="text-center">
-                          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                            <polyline points="21 15 16 10 5 21"></polyline>
-                          </svg>
-                        </div>
-                      </div>
-                    </Tab.Pane>
-                    <Tab.Pane eventKey="editor">
-                      <Tab.Container
-                        activeKey={activeEditorTab}
-                        onSelect={(k) => setActiveEditorTab(k as 'sun' | 'block' | 'raw')}
-                      >
-                        <Nav variant="underline" className="nav-underline mb-3">
-                          <Nav.Item>
-                            <Nav.Link
-                              eventKey="sun"
-                              className="d-flex align-items-center gap-2"
-                            >
-                              <Sun size={16} />
-                              Sun Editor
-                            </Nav.Link>
-                          </Nav.Item>
-                          <Nav.Item>
-                            <Nav.Link
-                              eventKey="block"
-                              className="d-flex align-items-center gap-2"
-                            >
-                              <Grid3x3 size={16} />
-                              Block Editor
-                            </Nav.Link>
-                          </Nav.Item>
-                          <Nav.Item>
-                            <Nav.Link
-                              eventKey="raw"
-                              className="d-flex align-items-center gap-2"
-                            >
-                              <Code size={16} />
-                              Raw HTML
-                            </Nav.Link>
-                          </Nav.Item>
-                        </Nav>
-
-                        <Tab.Content>
-                          <Tab.Pane eventKey="block">
-                            <div>
-                              <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
-                                <button
-                                  type="button"
-                                  className="btn btn-light border p-2"
-                                  title="Align left"
-                                  style={{ width: '36px', height: '36px' }}
-                                >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <line x1="17" y1="10" x2="3" y2="10"></line>
-                              <line x1="21" y1="6" x2="3" y2="6"></line>
-                              <line x1="21" y1="14" x2="3" y2="14"></line>
-                              <line x1="17" y1="18" x2="3" y2="18"></line>
-                            </svg>
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-light border p-2"
-                            title="Align center"
-                            style={{ width: '36px', height: '36px' }}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <line x1="18" y1="10" x2="6" y2="10"></line>
-                              <line x1="21" y1="6" x2="3" y2="6"></line>
-                              <line x1="21" y1="14" x2="3" y2="14"></line>
-                              <line x1="18" y1="18" x2="6" y2="18"></line>
-                            </svg>
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-light border p-2"
-                            title="Align right"
-                            style={{ width: '36px', height: '36px' }}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <line x1="21" y1="10" x2="7" y2="10"></line>
-                              <line x1="21" y1="6" x2="3" y2="6"></line>
-                              <line x1="21" y1="14" x2="3" y2="14"></line>
-                              <line x1="21" y1="18" x2="7" y2="18"></line>
-                            </svg>
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-light border p-2"
-                            title="Justify"
-                            style={{ width: '36px', height: '36px' }}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <line x1="21" y1="10" x2="3" y2="10"></line>
-                              <line x1="21" y1="6" x2="3" y2="6"></line>
-                              <line x1="21" y1="14" x2="3" y2="14"></line>
-                              <line x1="21" y1="18" x2="3" y2="18"></line>
-                            </svg>
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-light border p-2"
-                            title="Insert image"
-                            style={{ width: '36px', height: '36px' }}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                              <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                              <polyline points="21 15 16 10 5 21"></polyline>
-                            </svg>
-                          </button>
-                        </div>
-                        <div
-                          className="border rounded p-3"
-                          style={{
-                            minHeight: '150px',
-                            backgroundColor: '#f8f9fa',
-                            cursor: 'text'
-                          }}
-                          contentEditable
-                          suppressContentEditableWarning
-                          onInput={(e) => setContent(e.currentTarget.textContent || '')}
-                          dangerouslySetInnerHTML={{ __html: content }}
+              <Card.Header className="bg-white border-bottom-0 pb-0">
+                <Nav variant="underline" className="nav-underline">
+                  <Nav.Item>
+                    <Nav.Link
+                      active={activeTab === 'preview'}
+                      onClick={() => setActiveTab('preview')}
+                      className="d-flex align-items-center gap-2"
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <Eye size={16} />
+                      Published Content
+                    </Nav.Link>
+                  </Nav.Item>
+                  {activeTab !== 'preview' && (
+                    <>
+                      <Nav.Item>
+                        <Nav.Link
+                          active={activeTab === 'sun'}
+                          onClick={() => setActiveTab('sun')}
+                          className="d-flex align-items-center gap-2"
+                          style={{ cursor: 'pointer' }}
                         >
-                        </div>
-                        <div className="d-flex justify-content-end gap-2 mt-3">
-                          <Button
-                            variant="outline-secondary"
-                            onClick={handleSaveAsDraft}
-                            style={{ padding: '6px 20px', fontSize: '0.875rem' }}
-                          >
-                            SAVE AS A DRAFT ONLY
-                          </Button>
-                          <Button
-                            variant="primary"
-                            onClick={handlePublish}
-                            style={{ padding: '6px 32px', fontSize: '0.875rem' }}
-                          >
-                            PUBLISH
-                          </Button>
-                        </div>
-                      </div>
-                        </Tab.Pane>
-                        <Tab.Pane eventKey="sun">
-                      <div>
-                        <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
-                          <button
-                            type="button"
-                            className="btn btn-light border p-2"
-                            title="Align left"
-                            style={{ width: '36px', height: '36px' }}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <line x1="17" y1="10" x2="3" y2="10"></line>
-                              <line x1="21" y1="6" x2="3" y2="6"></line>
-                              <line x1="21" y1="14" x2="3" y2="14"></line>
-                              <line x1="17" y1="18" x2="3" y2="18"></line>
-                            </svg>
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-light border p-2"
-                            title="Align center"
-                            style={{ width: '36px', height: '36px' }}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <line x1="18" y1="10" x2="6" y2="10"></line>
-                              <line x1="21" y1="6" x2="3" y2="6"></line>
-                              <line x1="21" y1="14" x2="3" y2="14"></line>
-                              <line x1="18" y1="18" x2="6" y2="18"></line>
-                            </svg>
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-light border p-2"
-                            title="Align right"
-                            style={{ width: '36px', height: '36px' }}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <line x1="21" y1="10" x2="7" y2="10"></line>
-                              <line x1="21" y1="6" x2="3" y2="6"></line>
-                              <line x1="21" y1="14" x2="3" y2="14"></line>
-                              <line x1="21" y1="18" x2="7" y2="18"></line>
-                            </svg>
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-light border p-2"
-                            title="Justify"
-                            style={{ width: '36px', height: '36px' }}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <line x1="21" y1="10" x2="3" y2="10"></line>
-                              <line x1="21" y1="6" x2="3" y2="6"></line>
-                              <line x1="21" y1="14" x2="3" y2="14"></line>
-                              <line x1="21" y1="18" x2="3" y2="18"></line>
-                            </svg>
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-light border p-2"
-                            title="Insert image"
-                            style={{ width: '36px', height: '36px' }}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                              <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                              <polyline points="21 15 16 10 5 21"></polyline>
-                            </svg>
-                          </button>
-                        </div>
-                        <div className="text-muted text-center py-5">
-                          SUN EDITOR content area
-                        </div>
-                        <div className="d-flex justify-content-end gap-2 mt-3">
-                          <Button
-                            variant="outline-secondary"
-                            onClick={handleSaveAsDraft}
-                            style={{ padding: '6px 20px', fontSize: '0.875rem' }}
-                          >
-                            SAVE AS A DRAFT ONLY
-                          </Button>
-                          <Button
-                            variant="primary"
-                            onClick={handlePublish}
-                            style={{ padding: '6px 32px', fontSize: '0.875rem' }}
-                          >
-                            PUBLISH
-                          </Button>
-                        </div>
-                      </div>
-                        </Tab.Pane>
-                        <Tab.Pane eventKey="raw">
-                      <div>
-                        <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
-                          <button
-                            type="button"
-                            className="btn btn-light border p-2"
-                            title="Align left"
-                            style={{ width: '36px', height: '36px' }}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <line x1="17" y1="10" x2="3" y2="10"></line>
-                              <line x1="21" y1="6" x2="3" y2="6"></line>
-                              <line x1="21" y1="14" x2="3" y2="14"></line>
-                              <line x1="17" y1="18" x2="3" y2="18"></line>
-                            </svg>
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-light border p-2"
-                            title="Align center"
-                            style={{ width: '36px', height: '36px' }}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <line x1="18" y1="10" x2="6" y2="10"></line>
-                              <line x1="21" y1="6" x2="3" y2="6"></line>
-                              <line x1="21" y1="14" x2="3" y2="14"></line>
-                              <line x1="18" y1="18" x2="6" y2="18"></line>
-                            </svg>
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-light border p-2"
-                            title="Align right"
-                            style={{ width: '36px', height: '36px' }}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <line x1="21" y1="10" x2="7" y2="10"></line>
-                              <line x1="21" y1="6" x2="3" y2="6"></line>
-                              <line x1="21" y1="14" x2="3" y2="14"></line>
-                              <line x1="21" y1="18" x2="7" y2="18"></line>
-                            </svg>
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-light border p-2"
-                            title="Justify"
-                            style={{ width: '36px', height: '36px' }}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <line x1="21" y1="10" x2="3" y2="10"></line>
-                              <line x1="21" y1="6" x2="3" y2="6"></line>
-                              <line x1="21" y1="14" x2="3" y2="14"></line>
-                              <line x1="21" y1="18" x2="3" y2="18"></line>
-                            </svg>
-                          </button>
-                          <button
-                            type="button"
-                            className="btn btn-light border p-2"
-                            title="Insert image"
-                            style={{ width: '36px', height: '36px' }}
-                          >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                              <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                              <polyline points="21 15 16 10 5 21"></polyline>
-                            </svg>
-                          </button>
-                        </div>
-                        <Form.Control
-                          as="textarea"
-                          rows={8}
-                          placeholder="Enter HTML code..."
-                          style={{ fontFamily: 'monospace', fontSize: '0.875rem', resize: 'none' }}
-                          value={content}
-                          onChange={(e) => setContent(e.target.value)}
-                        />
-                        <div className="d-flex justify-content-end gap-2 mt-3">
-                          <Button
-                            variant="outline-secondary"
-                            onClick={handleSaveAsDraft}
-                            style={{ padding: '6px 20px', fontSize: '0.875rem' }}
-                          >
-                            SAVE AS A DRAFT ONLY
-                          </Button>
-                          <Button
-                            variant="primary"
-                            onClick={handlePublish}
-                            style={{ padding: '6px 32px', fontSize: '0.875rem' }}
-                          >
-                            PUBLISH
-                          </Button>
-                        </div>
-                      </div>
-                        </Tab.Pane>
-                      </Tab.Content>
-                    </Tab.Container>
-                    </Tab.Pane>
-                  </Tab.Content>
-                </Card.Body>
-              </Tab.Container>
+                          <Sun size={16} />
+                          Sun Editor
+                        </Nav.Link>
+                      </Nav.Item>
+                      <Nav.Item>
+                        <Nav.Link
+                          active={activeTab === 'block'}
+                          onClick={() => setActiveTab('block')}
+                          className="d-flex align-items-center gap-2"
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <Grid3x3 size={16} />
+                          Block Editor
+                        </Nav.Link>
+                      </Nav.Item>
+                      <Nav.Item>
+                        <Nav.Link
+                          active={activeTab === 'raw'}
+                          onClick={() => setActiveTab('raw')}
+                          className="d-flex align-items-center gap-2"
+                          style={{ cursor: 'pointer' }}
+                        >
+                          <Code size={16} />
+                          Raw HTML
+                        </Nav.Link>
+                      </Nav.Item>
+                    </>
+                  )}
+                  <Nav.Item>
+                    <Nav.Link
+                      active={activeTab !== 'preview' && activeTab !== 'sun' && activeTab !== 'block' && activeTab !== 'raw'}
+                      onClick={() => setActiveTab('block')}
+                      className="d-flex align-items-center gap-2"
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <Edit size={16} />
+                      Editor
+                    </Nav.Link>
+                  </Nav.Item>
+                </Nav>
+              </Card.Header>
+
+              <Card.Body>
+                {activeTab === 'preview' && (
+                  <div
+                    className="border rounded d-flex align-items-center justify-content-center"
+                    style={{
+                      minHeight: '200px',
+                      backgroundColor: '#6c757d',
+                      color: '#dee2e6'
+                    }}
+                  >
+                    <div className="text-center">
+                      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                      </svg>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'block' && (
+                  <div>
+                    <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
+                      <button
+                        type="button"
+                        className="btn btn-light border p-2"
+                        title="Align left"
+                        style={{ width: '36px', height: '36px' }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="17" y1="10" x2="3" y2="10"></line>
+                          <line x1="21" y1="6" x2="3" y2="6"></line>
+                          <line x1="21" y1="14" x2="3" y2="14"></line>
+                          <line x1="17" y1="18" x2="3" y2="18"></line>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-light border p-2"
+                        title="Align center"
+                        style={{ width: '36px', height: '36px' }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="18" y1="10" x2="6" y2="10"></line>
+                          <line x1="21" y1="6" x2="3" y2="6"></line>
+                          <line x1="21" y1="14" x2="3" y2="14"></line>
+                          <line x1="18" y1="18" x2="6" y2="18"></line>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-light border p-2"
+                        title="Align right"
+                        style={{ width: '36px', height: '36px' }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="21" y1="10" x2="7" y2="10"></line>
+                          <line x1="21" y1="6" x2="3" y2="6"></line>
+                          <line x1="21" y1="14" x2="3" y2="14"></line>
+                          <line x1="21" y1="18" x2="7" y2="18"></line>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-light border p-2"
+                        title="Justify"
+                        style={{ width: '36px', height: '36px' }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="21" y1="10" x2="3" y2="10"></line>
+                          <line x1="21" y1="6" x2="3" y2="6"></line>
+                          <line x1="21" y1="14" x2="3" y2="14"></line>
+                          <line x1="21" y1="18" x2="3" y2="18"></line>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-light border p-2"
+                        title="Insert image"
+                        style={{ width: '36px', height: '36px' }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                          <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                      </button>
+                    </div>
+                    <div
+                      className="border rounded p-3"
+                      style={{
+                        minHeight: '150px',
+                        backgroundColor: '#f8f9fa',
+                        cursor: 'text'
+                      }}
+                      contentEditable
+                      suppressContentEditableWarning
+                      onInput={(e) => setContent(e.currentTarget.textContent || '')}
+                      dangerouslySetInnerHTML={{ __html: content }}
+                    >
+                    </div>
+                    <div className="d-flex justify-content-end gap-2 mt-3">
+                      <Button
+                        variant="outline-secondary"
+                        onClick={handleSaveAsDraft}
+                        style={{ padding: '6px 20px', fontSize: '0.875rem' }}
+                      >
+                        SAVE AS A DRAFT ONLY
+                      </Button>
+                      <Button
+                        variant="primary"
+                        onClick={handlePublish}
+                        style={{ padding: '6px 32px', fontSize: '0.875rem' }}
+                      >
+                        PUBLISH
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'sun' && (
+                  <div>
+                    <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
+                      <button
+                        type="button"
+                        className="btn btn-light border p-2"
+                        title="Align left"
+                        style={{ width: '36px', height: '36px' }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="17" y1="10" x2="3" y2="10"></line>
+                          <line x1="21" y1="6" x2="3" y2="6"></line>
+                          <line x1="21" y1="14" x2="3" y2="14"></line>
+                          <line x1="17" y1="18" x2="3" y2="18"></line>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-light border p-2"
+                        title="Align center"
+                        style={{ width: '36px', height: '36px' }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="18" y1="10" x2="6" y2="10"></line>
+                          <line x1="21" y1="6" x2="3" y2="6"></line>
+                          <line x1="21" y1="14" x2="3" y2="14"></line>
+                          <line x1="18" y1="18" x2="6" y2="18"></line>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-light border p-2"
+                        title="Align right"
+                        style={{ width: '36px', height: '36px' }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="21" y1="10" x2="7" y2="10"></line>
+                          <line x1="21" y1="6" x2="3" y2="6"></line>
+                          <line x1="21" y1="14" x2="3" y2="14"></line>
+                          <line x1="21" y1="18" x2="7" y2="18"></line>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-light border p-2"
+                        title="Justify"
+                        style={{ width: '36px', height: '36px' }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="21" y1="10" x2="3" y2="10"></line>
+                          <line x1="21" y1="6" x2="3" y2="6"></line>
+                          <line x1="21" y1="14" x2="3" y2="14"></line>
+                          <line x1="21" y1="18" x2="3" y2="18"></line>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-light border p-2"
+                        title="Insert image"
+                        style={{ width: '36px', height: '36px' }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                          <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                      </button>
+                    </div>
+                    <div className="text-muted text-center py-5">
+                      SUN EDITOR content area
+                    </div>
+                    <div className="d-flex justify-content-end gap-2 mt-3">
+                      <Button
+                        variant="outline-secondary"
+                        onClick={handleSaveAsDraft}
+                        style={{ padding: '6px 20px', fontSize: '0.875rem' }}
+                      >
+                        SAVE AS A DRAFT ONLY
+                      </Button>
+                      <Button
+                        variant="primary"
+                        onClick={handlePublish}
+                        style={{ padding: '6px 32px', fontSize: '0.875rem' }}
+                      >
+                        PUBLISH
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'raw' && (
+                  <div>
+                    <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
+                      <button
+                        type="button"
+                        className="btn btn-light border p-2"
+                        title="Align left"
+                        style={{ width: '36px', height: '36px' }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="17" y1="10" x2="3" y2="10"></line>
+                          <line x1="21" y1="6" x2="3" y2="6"></line>
+                          <line x1="21" y1="14" x2="3" y2="14"></line>
+                          <line x1="17" y1="18" x2="3" y2="18"></line>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-light border p-2"
+                        title="Align center"
+                        style={{ width: '36px', height: '36px' }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="18" y1="10" x2="6" y2="10"></line>
+                          <line x1="21" y1="6" x2="3" y2="6"></line>
+                          <line x1="21" y1="14" x2="3" y2="14"></line>
+                          <line x1="18" y1="18" x2="6" y2="18"></line>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-light border p-2"
+                        title="Align right"
+                        style={{ width: '36px', height: '36px' }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="21" y1="10" x2="7" y2="10"></line>
+                          <line x1="21" y1="6" x2="3" y2="6"></line>
+                          <line x1="21" y1="14" x2="3" y2="14"></line>
+                          <line x1="21" y1="18" x2="7" y2="18"></line>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-light border p-2"
+                        title="Justify"
+                        style={{ width: '36px', height: '36px' }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <line x1="21" y1="10" x2="3" y2="10"></line>
+                          <line x1="21" y1="6" x2="3" y2="6"></line>
+                          <line x1="21" y1="14" x2="3" y2="14"></line>
+                          <line x1="21" y1="18" x2="3" y2="18"></line>
+                        </svg>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-light border p-2"
+                        title="Insert image"
+                        style={{ width: '36px', height: '36px' }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                          <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                      </button>
+                    </div>
+                    <Form.Control
+                      as="textarea"
+                      rows={8}
+                      placeholder="Enter HTML code..."
+                      style={{ fontFamily: 'monospace', fontSize: '0.875rem', resize: 'none' }}
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                    />
+                    <div className="d-flex justify-content-end gap-2 mt-3">
+                      <Button
+                        variant="outline-secondary"
+                        onClick={handleSaveAsDraft}
+                        style={{ padding: '6px 20px', fontSize: '0.875rem' }}
+                      >
+                        SAVE AS A DRAFT ONLY
+                      </Button>
+                      <Button
+                        variant="primary"
+                        onClick={handlePublish}
+                        style={{ padding: '6px 32px', fontSize: '0.875rem' }}
+                      >
+                        PUBLISH
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </Card.Body>
             </Card>
           </div>
 
