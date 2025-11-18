@@ -476,15 +476,11 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                     </Nav.Item>
                   </Nav>
 
+                  {activeTab === 'editor' && (
                   <div
                     style={{
                       flex: '0 0 auto',
-                      display: 'flex',
-                      maxWidth: activeTab === 'editor' ? '800px' : '0',
-                      opacity: activeTab === 'editor' ? 1 : 0,
-                      overflow: 'hidden',
-                      transition: 'max-width 0.3s ease-in-out, opacity 0.3s ease-in-out',
-                      pointerEvents: activeTab === 'editor' ? 'auto' : 'none'
+                      display: 'flex'
                     }}
                   >
                     <Nav variant="underline" className="nav-underline">
@@ -541,6 +537,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                       </Nav.Item>
                     </Nav>
                   </div>
+                  )}
                 </div>
               </Card.Header>
 
