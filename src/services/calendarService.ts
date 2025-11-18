@@ -96,36 +96,101 @@ export async function getAllSkills(): Promise<string[]> {
 export async function fetchCalendarEvents(
   startDate: Date,
   endDate: Date,
-  estimatorIds?: string[]
+  subcontractorNames?: string[]
 ): Promise<CalendarEventWithEstimator[]> {
-  // Fetch events that overlap with the date range:
-  // - Events that start before or during the range AND end during or after the range
-  // This ensures multi-day events that span across the viewed date are included
-  let query = supabase
-    .from('calendar_events')
+  // Fetch meetings with their associated subcontractors
+  const { data: meetings, error: meetingsError } = await supabase
+    .from('meetings')
     .select(`
       *,
-      estimator:estimators(*)
+      meeting_subcontractors (
+        subcontractor:subcontractors (*)
+      )
     `)
     .lte('start_date', endDate.toISOString())
     .gte('end_date', startDate.toISOString())
     .order('start_date');
 
-  if (estimatorIds && estimatorIds.length > 0) {
-    query = query.in('estimator_id', estimatorIds);
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error('Error fetching calendar events:', error);
+  if (meetingsError) {
+    console.error('Error fetching meetings:', meetingsError);
     return [];
   }
 
-  return (data || []).map((event: any) => ({
-    ...event,
-    estimator: event.estimator || undefined
-  }));
+  // Transform meetings to match CalendarEventWithEstimator structure
+  const events = (meetings || [])
+    .filter((meeting: any) => {
+      // If specific subcontractor names are requested, filter by them
+      if (!subcontractorNames || subcontractorNames.length === 0) return true;
+
+      const meetingSubs = meeting.meeting_subcontractors || [];
+      return meetingSubs.some((ms: any) =>
+        subcontractorNames.includes(ms.subcontractor?.name)
+      );
+    })
+    .flatMap((meeting: any) => {
+      const meetingSubs = meeting.meeting_subcontractors || [];
+
+      // If no subcontractors assigned, return the meeting once without estimator
+      if (meetingSubs.length === 0) {
+        return [{
+          id: meeting.id,
+          title: meeting.title,
+          description: meeting.description,
+          event_type: meeting.meeting_type,
+          status: meeting.status,
+          start_date: meeting.start_date,
+          end_date: meeting.end_date,
+          is_all_day: false,
+          location: meeting.location,
+          estimator_id: null,
+          contact_name: null,
+          contact_email: null,
+          contact_phone: null,
+          amount: null,
+          quote_number: null,
+          notes: meeting.notes,
+          created_at: meeting.created_at,
+          updated_at: meeting.updated_at,
+          estimator: undefined
+        }];
+      }
+
+      // Return one event per subcontractor assigned to the meeting
+      return meetingSubs.map((ms: any) => ({
+        id: meeting.id,
+        title: meeting.title,
+        description: meeting.description,
+        event_type: meeting.meeting_type,
+        status: meeting.status,
+        start_date: meeting.start_date,
+        end_date: meeting.end_date,
+        is_all_day: false,
+        location: meeting.location,
+        estimator_id: ms.subcontractor?.id,
+        contact_name: null,
+        contact_email: null,
+        contact_phone: null,
+        amount: null,
+        quote_number: meeting.title,
+        notes: meeting.notes,
+        created_at: meeting.created_at,
+        updated_at: meeting.updated_at,
+        estimator: ms.subcontractor ? {
+          id: ms.subcontractor.id,
+          name: ms.subcontractor.name,
+          email: ms.subcontractor.email,
+          phone: ms.subcontractor.phone,
+          is_active: ms.subcontractor.is_active,
+          color: '#3b82f6',
+          hourly_rate: 0,
+          skills: [ms.subcontractor.specialty].filter(Boolean),
+          created_at: ms.subcontractor.created_at,
+          updated_at: ms.subcontractor.updated_at
+        } : undefined
+      }));
+    });
+
+  return events;
 }
 
 export async function createCalendarEvent(

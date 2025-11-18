@@ -896,8 +896,10 @@ const DispatchingView = ({
 
   // Load calendar events from database
   React.useEffect(() => {
-    loadCalendarData();
-  }, [selectedDate, rateFilter, skillFilters]);
+    if (subcontractors.length > 0) {
+      loadCalendarData();
+    }
+  }, [selectedDate, rateFilter, skillFilters, selectedSubcontractors, subcontractors.length]);
 
   const loadCalendarData = async () => {
     setLoading(true);
@@ -918,7 +920,7 @@ const DispatchingView = ({
       }
 
       const [eventsData, estimatorsData, allEstimatorsData, skillsData] = await Promise.all([
-        fetchCalendarEvents(startOfDay, endOfDay),
+        fetchCalendarEvents(startOfDay, endOfDay, selectedSubcontractors.length > 0 ? selectedSubcontractors : undefined),
         fetchEstimators(Object.keys(filters).length > 0 ? filters : undefined),
         fetchEstimators(),
         import('../../services/calendarService').then(m => m.getAllSkills())
