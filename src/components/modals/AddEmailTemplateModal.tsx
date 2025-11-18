@@ -184,7 +184,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
         </Modal.Title>
       </Modal.Header>
       <Modal.Body className="pt-3 pb-4" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
-        <div className="d-flex flex-column gap-3">
+        <div className="d-flex flex-column gap-2">
           {error && (
             <div className="alert alert-danger mb-0" role="alert">
               {error}
@@ -387,7 +387,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
             </Col>
           </Row>
 
-          <Row>
+          <Row className="mb-0">
             <Col md={12}>
               <div className="d-flex align-items-end gap-2">
                 <div className="flex-grow-1">
@@ -439,9 +439,8 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
             </Col>
           </Row>
 
-          <div>
-            <Card className="shadow-sm">
-              <Card.Header className="bg-white border-bottom-0 pb-0">
+          <Card className="shadow-sm mt-2">
+            <Card.Header className="bg-white border-bottom-0 pb-0 pt-2">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'nowrap' }}>
                   <Nav variant="underline" className="nav-underline" style={{ flex: '0 0 auto' }}>
                     <Nav.Item>
@@ -851,9 +850,8 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                 )}
               </Card.Body>
             </Card>
-          </div>
 
-          <Row className="mt-3">
+          <Row className="mt-2">
             <Col md={3}>
               <FloatingSelect
                 label="Content TCPA"
