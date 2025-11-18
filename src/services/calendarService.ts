@@ -116,6 +116,9 @@ export async function fetchCalendarEvents(
     return [];
   }
 
+  console.log('Fetched meetings:', meetings?.length, 'meetings');
+  console.log('Filter by subcontractors:', subcontractorNames);
+
   // Transform meetings to match CalendarEventWithEstimator structure
   const events = (meetings || [])
     .filter((meeting: any) => {
@@ -189,6 +192,9 @@ export async function fetchCalendarEvents(
         } : undefined
       }));
     });
+
+  console.log('Transformed events:', events.length, 'events');
+  console.log('Sample event:', events[0]);
 
   return events;
 }
