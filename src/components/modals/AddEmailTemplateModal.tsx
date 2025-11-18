@@ -474,57 +474,73 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                       Editor
                     </Nav.Link>
                   </Nav.Item>
-                  {activeTab === 'editor' && (
-                    <>
-                      <Nav.Item>
-                        <Nav.Link
-                          active={editorSubTab === 'sun'}
-                          onClick={() => setEditorSubTab('sun')}
-                          className="d-flex align-items-center gap-2"
-                          style={{
-                            cursor: 'pointer',
-                            color: editorSubTab === 'sun' ? '#0d6efd' : '#6c757d',
-                            borderBottomColor: editorSubTab === 'sun' ? '#0d6efd' : 'transparent',
-                            marginLeft: '1rem'
-                          }}
-                        >
-                          <Sun size={16} />
-                          Sun Editor
-                        </Nav.Link>
-                      </Nav.Item>
-                      <Nav.Item>
-                        <Nav.Link
-                          active={editorSubTab === 'block'}
-                          onClick={() => setEditorSubTab('block')}
-                          className="d-flex align-items-center gap-2"
-                          style={{
-                            cursor: 'pointer',
-                            color: editorSubTab === 'block' ? '#0d6efd' : '#6c757d',
-                            borderBottomColor: editorSubTab === 'block' ? '#0d6efd' : 'transparent'
-                          }}
-                        >
-                          <Grid3x3 size={16} />
-                          Block Editor
-                        </Nav.Link>
-                      </Nav.Item>
-                      <Nav.Item>
-                        <Nav.Link
-                          active={editorSubTab === 'raw'}
-                          onClick={() => setEditorSubTab('raw')}
-                          className="d-flex align-items-center gap-2"
-                          style={{
-                            cursor: 'pointer',
-                            color: editorSubTab === 'raw' ? '#0d6efd' : '#6c757d',
-                            borderBottomColor: editorSubTab === 'raw' ? '#0d6efd' : 'transparent'
-                          }}
-                        >
-                          <Code size={16} />
-                          Raw HTML
-                        </Nav.Link>
-                      </Nav.Item>
-                    </>
-                  )}
                 </Nav>
+                {activeTab === 'editor' && (
+                  <>
+                    <hr style={{
+                      margin: '0.5rem 0',
+                      borderTop: '1px solid #dee2e6',
+                      opacity: 0.5
+                    }} />
+                    <div style={{
+                      backgroundColor: '#f8f9fa',
+                      margin: '0 -1rem',
+                      padding: '0.5rem 1rem 0',
+                      borderRadius: '0'
+                    }}>
+                      <Nav variant="underline" className="nav-underline">
+                        <Nav.Item>
+                          <Nav.Link
+                            active={editorSubTab === 'sun'}
+                            onClick={() => setEditorSubTab('sun')}
+                            className="d-flex align-items-center gap-2"
+                            style={{
+                              cursor: 'pointer',
+                              color: editorSubTab === 'sun' ? '#0d6efd' : '#6c757d',
+                              borderBottomColor: editorSubTab === 'sun' ? '#0d6efd' : 'transparent',
+                              fontSize: '0.9rem'
+                            }}
+                          >
+                            <Sun size={15} />
+                            Sun Editor
+                          </Nav.Link>
+                        </Nav.Item>
+                        <Nav.Item>
+                          <Nav.Link
+                            active={editorSubTab === 'block'}
+                            onClick={() => setEditorSubTab('block')}
+                            className="d-flex align-items-center gap-2"
+                            style={{
+                              cursor: 'pointer',
+                              color: editorSubTab === 'block' ? '#0d6efd' : '#6c757d',
+                              borderBottomColor: editorSubTab === 'block' ? '#0d6efd' : 'transparent',
+                              fontSize: '0.9rem'
+                            }}
+                          >
+                            <Grid3x3 size={15} />
+                            Block Editor
+                          </Nav.Link>
+                        </Nav.Item>
+                        <Nav.Item>
+                          <Nav.Link
+                            active={editorSubTab === 'raw'}
+                            onClick={() => setEditorSubTab('raw')}
+                            className="d-flex align-items-center gap-2"
+                            style={{
+                              cursor: 'pointer',
+                              color: editorSubTab === 'raw' ? '#0d6efd' : '#6c757d',
+                              borderBottomColor: editorSubTab === 'raw' ? '#0d6efd' : 'transparent',
+                              fontSize: '0.9rem'
+                            }}
+                          >
+                            <Code size={15} />
+                            Raw HTML
+                          </Nav.Link>
+                        </Nav.Item>
+                      </Nav>
+                    </div>
+                  </>
+                )}
               </Card.Header>
 
               <Card.Body>
