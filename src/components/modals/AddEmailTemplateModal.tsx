@@ -33,7 +33,8 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
   const [protectFromSharing, setProtectFromSharing] = useState(false);
   const [excludeClient, setExcludeClient] = useState(false);
   const [description, setDescription] = useState('');
-  const [activeTab, setActiveTab] = useState<'preview' | 'sun' | 'block' | 'raw'>('preview');
+  const [activeTab, setActiveTab] = useState<'preview' | 'editor'>('preview');
+  const [editorSubTab, setEditorSubTab] = useState<'sun' | 'block' | 'raw'>('block');
   const [contentTcpa, setContentTcpa] = useState('Promotional');
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
@@ -69,6 +70,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
       setContentTcpa('Promotional');
       setContent('');
       setActiveTab('preview');
+      setEditorSubTab('block');
     }
   }, [show, template]);
 
@@ -446,20 +448,45 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                       active={activeTab === 'preview'}
                       onClick={() => setActiveTab('preview')}
                       className="d-flex align-items-center gap-2"
-                      style={{ cursor: 'pointer' }}
+                      style={{
+                        cursor: 'pointer',
+                        color: activeTab === 'preview' ? '#0d6efd' : '#6c757d',
+                        borderBottomColor: activeTab === 'preview' ? '#0d6efd' : 'transparent'
+                      }}
                     >
                       <Eye size={16} />
                       Published Content
                     </Nav.Link>
                   </Nav.Item>
-                  {activeTab !== 'preview' && (
+                  <Nav.Item>
+                    <Nav.Link
+                      active={activeTab === 'editor'}
+                      onClick={() => setActiveTab('editor')}
+                      className="d-flex align-items-center gap-2"
+                      style={{
+                        cursor: 'pointer',
+                        color: activeTab === 'editor' ? '#0a58ca' : '#6c757d',
+                        borderBottomColor: activeTab === 'editor' ? '#0a58ca' : 'transparent',
+                        fontWeight: activeTab === 'editor' ? 600 : 400
+                      }}
+                    >
+                      <Edit size={16} />
+                      Editor
+                    </Nav.Link>
+                  </Nav.Item>
+                  {activeTab === 'editor' && (
                     <>
                       <Nav.Item>
                         <Nav.Link
-                          active={activeTab === 'sun'}
-                          onClick={() => setActiveTab('sun')}
+                          active={editorSubTab === 'sun'}
+                          onClick={() => setEditorSubTab('sun')}
                           className="d-flex align-items-center gap-2"
-                          style={{ cursor: 'pointer' }}
+                          style={{
+                            cursor: 'pointer',
+                            color: editorSubTab === 'sun' ? '#0d6efd' : '#6c757d',
+                            borderBottomColor: editorSubTab === 'sun' ? '#0d6efd' : 'transparent',
+                            marginLeft: '1rem'
+                          }}
                         >
                           <Sun size={16} />
                           Sun Editor
@@ -467,10 +494,14 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                       </Nav.Item>
                       <Nav.Item>
                         <Nav.Link
-                          active={activeTab === 'block'}
-                          onClick={() => setActiveTab('block')}
+                          active={editorSubTab === 'block'}
+                          onClick={() => setEditorSubTab('block')}
                           className="d-flex align-items-center gap-2"
-                          style={{ cursor: 'pointer' }}
+                          style={{
+                            cursor: 'pointer',
+                            color: editorSubTab === 'block' ? '#0d6efd' : '#6c757d',
+                            borderBottomColor: editorSubTab === 'block' ? '#0d6efd' : 'transparent'
+                          }}
                         >
                           <Grid3x3 size={16} />
                           Block Editor
@@ -478,10 +509,14 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                       </Nav.Item>
                       <Nav.Item>
                         <Nav.Link
-                          active={activeTab === 'raw'}
-                          onClick={() => setActiveTab('raw')}
+                          active={editorSubTab === 'raw'}
+                          onClick={() => setEditorSubTab('raw')}
                           className="d-flex align-items-center gap-2"
-                          style={{ cursor: 'pointer' }}
+                          style={{
+                            cursor: 'pointer',
+                            color: editorSubTab === 'raw' ? '#0d6efd' : '#6c757d',
+                            borderBottomColor: editorSubTab === 'raw' ? '#0d6efd' : 'transparent'
+                          }}
                         >
                           <Code size={16} />
                           Raw HTML
@@ -489,17 +524,6 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                       </Nav.Item>
                     </>
                   )}
-                  <Nav.Item>
-                    <Nav.Link
-                      active={activeTab !== 'preview' && activeTab !== 'sun' && activeTab !== 'block' && activeTab !== 'raw'}
-                      onClick={() => setActiveTab('block')}
-                      className="d-flex align-items-center gap-2"
-                      style={{ cursor: 'pointer' }}
-                    >
-                      <Edit size={16} />
-                      Editor
-                    </Nav.Link>
-                  </Nav.Item>
                 </Nav>
               </Card.Header>
 
@@ -523,7 +547,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                   </div>
                 )}
 
-                {activeTab === 'block' && (
+                {activeTab === 'editor' && editorSubTab === 'block' && (
                   <div>
                     <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
                       <button
@@ -623,7 +647,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                   </div>
                 )}
 
-                {activeTab === 'sun' && (
+                {activeTab === 'editor' && editorSubTab === 'sun' && (
                   <div>
                     <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
                       <button
@@ -713,7 +737,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                   </div>
                 )}
 
-                {activeTab === 'raw' && (
+                {activeTab === 'editor' && editorSubTab === 'raw' && (
                   <div>
                     <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
                       <button
