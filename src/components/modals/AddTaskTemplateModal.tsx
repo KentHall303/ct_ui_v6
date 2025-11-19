@@ -418,7 +418,7 @@ export const AddTaskTemplateModal: React.FC<AddTaskTemplateModalProps> = ({
           <Row>
             <Col md={12}>
               <div className="form-floating-compact">
-                <label className="mb-3">Assignee:</label>
+                <label className="mb-4">Assignee:</label>
                 <div className="d-flex gap-4">
                   <Form.Group className="d-flex align-items-center gap-2 mb-0">
                     <Form.Check
