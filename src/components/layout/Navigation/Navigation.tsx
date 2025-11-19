@@ -115,6 +115,9 @@ const navigationItems: NavItem[] = [
       { id: "ap-connection", label: "Connection Plans", path: "/action-plans/connection" },
       { id: "ap-conversion", label: "Conversion Plans", path: "/action-plans/conversion" },
       { id: "ap-retention", label: "Retention Plans", path: "/action-plans/retention" },
+      { id: "ap-events", label: "Events Plans", path: "/action-plans/events" },
+      { id: "ap-seasonal", label: "Seasonal Plans", path: "/action-plans/seasonal" },
+      { id: "ap-parallel-trigger", label: "Parallel Trigger Plans", path: "/action-plans/parallel-trigger" },
     ]
   },
   {

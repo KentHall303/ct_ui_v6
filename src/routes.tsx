@@ -133,6 +133,18 @@ export const routes: RouteObject[] = [
     element: <PlaceholderPage title="Retention Plans" description="Retention Plans content will be implemented here." />
   },
   {
+    path: '/action-plans/events',
+    element: <PlaceholderPage title="Events Plans" description="Events Plans content will be implemented here." />
+  },
+  {
+    path: '/action-plans/seasonal',
+    element: <PlaceholderPage title="Seasonal Plans" description="Seasonal Plans content will be implemented here." />
+  },
+  {
+    path: '/action-plans/parallel-trigger',
+    element: <PlaceholderPage title="Parallel Trigger Plans" description="Parallel Trigger Plans content will be implemented here." />
+  },
+  {
     path: '/templates',
     element: <TemplatesPage />
   },
