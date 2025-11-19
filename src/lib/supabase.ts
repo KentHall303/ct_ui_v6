@@ -193,3 +193,38 @@ export interface Token {
 export interface TokenCategoryWithTokens extends TokenCategory {
   tokens: Token[];
 }
+
+export interface ConnectionPlan {
+  id: string;
+  name: string;
+  contact_types: string;
+  next_plan?: string;
+  lead_sources?: string;
+  specific_date?: string;
+  plan_id?: string;
+  count: number;
+  is_active: boolean;
+  show_only_here: boolean;
+  build_pending_traditional: boolean;
+  build_pending_domino: boolean;
+  protect_from_overwriting: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ConnectionPlanAction {
+  id: string;
+  connection_plan_id: string;
+  step_number: number;
+  action_name: string;
+  action_type?: string;
+  delivery_timing?: string;
+  delivery_type: string;
+  add_notifications: boolean;
+  display_order: number;
+  created_at: string;
+}
+
+export interface ConnectionPlanWithActions extends ConnectionPlan {
+  actions: ConnectionPlanAction[];
+}

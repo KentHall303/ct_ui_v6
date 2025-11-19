@@ -27,6 +27,7 @@ const NotesLogsTemplatesPage = React.lazy(() => import('./screens/Templates/Note
 const ExportListTemplatesPage = React.lazy(() => import('./screens/Templates/ExportListTemplatesPage').then(m => ({ default: m.ExportListTemplatesPage })));
 const DropdownsTemplatesPage = React.lazy(() => import('./screens/Templates/DropdownsTemplatesPage').then(m => ({ default: m.DropdownsTemplatesPage })));
 const EmailTemplateModalTestPage = React.lazy(() => import('./screens/Templates/EmailTemplateModalTestPage').then(m => ({ default: m.EmailTemplateModalTestPage })));
+const ConnectionPlansPage = React.lazy(() => import('./screens/ActionPlans/ConnectionPlansPage').then(m => ({ default: m.ConnectionPlansPage })));
 
 const PlaceholderPage: React.FC<{ title: string; description: string }> = ({ title, description }) => (
   <div className="p-6">
@@ -122,7 +123,7 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/action-plans/connection',
-    element: <PlaceholderPage title="Connection Plans" description="Connection Plans content will be implemented here." />
+    element: <ConnectionPlansPage />
   },
   {
     path: '/action-plans/conversion',
