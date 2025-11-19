@@ -166,7 +166,7 @@ const EmailTemplates = (): JSX.Element => {
           className="bg-white rounded-3 border shadow-sm h-100"
           style={{ overflow: 'auto' }}
         >
-          <Table className="standard-table mb-0">
+          <Table className="standard-table table-striped mb-0">
             <caption className="visually-hidden">
               Email templates table showing {templates.length} records.
               Use arrow keys to navigate, Enter or Space to sort columns.
