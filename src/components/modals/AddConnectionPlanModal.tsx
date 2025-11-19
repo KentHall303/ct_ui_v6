@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Modal, Form } from 'react-bootstrap';
 import { Button } from '../bootstrap/Button';
 import { FloatingInput, FloatingSelect, FloatingSelectOption } from '../bootstrap/FormControls';
+import { ChipCheck } from '../bootstrap/ChipCheck';
 import { Plus, RefreshCw } from 'lucide-react';
 import { ConnectionPlan, ConnectionPlanWithActions, ConnectionPlanAction } from '../../lib/supabase';
 import { connectionPlanService } from '../../services/connectionPlanService';
@@ -22,8 +23,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
   const [name, setName] = useState('');
   const [isActive, setIsActive] = useState(true);
   const [showOnlyHere, setShowOnlyHere] = useState(false);
-  const [buildPendingTraditional, setBuildPendingTraditional] = useState(false);
-  const [buildPendingDomino, setBuildPendingDomino] = useState(false);
+  const [buildPendingMethod, setBuildPendingMethod] = useState<'traditional' | 'domino'>('traditional');
   const [contactTypes, setContactTypes] = useState<string[]>(['All']);
   const [isContactTypeOpen, setIsContactTypeOpen] = useState(false);
   const contactTypeDropdownRef = useRef<HTMLDivElement>(null);
@@ -49,8 +49,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
       setName(plan.name || '');
       setIsActive(plan.is_active);
       setShowOnlyHere(plan.show_only_here || false);
-      setBuildPendingTraditional(plan.build_pending_traditional || false);
-      setBuildPendingDomino(plan.build_pending_domino || false);
+      setBuildPendingMethod(plan.build_pending_domino ? 'domino' : 'traditional');
       setContactTypes(plan.contact_types ? plan.contact_types.split(',').map(t => t.trim()) : ['All']);
       setNextPlan(plan.next_plan || '');
       setLeadSources(plan.lead_sources ? plan.lead_sources.split(',').map(s => s.trim()).filter(s => s) : []);
@@ -77,8 +76,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
     setName('');
     setIsActive(true);
     setShowOnlyHere(false);
-    setBuildPendingTraditional(false);
-    setBuildPendingDomino(false);
+    setBuildPendingMethod('traditional');
     setContactTypes(['All']);
     setNextPlan('');
     setLeadSources([]);
@@ -106,8 +104,8 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
         name: name.trim(),
         is_active: isActive,
         show_only_here: showOnlyHere,
-        build_pending_traditional: buildPendingTraditional,
-        build_pending_domino: buildPendingDomino,
+        build_pending_traditional: buildPendingMethod === 'traditional',
+        build_pending_domino: buildPendingMethod === 'domino',
         contact_types: contactTypes.join(', '),
         next_plan: nextPlan.trim() || undefined,
         lead_sources: leadSources.join(', ') || undefined,
@@ -305,22 +303,21 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 onChange={(e) => setShowOnlyHere(e.target.checked)}
                 style={{ fontSize: '0.9375rem' }}
               />
-              <Form.Check
-                type="checkbox"
-                id="build-traditional"
-                label="Build Pending Action in Traditional Method"
-                checked={buildPendingTraditional}
-                onChange={(e) => setBuildPendingTraditional(e.target.checked)}
-                style={{ fontSize: '0.9375rem' }}
-              />
-              <Form.Check
-                type="checkbox"
-                id="build-domino"
-                label="Build Pending Action in Domino Effect"
-                checked={buildPendingDomino}
-                onChange={(e) => setBuildPendingDomino(e.target.checked)}
-                style={{ fontSize: '0.9375rem' }}
-              />
+              <div className="d-flex align-items-center gap-2">
+                <span className="text-secondary" style={{ fontSize: '0.9375rem', fontWeight: 500 }}>
+                  Build Pending Action:
+                </span>
+                <ChipCheck
+                  label="Traditional"
+                  isActive={buildPendingMethod === 'traditional'}
+                  onClick={() => setBuildPendingMethod('traditional')}
+                />
+                <ChipCheck
+                  label="Domino Effect"
+                  isActive={buildPendingMethod === 'domino'}
+                  onClick={() => setBuildPendingMethod('domino')}
+                />
+              </div>
             </div>
           </div>
 
