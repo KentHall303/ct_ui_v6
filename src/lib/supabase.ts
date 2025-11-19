@@ -170,3 +170,26 @@ export interface NotesLogsTemplate {
   created_at: string;
   updated_at: string;
 }
+
+export interface TokenCategory {
+  id: string;
+  name: string;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Token {
+  id: string;
+  category_id: string;
+  token_value: string;
+  display_order: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TokenCategoryWithTokens extends TokenCategory {
+  tokens: Token[];
+}

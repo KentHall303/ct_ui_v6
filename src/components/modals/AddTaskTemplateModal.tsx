@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Modal, Form, Row, Col } from 'react-bootstrap';
 import { Button } from '../bootstrap/Button';
 import { FloatingInput, FloatingSelect, FloatingSelectOption } from '../bootstrap/FormControls';
+import { TokenDropdown } from '../bootstrap/TokenDropdown';
 import { TaskTemplate } from '../../lib/supabase';
 import { taskTemplateService } from '../../services/taskTemplateService';
 
@@ -109,16 +110,12 @@ export const AddTaskTemplateModal: React.FC<AddTaskTemplateModalProps> = ({
 
           <Row>
             <Col md={12}>
-              <FloatingSelect
+              <TokenDropdown
                 label="Select Token"
                 value={selectedToken}
-                onChange={(e) => setSelectedToken(e.target.value)}
-              >
-                <FloatingSelectOption value="Contact ID">Contact ID</FloatingSelectOption>
-                <FloatingSelectOption value="Contact Name">Contact Name</FloatingSelectOption>
-                <FloatingSelectOption value="Contact Email">Contact Email</FloatingSelectOption>
-                <FloatingSelectOption value="Contact Phone">Contact Phone</FloatingSelectOption>
-              </FloatingSelect>
+                onChange={(value) => setSelectedToken(value)}
+                placeholder="Select a token..."
+              />
             </Col>
           </Row>
 

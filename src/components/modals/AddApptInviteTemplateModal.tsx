@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Modal, Form, Row, Col } from 'react-bootstrap';
 import { Button } from '../bootstrap/Button';
 import { FloatingInput, FloatingSelect, FloatingSelectOption } from '../bootstrap/FormControls';
+import { TokenDropdown } from '../bootstrap/TokenDropdown';
 import { ApptInviteTemplate } from '../../lib/supabase';
 import { apptInviteTemplateService } from '../../services/apptInviteTemplateService';
 
@@ -256,16 +257,12 @@ export const AddApptInviteTemplateModal: React.FC<AddApptInviteTemplateModalProp
                   </div>
                 </Col>
                 <Col md={6}>
-                  <FloatingSelect
+                  <TokenDropdown
                     label="Select Token"
                     value={selectedToken}
-                    onChange={(e) => setSelectedToken(e.target.value)}
-                  >
-                    <FloatingSelectOption value="Contact ID">Contact ID</FloatingSelectOption>
-                    <FloatingSelectOption value="Contact Name">Contact Name</FloatingSelectOption>
-                    <FloatingSelectOption value="Contact Email">Contact Email</FloatingSelectOption>
-                    <FloatingSelectOption value="Contact Phone">Contact Phone</FloatingSelectOption>
-                  </FloatingSelect>
+                    onChange={(value) => setSelectedToken(value)}
+                    placeholder="Select a token..."
+                  />
                 </Col>
               </Row>
             </Col>
