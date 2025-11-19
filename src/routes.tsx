@@ -25,6 +25,7 @@ const TextTemplatesPage = React.lazy(() => import('./screens/Templates/TextTempl
 const ApptInvitesTemplatesPage = React.lazy(() => import('./screens/Templates/ApptInvitesTemplatesPage').then(m => ({ default: m.ApptInvitesTemplatesPage })));
 const NotesLogsTemplatesPage = React.lazy(() => import('./screens/Templates/NotesLogsTemplatesPage').then(m => ({ default: m.NotesLogsTemplatesPage })));
 const ExportListTemplatesPage = React.lazy(() => import('./screens/Templates/ExportListTemplatesPage').then(m => ({ default: m.ExportListTemplatesPage })));
+const DropdownsTemplatesPage = React.lazy(() => import('./screens/Templates/DropdownsTemplatesPage').then(m => ({ default: m.DropdownsTemplatesPage })));
 const EmailTemplateModalTestPage = React.lazy(() => import('./screens/Templates/EmailTemplateModalTestPage').then(m => ({ default: m.EmailTemplateModalTestPage })));
 
 const PlaceholderPage: React.FC<{ title: string; description: string }> = ({ title, description }) => (
@@ -158,6 +159,10 @@ export const routes: RouteObject[] = [
   {
     path: '/templates/export-list',
     element: <ExportListTemplatesPage />
+  },
+  {
+    path: '/templates/dropdowns',
+    element: <DropdownsTemplatesPage />
   },
   {
     path: '/templates/email-modal-test',

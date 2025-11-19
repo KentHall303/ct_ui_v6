@@ -130,6 +130,7 @@ const navigationItems: NavItem[] = [
       { id: "tp-appt-invites", label: "Appointment Invites", path: "/templates/appt-invites" },
       { id: "tp-notes-logs", label: "Notes/Logs", path: "/templates/notes-logs" },
       { id: "tp-export-list", label: "Export List for Review", path: "/templates/export-list" },
+      { id: "tp-dropdowns", label: "Dropdowns", path: "/templates/dropdowns" },
     ]
   },
   {
