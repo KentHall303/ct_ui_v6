@@ -147,12 +147,32 @@ const ConnectionPlans = (): JSX.Element => {
   return (
     <div className="d-flex flex-column w-100 h-100">
       <div className="px-3 pt-3 flex-shrink-0">
-        <div className="bg-white rounded-3 pt-3 pb-3 px-4 border shadow-sm">
-          <div className="d-flex align-items-center justify-content-between">
-            <h2 className="h2 fw-bold text-dark mb-0">Connection Plans</h2>
+        <div className="bg-white rounded-3 pt-3 pb-4 px-4 border shadow-sm">
+          <div className="d-flex align-items-start justify-content-between">
+            <div className="flex-grow-1" style={{ maxWidth: 'calc(100% - 140px)' }}>
+              <h2 className="h2 fw-bold text-dark mb-1">Connection Plans</h2>
+              <div className="text-muted mb-3" style={{ fontSize: '0.875rem' }}>
+                ID: 1605
+              </div>
+              <p className="text-secondary mb-2" style={{ fontSize: '0.9375rem', lineHeight: '1.5' }}>
+                Connection Plans support the "Speed to Lead" process via short-term,
+                automated communications, typically have a Lead Source attached and can
+                flow to a Retention Plan for continued long-term outreach in instances where
+                the lead does not engage.
+              </p>
+              <a
+                href="https://support.clienttether.com/action-plans/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary"
+                style={{ fontSize: '0.9375rem', textDecoration: 'none' }}
+              >
+                More info
+              </a>
+            </div>
             <Button
               variant="success"
-              className="rounded-pill d-flex align-items-center gap-2"
+              className="rounded-pill d-flex align-items-center gap-2 flex-shrink-0"
               title="Add new connection plan"
               onClick={() => {
                 setShowAddModal(true);
