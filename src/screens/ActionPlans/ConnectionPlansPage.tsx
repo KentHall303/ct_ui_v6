@@ -2,7 +2,8 @@ import React from 'react';
 import { BodyLayout } from '../../components/layout/BodyLayout/BodyLayout';
 import { Button } from '../../components/bootstrap/Button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/bootstrap/Table';
-import { Plus, Copy } from 'lucide-react';
+import { Plus, Copy, ChevronDown, ChevronRight } from 'lucide-react';
+import { Collapse } from 'react-bootstrap';
 import { AddConnectionPlanModal } from '../../components/modals/AddConnectionPlanModal';
 import { connectionPlanService } from '../../services/connectionPlanService';
 import { ConnectionPlan } from '../../lib/supabase';
@@ -18,10 +19,22 @@ const ConnectionPlans = (): JSX.Element => {
   } | null>({ key: 'updated_at', direction: 'desc' });
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [editingPlan, setEditingPlan] = React.useState<ConnectionPlan | null>(null);
+  const [showInfo, setShowInfo] = React.useState(() => {
+    const saved = localStorage.getItem('connectionPlansInfoVisible');
+    return saved !== null ? saved === 'true' : true;
+  });
 
   React.useEffect(() => {
     loadPlans();
   }, []);
+
+  const toggleInfo = () => {
+    setShowInfo((prev) => {
+      const newValue = !prev;
+      localStorage.setItem('connectionPlansInfoVisible', String(newValue));
+      return newValue;
+    });
+  };
 
   const loadPlans = async () => {
     try {
@@ -147,28 +160,48 @@ const ConnectionPlans = (): JSX.Element => {
   return (
     <div className="d-flex flex-column w-100 h-100">
       <div className="px-3 pt-3 flex-shrink-0">
-        <div className="bg-white rounded-3 pt-3 pb-4 px-4 border shadow-sm">
+        <div className={`bg-white rounded-3 pt-3 px-4 border shadow-sm ${showInfo ? 'pb-4' : 'pb-3'}`}>
           <div className="d-flex align-items-start justify-content-between">
             <div className="flex-grow-1" style={{ maxWidth: 'calc(100% - 140px)' }}>
-              <h2 className="h2 fw-bold text-dark mb-1">Connection Plans</h2>
-              <div className="text-muted mb-3" style={{ fontSize: '0.875rem' }}>
-                ID: 1605
+              <div className="d-flex align-items-center gap-2 mb-1">
+                <h2 className="h2 fw-bold text-dark mb-0">Connection Plans</h2>
+                <button
+                  onClick={toggleInfo}
+                  className="btn btn-link p-0 text-secondary border-0"
+                  style={{
+                    background: 'none',
+                    fontSize: '1rem',
+                    lineHeight: 1,
+                    marginTop: '2px'
+                  }}
+                  title={showInfo ? 'Hide information' : 'Show information'}
+                  aria-label={showInfo ? 'Hide information' : 'Show information'}
+                >
+                  {showInfo ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                </button>
               </div>
-              <p className="text-secondary mb-2" style={{ fontSize: '0.9375rem', lineHeight: '1.5' }}>
-                Connection Plans support the "Speed to Lead" process via short-term,
-                automated communications, typically have a Lead Source attached and can
-                flow to a Retention Plan for continued long-term outreach in instances where
-                the lead does not engage.
-              </p>
-              <a
-                href="https://support.clienttether.com/action-plans/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary"
-                style={{ fontSize: '0.9375rem', textDecoration: 'none' }}
-              >
-                More info
-              </a>
+              <Collapse in={showInfo}>
+                <div>
+                  <div className="text-muted mb-3" style={{ fontSize: '0.875rem' }}>
+                    ID: 1605
+                  </div>
+                  <p className="text-secondary mb-2" style={{ fontSize: '0.9375rem', lineHeight: '1.5' }}>
+                    Connection Plans support the "Speed to Lead" process via short-term,
+                    automated communications, typically have a Lead Source attached and can
+                    flow to a Retention Plan for continued long-term outreach in instances where
+                    the lead does not engage.
+                  </p>
+                  <a
+                    href="https://support.clienttether.com/action-plans/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary"
+                    style={{ fontSize: '0.9375rem', textDecoration: 'none' }}
+                  >
+                    More info
+                  </a>
+                </div>
+              </Collapse>
             </div>
             <Button
               variant="success"
