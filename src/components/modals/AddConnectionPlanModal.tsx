@@ -143,6 +143,16 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
         return;
       }
 
+      if (actions.length === 0) {
+        setError('At least one action step is required');
+        return;
+      }
+
+      if (leadSources.length === 0) {
+        setError('At least one lead source is required');
+        return;
+      }
+
       const planData: Partial<ConnectionPlan> = {
         name: name.trim(),
         is_active: isActive,
@@ -335,7 +345,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
           )}
 
           <div className="row align-items-center">
-            <div className="col-md-4">
+            <div className="col-md-3">
               <FloatingInput
                 label="Action plan Name"
                 type="text"
@@ -344,7 +354,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 placeholder="Enter plan name..."
               />
             </div>
-            <div className="col-md-8 d-flex align-items-center justify-content-end gap-3">
+            <div className="col-md-2 d-flex align-items-center">
               <Form.Check
                 type="switch"
                 id="active-switch"
@@ -352,6 +362,8 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
               />
+            </div>
+            <div className="col-md-7 d-flex align-items-center justify-content-end gap-3">
               <Form.Check
                 type="checkbox"
                 id="show-only-here"
@@ -544,14 +556,14 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
               <Button
                 variant="success"
                 onClick={handleSave}
-                disabled={saving}
+                disabled={saving || actions.length === 0 || !name.trim() || leadSources.length === 0}
                 style={{
                   backgroundColor: '#28a745',
                   border: 'none',
                   padding: '8px 24px',
                   fontSize: '0.875rem',
                   fontWeight: 500,
-                  opacity: saving ? 0.6 : 1
+                  opacity: (saving || actions.length === 0 || !name.trim() || leadSources.length === 0) ? 0.6 : 1
                 }}
               >
                 {saving ? 'SAVING...' : 'SAVE'}
@@ -559,22 +571,24 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
             </div>
           </div>
 
-          <hr className="my-4" style={{ borderTop: '1px solid #dee2e6' }} />
+          <hr className="my-2" style={{ borderTop: '1px solid #dee2e6' }} />
 
           <div className="row">
             <div className="col-md-3">
-              <div className="bg-light p-3 rounded" style={{ minHeight: '400px', maxHeight: '400px', overflowY: 'auto' }}>
+              <div className="bg-light p-3 rounded" style={{ minHeight: '400px', maxHeight: '400px', overflowY: 'auto', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
                 <div className="d-flex justify-content-center mb-3">
                   <Button
                     variant="success"
                     className="rounded-pill d-flex align-items-center gap-1"
                     onClick={handleAddNewAction}
+                    disabled={actions.some(action => !action.action_type)}
                     style={{
                       fontSize: '0.75rem',
                       padding: '0.375rem 0.75rem',
                       lineHeight: '1.3',
                       minHeight: '28px',
-                      fontWeight: 500
+                      fontWeight: 500,
+                      opacity: actions.some(action => !action.action_type) ? 0.6 : 1
                     }}
                   >
                     <Plus size={14} />
@@ -610,7 +624,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
               </div>
             </div>
             <div className="col-md-9">
-              <div className="border rounded p-3">
+              <div className="border rounded p-3" style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
                 <div className="row mb-3">
                   <div className="col-md-6">
                     <FloatingSelect
