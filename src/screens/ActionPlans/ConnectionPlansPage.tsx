@@ -7,7 +7,7 @@ import { Collapse } from 'react-bootstrap';
 import { AddConnectionPlanModal } from '../../components/modals/AddConnectionPlanModal';
 import { connectionPlanService } from '../../services/connectionPlanService';
 import { ConnectionPlan } from '../../lib/supabase';
-import { formatDate } from '../../utils/dateUtils';
+import { formatDateTime } from '../../utils/dateUtils';
 
 const ConnectionPlans = (): JSX.Element => {
   const [plans, setPlans] = React.useState<ConnectionPlan[]>([]);
@@ -335,7 +335,7 @@ const ConnectionPlans = (): JSX.Element => {
 
                   <TableCell role="gridcell">
                     <div className="text-dark" style={{ fontSize: '0.9375rem' }}>
-                      {plan.specific_date ? formatDate(plan.specific_date) : ''}
+                      {plan.specific_date ? formatDateTime(plan.specific_date) : ''}
                     </div>
                   </TableCell>
 

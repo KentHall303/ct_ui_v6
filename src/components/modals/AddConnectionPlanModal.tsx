@@ -57,7 +57,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
         setContactTypes(plan.contact_types ? plan.contact_types.split(',').map(t => t.trim()) : ['All']);
         setNextPlan(plan.next_plan || '');
         setLeadSources(plan.lead_sources ? plan.lead_sources.split(',').map(s => s.trim()).filter(s => s) : []);
-        setSpecificDate(plan.specific_date || '');
+        setSpecificDate(plan.specific_date ? plan.specific_date.slice(0, 16) : '');
         setProtectFromOverwriting(plan.protect_from_overwriting || false);
         loadPlanActions(plan.id);
       } else {
@@ -128,7 +128,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
         contact_types: contactTypes.join(', '),
         next_plan: nextPlan.trim() || undefined,
         lead_sources: leadSources.join(', ') || undefined,
-        specific_date: specificDate.trim() || undefined,
+        specific_date: specificDate.trim() ? `${specificDate.trim()}:00` : undefined,
         protect_from_overwriting: protectFromOverwriting,
       };
 
@@ -485,10 +485,10 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
             <div className="col-md-3">
               <FloatingInput
                 label="Specific Date:"
-                type="date"
+                type="datetime-local"
                 value={specificDate}
                 onChange={(e) => setSpecificDate(e.target.value)}
-                min={new Date().toISOString().split('T')[0]}
+                min={new Date().toISOString().slice(0, 16)}
               />
             </div>
           </div>
