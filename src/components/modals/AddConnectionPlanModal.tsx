@@ -3,9 +3,33 @@ import { Modal, Form } from 'react-bootstrap';
 import { Button } from '../bootstrap/Button';
 import { FloatingInput, FloatingSelect, FloatingSelectOption } from '../bootstrap/FormControls';
 import { ChipCheck } from '../bootstrap/ChipCheck';
-import { Plus, RefreshCw } from 'lucide-react';
+import { Plus, RefreshCw, Mail, MessageSquare, Phone, CheckSquare, Tag, UserPlus, PhoneCall, Users, Bell, Zap, Sheet, Send, FileText, X, Webhook, ThumbsUp, MessageCircle, HelpCircle } from 'lucide-react';
 import { ConnectionPlan, ConnectionPlanWithActions, ConnectionPlanAction } from '../../lib/supabase';
 import { connectionPlanService } from '../../services/connectionPlanService';
+
+const getActionTypeIcon = (actionType: string) => {
+  const iconMap: Record<string, any> = {
+    'Assign User': UserPlus,
+    'Automated Call': PhoneCall,
+    'Change Contact Type': Users,
+    'Contact Reminder': Bell,
+    'Dispatch.me Integration': Zap,
+    'Email': Mail,
+    'Google Sheet': Sheet,
+    'Mailbox Power': Send,
+    'Proposal Invoice Status': FileText,
+    'Remove Seasonal/Event Actions': X,
+    'Remove Parallel Trigger\'s Actions': X,
+    'SMS': MessageSquare,
+    'Sendjim': MessageCircle,
+    'Task': CheckSquare,
+    'Tag': Tag,
+    'ThumbTack Integration': ThumbsUp,
+    'Sales Chatz Integration': MessageCircle,
+    'Webhook': Webhook,
+  };
+  return iconMap[actionType] || HelpCircle;
+};
 
 interface AddConnectionPlanModalProps {
   show: boolean;
@@ -493,41 +517,44 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
             </div>
           </div>
 
+          <hr className="my-4" style={{ borderTop: '1px solid #dee2e6' }} />
+
           <div className="row">
             <div className="col-md-3">
               <div className="bg-light p-3 rounded" style={{ minHeight: '400px', maxHeight: '400px', overflowY: 'auto' }}>
-                <button
-                  className="btn btn-success rounded-circle d-flex align-items-center justify-content-center mb-3"
-                  style={{ width: '36px', height: '36px' }}
+                <Button
+                  variant="success"
+                  className="rounded-pill d-flex align-items-center gap-2 mb-3"
                   onClick={handleAddNewAction}
                 >
-                  <Plus size={18} />
-                </button>
+                  <Plus size={16} />
+                  <span>Add Action</span>
+                </Button>
                 <div className="d-flex flex-column gap-2">
-                  {actions.map((action, index) => (
-                    <div
-                      key={index}
-                      className={`p-2 bg-white rounded border cursor-pointer ${selectedActionIndex === index ? 'border-primary' : ''}`}
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => handleSelectAction(index)}
-                    >
-                      <div className="d-flex justify-content-between align-items-start">
-                        <div className="flex-grow-1">
-                          <div className="small text-muted">Step {action.step_number}</div>
-                          <div className="fw-medium" style={{ fontSize: '0.875rem', color: '#17a2b8' }}>
-                            {action.action_name}
+                  {actions.map((action, index) => {
+                    const IconComponent = getActionTypeIcon(action.action_type || '');
+                    return (
+                      <div
+                        key={index}
+                        className={`p-2 bg-white rounded border cursor-pointer ${selectedActionIndex === index ? 'border-primary' : ''}`}
+                        style={{ cursor: 'pointer' }}
+                        onClick={() => handleSelectAction(index)}
+                      >
+                        <div className="d-flex justify-content-between align-items-start">
+                          <div className="flex-grow-1">
+                            <div className="small text-muted">Step {action.step_number}</div>
+                            <div className="fw-medium" style={{ fontSize: '0.875rem', color: '#17a2b8' }}>
+                              {action.action_name}
+                            </div>
+                            <div className="small text-muted">{action.delivery_timing || 'Immediate'}</div>
                           </div>
-                          <div className="small text-muted">{action.delivery_timing || 'Immediate'}</div>
-                        </div>
-                        <div>
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <polyline points="12 6 12 12 16 14"></polyline>
-                          </svg>
+                          <div>
+                            <IconComponent size={20} className="text-secondary" />
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -541,10 +568,24 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                       onChange={(e) => setActionType(e.target.value)}
                     >
                       <FloatingSelectOption value="">Select Action Type</FloatingSelectOption>
-                      <FloatingSelectOption value="message">Message</FloatingSelectOption>
-                      <FloatingSelectOption value="email">Email</FloatingSelectOption>
-                      <FloatingSelectOption value="call">Call</FloatingSelectOption>
-                      <FloatingSelectOption value="task">Task</FloatingSelectOption>
+                      <FloatingSelectOption value="Assign User">Assign User</FloatingSelectOption>
+                      <FloatingSelectOption value="Automated Call">Automated Call</FloatingSelectOption>
+                      <FloatingSelectOption value="Change Contact Type">Change Contact Type</FloatingSelectOption>
+                      <FloatingSelectOption value="Contact Reminder">Contact Reminder</FloatingSelectOption>
+                      <FloatingSelectOption value="Dispatch.me Integration">Dispatch.me Integration</FloatingSelectOption>
+                      <FloatingSelectOption value="Email">Email</FloatingSelectOption>
+                      <FloatingSelectOption value="Google Sheet">Google Sheet</FloatingSelectOption>
+                      <FloatingSelectOption value="Mailbox Power">Mailbox Power</FloatingSelectOption>
+                      <FloatingSelectOption value="Proposal Invoice Status">Proposal Invoice Status</FloatingSelectOption>
+                      <FloatingSelectOption value="Remove Seasonal/Event Actions">Remove Seasonal/Event Actions</FloatingSelectOption>
+                      <FloatingSelectOption value="Remove Parallel Trigger's Actions">Remove Parallel Trigger's Actions</FloatingSelectOption>
+                      <FloatingSelectOption value="SMS">SMS</FloatingSelectOption>
+                      <FloatingSelectOption value="Sendjim">Sendjim</FloatingSelectOption>
+                      <FloatingSelectOption value="Task">Task</FloatingSelectOption>
+                      <FloatingSelectOption value="Tag">Tag</FloatingSelectOption>
+                      <FloatingSelectOption value="ThumbTack Integration">ThumbTack Integration</FloatingSelectOption>
+                      <FloatingSelectOption value="Sales Chatz Integration">Sales Chatz Integration</FloatingSelectOption>
+                      <FloatingSelectOption value="Webhook">Webhook</FloatingSelectOption>
                     </FloatingSelect>
                   </div>
                   <div className="col-md-6">
