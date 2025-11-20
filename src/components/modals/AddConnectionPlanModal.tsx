@@ -3,7 +3,7 @@ import { Modal, Form } from 'react-bootstrap';
 import { Button } from '../bootstrap/Button';
 import { FloatingInput, FloatingSelect, FloatingSelectOption } from '../bootstrap/FormControls';
 import { ChipCheck } from '../bootstrap/ChipCheck';
-import { Plus, RefreshCw, Mail, MessageSquare, Phone, CheckSquare, Tag, UserPlus, PhoneCall, Users, Bell, Zap, Sheet, Send, FileText, X, Webhook, ThumbsUp, MessageCircle, HelpCircle } from 'lucide-react';
+import { Plus, RefreshCw, Mail, MessageSquare, Phone, CheckSquare, Tag, UserPlus, PhoneCall, Users, Bell, Zap, Sheet, Send, FileText, X, Webhook, ThumbsUp, MessageCircle, HelpCircle, Trash2 } from 'lucide-react';
 import { ConnectionPlan, ConnectionPlanWithActions, ConnectionPlanAction } from '../../lib/supabase';
 import { connectionPlanService } from '../../services/connectionPlanService';
 
@@ -288,6 +288,21 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
     }
   };
 
+  const handleDeleteAction = () => {
+    if (selectedActionIndex !== null) {
+      const updatedActions = actions.filter((_, index) => index !== selectedActionIndex);
+      updatedActions.forEach((action, index) => {
+        action.step_number = index + 1;
+      });
+      setActions(updatedActions);
+      setActionName('');
+      setActionType('');
+      setAddNotifications(false);
+      setDeliveryType('Immediate');
+      setSelectedActionIndex(null);
+    }
+  };
+
   const handleSelectAction = (index: number) => {
     setSelectedActionIndex(index);
     const action = actions[index];
@@ -329,14 +344,13 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 placeholder="Enter plan name..."
               />
             </div>
-            <div className="col-md-8 d-flex align-items-center gap-3">
+            <div className="col-md-8 d-flex align-items-center justify-content-end gap-3">
               <Form.Check
                 type="switch"
                 id="active-switch"
                 label="Active"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
-                style={{ fontSize: '0.9375rem' }}
               />
               <Form.Check
                 type="checkbox"
@@ -344,7 +358,15 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 label="Show only here"
                 checked={showOnlyHere}
                 onChange={(e) => setShowOnlyHere(e.target.checked)}
-                style={{ fontSize: '0.9375rem', whiteSpace: 'nowrap' }}
+                style={{ whiteSpace: 'nowrap' }}
+              />
+              <Form.Check
+                type="checkbox"
+                id="protect-overwriting"
+                label="Protect from Overwriting"
+                checked={protectFromOverwriting}
+                onChange={(e) => setProtectFromOverwriting(e.target.checked)}
+                style={{ whiteSpace: 'nowrap' }}
               />
             </div>
           </div>
@@ -491,11 +513,20 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 )}
               </div>
             </div>
+            <div className="col-md-3">
+              <FloatingInput
+                label="Specific Date:"
+                type="datetime-local"
+                value={specificDate}
+                onChange={(e) => setSpecificDate(e.target.value)}
+                min={new Date().toISOString().slice(0, 16)}
+              />
+            </div>
           </div>
 
           <div className="row align-items-center">
-            <div className="col-md-4 d-flex align-items-center justify-content-center gap-2">
-              <span className="text-secondary" style={{ fontSize: '0.9375rem', fontWeight: 500 }}>
+            <div className="col-md-7 d-flex align-items-center gap-2">
+              <span className="text-secondary" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>
                 Build Pending Action:
               </span>
               <ChipCheck
@@ -504,18 +535,9 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 onClick={() => setBuildPendingMethod('traditional')}
               />
               <ChipCheck
-                label="Domino Effect"
+                label="Domino"
                 isActive={buildPendingMethod === 'domino'}
                 onClick={() => setBuildPendingMethod('domino')}
-              />
-            </div>
-            <div className="col-md-3">
-              <FloatingInput
-                label="Specific Date:"
-                type="datetime-local"
-                value={specificDate}
-                onChange={(e) => setSpecificDate(e.target.value)}
-                min={new Date().toISOString().slice(0, 16)}
               />
             </div>
             <div className="col-md-5 d-flex justify-content-end">
@@ -542,15 +564,23 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
           <div className="row">
             <div className="col-md-3">
               <div className="bg-light p-3 rounded" style={{ minHeight: '400px', maxHeight: '400px', overflowY: 'auto' }}>
-                <Button
-                  variant="success"
-                  className="rounded-pill d-flex align-items-center gap-2 mb-3"
-                  onClick={handleAddNewAction}
-                  style={{ fontSize: '0.9375rem' }}
-                >
-                  <Plus size={16} />
-                  <span>Add Action</span>
-                </Button>
+                <div className="d-flex justify-content-center mb-3">
+                  <Button
+                    variant="success"
+                    className="rounded-pill d-flex align-items-center gap-1"
+                    onClick={handleAddNewAction}
+                    style={{
+                      fontSize: '0.75rem',
+                      padding: '0.375rem 0.75rem',
+                      lineHeight: '1.3',
+                      minHeight: '28px',
+                      fontWeight: 500
+                    }}
+                  >
+                    <Plus size={14} />
+                    <span>Add Action</span>
+                  </Button>
+                </div>
                 <div className="d-flex flex-column gap-2">
                   {actions.map((action, index) => {
                     const IconComponent = getActionTypeIcon(action.action_type || '');
@@ -660,6 +690,15 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                   >
                     <RefreshCw size={18} />
                   </button>
+                  <button
+                    className="btn btn-link p-2 text-danger"
+                    title="Delete Action"
+                    onClick={handleDeleteAction}
+                    disabled={selectedActionIndex === null}
+                    style={{ opacity: selectedActionIndex === null ? 0.5 : 1 }}
+                  >
+                    <Trash2 size={18} />
+                  </button>
                   <Button
                     variant="success"
                     onClick={handleSaveAction}
@@ -670,18 +709,6 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                   </Button>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <div className="row">
-            <div className="col-md-12">
-              <Form.Check
-                type="checkbox"
-                id="protect-overwriting"
-                label="Protect from Overwriting"
-                checked={protectFromOverwriting}
-                onChange={(e) => setProtectFromOverwriting(e.target.checked)}
-              />
             </div>
           </div>
         </div>
