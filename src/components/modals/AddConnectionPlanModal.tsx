@@ -485,10 +485,10 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
             <div className="col-md-3">
               <FloatingInput
                 label="Specific Date:"
-                type="text"
+                type="date"
                 value={specificDate}
                 onChange={(e) => setSpecificDate(e.target.value)}
-                placeholder=""
+                min={new Date().toISOString().split('T')[0]}
               />
             </div>
           </div>
