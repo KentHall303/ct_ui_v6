@@ -41,25 +41,44 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
   const [deliveryType, setDeliveryType] = useState('Immediate');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [availablePlans, setAvailablePlans] = useState<ConnectionPlan[]>([]);
+  const [loadingPlans, setLoadingPlans] = useState(false);
 
   const isEditMode = !!plan;
 
   useEffect(() => {
-    if (show && plan) {
-      setName(plan.name || '');
-      setIsActive(plan.is_active);
-      setShowOnlyHere(plan.show_only_here || false);
-      setBuildPendingMethod(plan.build_pending_domino ? 'domino' : 'traditional');
-      setContactTypes(plan.contact_types ? plan.contact_types.split(',').map(t => t.trim()) : ['All']);
-      setNextPlan(plan.next_plan || '');
-      setLeadSources(plan.lead_sources ? plan.lead_sources.split(',').map(s => s.trim()).filter(s => s) : []);
-      setSpecificDate(plan.specific_date || '');
-      setProtectFromOverwriting(plan.protect_from_overwriting || false);
-      loadPlanActions(plan.id);
-    } else if (show && !plan) {
-      resetForm();
+    if (show) {
+      loadAvailablePlans();
+      if (plan) {
+        setName(plan.name || '');
+        setIsActive(plan.is_active);
+        setShowOnlyHere(plan.show_only_here || false);
+        setBuildPendingMethod(plan.build_pending_domino ? 'domino' : 'traditional');
+        setContactTypes(plan.contact_types ? plan.contact_types.split(',').map(t => t.trim()) : ['All']);
+        setNextPlan(plan.next_plan || '');
+        setLeadSources(plan.lead_sources ? plan.lead_sources.split(',').map(s => s.trim()).filter(s => s) : []);
+        setSpecificDate(plan.specific_date || '');
+        setProtectFromOverwriting(plan.protect_from_overwriting || false);
+        loadPlanActions(plan.id);
+      } else {
+        resetForm();
+      }
     }
   }, [show, plan]);
+
+  const loadAvailablePlans = async () => {
+    try {
+      setLoadingPlans(true);
+      const allPlans = await connectionPlanService.getAll();
+      const filteredPlans = plan ? allPlans.filter(p => p.id !== plan.id) : allPlans;
+      const sortedPlans = filteredPlans.sort((a, b) => a.name.localeCompare(b.name));
+      setAvailablePlans(sortedPlans);
+    } catch (err) {
+      console.error('Error loading available plans:', err);
+    } finally {
+      setLoadingPlans(false);
+    }
+  };
 
   const loadPlanActions = async (planId: string) => {
     try {
@@ -387,11 +406,20 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 label="Next plan:"
                 value={nextPlan}
                 onChange={(e) => setNextPlan(e.target.value)}
+                disabled={loadingPlans}
               >
-                <FloatingSelectOption value="">Select Action Plan</FloatingSelectOption>
-                <FloatingSelectOption value="Conversion">Conversion</FloatingSelectOption>
-                <FloatingSelectOption value="Retention">Retention</FloatingSelectOption>
-                <FloatingSelectOption value="Events">Events</FloatingSelectOption>
+                <FloatingSelectOption value="">
+                  {loadingPlans ? 'Loading plans...' : 'Select Action Plan'}
+                </FloatingSelectOption>
+                {availablePlans.length > 0 && (
+                  <optgroup label="Connection Plans">
+                    {availablePlans.map((p) => (
+                      <FloatingSelectOption key={p.id} value={p.name}>
+                        {p.name}
+                      </FloatingSelectOption>
+                    ))}
+                  </optgroup>
+                )}
               </FloatingSelect>
             </div>
             <div className="col-md-3">
