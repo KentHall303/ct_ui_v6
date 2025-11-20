@@ -344,23 +344,8 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 label="Show only here"
                 checked={showOnlyHere}
                 onChange={(e) => setShowOnlyHere(e.target.checked)}
-                style={{ fontSize: '0.9375rem' }}
+                style={{ fontSize: '0.9375rem', whiteSpace: 'nowrap' }}
               />
-              <div className="d-flex align-items-center gap-2">
-                <span className="text-secondary" style={{ fontSize: '0.9375rem', fontWeight: 500 }}>
-                  Build Pending Action:
-                </span>
-                <ChipCheck
-                  label="Traditional"
-                  isActive={buildPendingMethod === 'traditional'}
-                  onClick={() => setBuildPendingMethod('traditional')}
-                />
-                <ChipCheck
-                  label="Domino Effect"
-                  isActive={buildPendingMethod === 'domino'}
-                  onClick={() => setBuildPendingMethod('domino')}
-                />
-              </div>
             </div>
           </div>
 
@@ -506,6 +491,24 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 )}
               </div>
             </div>
+          </div>
+
+          <div className="row align-items-center">
+            <div className="col-md-4 d-flex align-items-center justify-content-center gap-2">
+              <span className="text-secondary" style={{ fontSize: '0.9375rem', fontWeight: 500 }}>
+                Build Pending Action:
+              </span>
+              <ChipCheck
+                label="Traditional"
+                isActive={buildPendingMethod === 'traditional'}
+                onClick={() => setBuildPendingMethod('traditional')}
+              />
+              <ChipCheck
+                label="Domino Effect"
+                isActive={buildPendingMethod === 'domino'}
+                onClick={() => setBuildPendingMethod('domino')}
+              />
+            </div>
             <div className="col-md-3">
               <FloatingInput
                 label="Specific Date:"
@@ -514,6 +517,23 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 onChange={(e) => setSpecificDate(e.target.value)}
                 min={new Date().toISOString().slice(0, 16)}
               />
+            </div>
+            <div className="col-md-5 d-flex justify-content-end">
+              <Button
+                variant="success"
+                onClick={handleSave}
+                disabled={saving}
+                style={{
+                  backgroundColor: '#28a745',
+                  border: 'none',
+                  padding: '8px 24px',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  opacity: saving ? 0.6 : 1
+                }}
+              >
+                {saving ? 'SAVING...' : 'SAVE'}
+              </Button>
             </div>
           </div>
 
@@ -526,6 +546,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                   variant="success"
                   className="rounded-pill d-flex align-items-center gap-2 mb-3"
                   onClick={handleAddNewAction}
+                  style={{ fontSize: '0.9375rem' }}
                 >
                   <Plus size={16} />
                   <span>Add Action</span>
@@ -643,6 +664,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                     variant="success"
                     onClick={handleSaveAction}
                     disabled={!actionName.trim()}
+                    style={{ fontSize: '0.9375rem' }}
                   >
                     Save Action
                   </Button>
@@ -661,24 +683,6 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 onChange={(e) => setProtectFromOverwriting(e.target.checked)}
               />
             </div>
-          </div>
-
-          <div className="d-flex justify-content-end">
-            <Button
-              variant="success"
-              onClick={handleSave}
-              disabled={saving}
-              style={{
-                backgroundColor: '#28a745',
-                border: 'none',
-                padding: '8px 24px',
-                fontSize: '0.875rem',
-                fontWeight: 500,
-                opacity: saving ? 0.6 : 1
-              }}
-            >
-              {saving ? 'SAVING...' : 'SAVE'}
-            </Button>
           </div>
         </div>
       </Modal.Body>
