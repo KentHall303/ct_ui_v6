@@ -3,7 +3,7 @@ import { Modal, Form } from 'react-bootstrap';
 import { Button } from '../bootstrap/Button';
 import { FloatingInput, FloatingSelect, FloatingSelectOption } from '../bootstrap/FormControls';
 import { ChipCheck } from '../bootstrap/ChipCheck';
-import { Plus, RefreshCw, Mail, MessageSquare, Phone, CheckSquare, Tag, UserPlus, PhoneCall, Users, Bell, Zap, Sheet, Send, FileText, X, Webhook, ThumbsUp, MessageCircle, HelpCircle, Trash2 } from 'lucide-react';
+import { Plus, RefreshCw, Mail, MessageSquare, Phone, CheckSquare, Tag, UserPlus, PhoneCall, Users, Bell, Zap, Sheet, Send, FileText, X, Webhook, ThumbsUp, MessageCircle, HelpCircle, Trash2, Info } from 'lucide-react';
 import { ConnectionPlan, ConnectionPlanWithActions, ConnectionPlanAction, EmailTemplate } from '../../lib/supabase';
 import { connectionPlanService } from '../../services/connectionPlanService';
 import { emailTemplateService } from '../../services/emailTemplateService';
@@ -66,6 +66,8 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
   const [actionName, setActionName] = useState('');
   const [addNotifications, setAddNotifications] = useState(false);
   const [deliveryType, setDeliveryType] = useState('Immediate');
+  const [deliveryValue, setDeliveryValue] = useState<number>(1);
+  const [deliveryUnit, setDeliveryUnit] = useState('Minutes');
   const [actionConfig, setActionConfig] = useState<Record<string, any>>({});
   const [actionConfigErrors, setActionConfigErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -157,6 +159,8 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
     setActionName('');
     setAddNotifications(false);
     setDeliveryType('Immediate');
+    setDeliveryValue(1);
+    setDeliveryUnit('Minutes');
     setActionConfig({});
     setActionConfigErrors({});
   };
@@ -336,20 +340,34 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
         }
       }
 
+      let deliveryTiming = 'Immediate';
+      if (deliveryType === 'Before') {
+        deliveryTiming = `Before ${deliveryValue} ${deliveryUnit}`;
+      } else if (deliveryType === 'Delayed') {
+        deliveryTiming = `Delayed ${deliveryValue} ${deliveryUnit}`;
+      }
+
       const updatedActions = [...actions];
       updatedActions[selectedActionIndex] = {
         ...updatedActions[selectedActionIndex],
         action_name: actionName.trim(),
         action_type: actionType,
         delivery_type: deliveryType,
+        delivery_timing: deliveryTiming,
         add_notifications: addNotifications,
-        action_config: actionConfig,
+        action_config: {
+          ...actionConfig,
+          deliveryValue: deliveryType !== 'Immediate' ? deliveryValue : undefined,
+          deliveryUnit: deliveryType !== 'Immediate' ? deliveryUnit : undefined,
+        },
       };
       setActions(updatedActions);
       setActionName('');
       setActionType('');
       setAddNotifications(false);
       setDeliveryType('Immediate');
+      setDeliveryValue(1);
+      setDeliveryUnit('Minutes');
       setActionConfig({});
       setActionConfigErrors({});
       setSelectedActionIndex(null);
@@ -367,6 +385,8 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
       setActionType('');
       setAddNotifications(false);
       setDeliveryType('Immediate');
+      setDeliveryValue(1);
+      setDeliveryUnit('Minutes');
       setActionConfig({});
       setActionConfigErrors({});
       setSelectedActionIndex(null);
@@ -380,7 +400,22 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
     setActionType(action.action_type || '');
     setAddNotifications(action.add_notifications || false);
     setDeliveryType(action.delivery_type || 'Immediate');
-    setActionConfig(action.action_config || {});
+
+    const config = action.action_config || {};
+    setActionConfig(config);
+
+    if (config.deliveryValue) {
+      setDeliveryValue(config.deliveryValue);
+    } else {
+      setDeliveryValue(1);
+    }
+
+    if (config.deliveryUnit) {
+      setDeliveryUnit(config.deliveryUnit);
+    } else {
+      setDeliveryUnit('Minutes');
+    }
+
     setActionConfigErrors({});
   };
 
@@ -682,30 +717,36 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                   </Button>
                 </div>
                 <div className="d-flex flex-column gap-2">
-                  {actions.map((action, index) => {
-                    const IconComponent = getActionTypeIcon(action.action_type || '');
-                    return (
-                      <div
-                        key={index}
-                        className={`p-2 bg-white rounded border cursor-pointer ${selectedActionIndex === index ? 'border-primary' : ''}`}
-                        style={{ cursor: 'pointer' }}
-                        onClick={() => handleSelectAction(index)}
-                      >
-                        <div className="d-flex justify-content-between align-items-start">
-                          <div className="flex-grow-1">
-                            <div className="small text-muted">Step {action.step_number}</div>
-                            <div className="fw-medium" style={{ fontSize: '0.875rem', color: '#17a2b8' }}>
-                              {action.action_name}
+                  {actions.length === 0 ? (
+                    <div className="text-center text-muted py-5" style={{ fontSize: '0.875rem' }}>
+                      Currently there are no Action Steps defined for this plan
+                    </div>
+                  ) : (
+                    actions.map((action, index) => {
+                      const IconComponent = getActionTypeIcon(action.action_type || '');
+                      return (
+                        <div
+                          key={index}
+                          className={`p-2 bg-white rounded border cursor-pointer ${selectedActionIndex === index ? 'border-primary' : ''}`}
+                          style={{ cursor: 'pointer' }}
+                          onClick={() => handleSelectAction(index)}
+                        >
+                          <div className="d-flex justify-content-between align-items-start">
+                            <div className="flex-grow-1">
+                              <div className="small text-muted">Step {action.step_number}</div>
+                              <div className="fw-medium" style={{ fontSize: '0.875rem', color: '#17a2b8' }}>
+                                {action.action_name}
+                              </div>
+                              <div className="small text-muted">{action.delivery_timing || 'Immediate'}</div>
                             </div>
-                            <div className="small text-muted">{action.delivery_timing || 'Immediate'}</div>
-                          </div>
-                          <div>
-                            <IconComponent size={20} className="text-secondary" />
+                            <div>
+                              <IconComponent size={20} className="text-secondary" />
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
               </div>
             </div>
@@ -759,8 +800,11 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label small">Delivery</label>
-                  <div className="d-flex gap-3">
+                  <div className="d-flex align-items-center gap-2 mb-2">
+                    <label className="form-label small mb-0">Delivery</label>
+                    <Info size={16} className="text-muted" />
+                  </div>
+                  <div className="d-flex gap-3 align-items-center flex-wrap">
                     <Form.Check
                       type="radio"
                       id="delivery-immediate"
@@ -770,11 +814,44 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                     />
                     <Form.Check
                       type="radio"
+                      id="delivery-before"
+                      label="Before"
+                      checked={deliveryType === 'Before'}
+                      onChange={() => setDeliveryType('Before')}
+                    />
+                    <Form.Check
+                      type="radio"
                       id="delivery-delayed"
                       label="Delayed"
                       checked={deliveryType === 'Delayed'}
                       onChange={() => setDeliveryType('Delayed')}
                     />
+                    {(deliveryType === 'Before' || deliveryType === 'Delayed') && (
+                      <>
+                        <input
+                          type="number"
+                          className="form-control form-control-sm"
+                          style={{ width: '120px' }}
+                          value={deliveryValue}
+                          onChange={(e) => setDeliveryValue(Number(e.target.value))}
+                          min="1"
+                          placeholder={deliveryType}
+                        />
+                        <select
+                          className="form-select form-select-sm"
+                          style={{ width: '120px' }}
+                          value={deliveryUnit}
+                          onChange={(e) => setDeliveryUnit(e.target.value)}
+                        >
+                          <option value="Minutes">Minutes</option>
+                          <option value="Hours">Hours</option>
+                          <option value="Days">Days</option>
+                          <option value="Weeks">Weeks</option>
+                          <option value="Months">Months</option>
+                          <option value="Years">Years</option>
+                        </select>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -809,6 +886,8 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                       setActionType('');
                       setAddNotifications(false);
                       setDeliveryType('Immediate');
+                      setDeliveryValue(1);
+                      setDeliveryUnit('Minutes');
                       setActionConfig({});
                       setActionConfigErrors({});
                     }}
