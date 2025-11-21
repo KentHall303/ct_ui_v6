@@ -713,7 +713,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                     }}
                   >
                     <Plus size={14} />
-                    <span>Add Action</span>
+                    <span>Add Action Step</span>
                   </Button>
                 </div>
                 <div className="d-flex flex-column gap-2">
