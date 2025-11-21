@@ -345,7 +345,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
           )}
 
           <div className="row align-items-center">
-            <div className="col-md-3">
+            <div className="col-md-6">
               <FloatingInput
                 label="Action plan Name"
                 type="text"
@@ -354,7 +354,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 placeholder="Enter plan name..."
               />
             </div>
-            <div className="col-md-9 d-flex align-items-center justify-content-end gap-2">
+            <div className="col-md-6 d-flex align-items-center justify-content-end gap-2">
               <span className="text-secondary" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>
                 Build Pending Action:
               </span>
@@ -525,7 +525,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
           </div>
 
           <div className="row align-items-center">
-            <div className="col-md-7 d-flex align-items-center gap-3">
+            <div className="col-md-3">
               <Form.Check
                 type="switch"
                 id="active-switch"
@@ -533,6 +533,8 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
               />
+            </div>
+            <div className="col-md-6 d-flex align-items-center gap-3">
               <Form.Check
                 type="checkbox"
                 id="show-only-here"
@@ -550,7 +552,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 style={{ whiteSpace: 'nowrap' }}
               />
             </div>
-            <div className="col-md-5 d-flex justify-content-end">
+            <div className="col-md-3 d-flex justify-content-end">
               <Button
                 variant="success"
                 onClick={handleSave}
@@ -569,7 +571,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
             </div>
           </div>
 
-          <hr className="my-2" style={{ borderTop: '1px solid #dee2e6' }} />
+          <hr className="my-1" style={{ borderTop: '1px solid #dee2e6' }} />
 
           <div className="row">
             <div className="col-md-3">
