@@ -354,7 +354,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 placeholder="Enter plan name..."
               />
             </div>
-            <div className="col-md-9 d-flex align-items-center gap-2">
+            <div className="col-md-9 d-flex align-items-center justify-content-end gap-2">
               <span className="text-secondary" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>
                 Build Pending Action:
               </span>
@@ -527,6 +527,13 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
           <div className="row align-items-center">
             <div className="col-md-7 d-flex align-items-center gap-3">
               <Form.Check
+                type="switch"
+                id="active-switch"
+                label="Active"
+                checked={isActive}
+                onChange={(e) => setIsActive(e.target.checked)}
+              />
+              <Form.Check
                 type="checkbox"
                 id="show-only-here"
                 label="Show only here"
@@ -541,13 +548,6 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 checked={protectFromOverwriting}
                 onChange={(e) => setProtectFromOverwriting(e.target.checked)}
                 style={{ whiteSpace: 'nowrap' }}
-              />
-              <Form.Check
-                type="switch"
-                id="active-switch"
-                label="Active"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
               />
             </div>
             <div className="col-md-5 d-flex justify-content-end">
