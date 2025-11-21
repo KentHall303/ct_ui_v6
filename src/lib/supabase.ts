@@ -222,6 +222,7 @@ export interface ConnectionPlanAction {
   delivery_type: string;
   add_notifications: boolean;
   display_order: number;
+  action_config?: Record<string, any>;
   created_at: string;
 }
 

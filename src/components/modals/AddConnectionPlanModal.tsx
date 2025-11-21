@@ -4,8 +4,11 @@ import { Button } from '../bootstrap/Button';
 import { FloatingInput, FloatingSelect, FloatingSelectOption } from '../bootstrap/FormControls';
 import { ChipCheck } from '../bootstrap/ChipCheck';
 import { Plus, RefreshCw, Mail, MessageSquare, Phone, CheckSquare, Tag, UserPlus, PhoneCall, Users, Bell, Zap, Sheet, Send, FileText, X, Webhook, ThumbsUp, MessageCircle, HelpCircle, Trash2 } from 'lucide-react';
-import { ConnectionPlan, ConnectionPlanWithActions, ConnectionPlanAction } from '../../lib/supabase';
+import { ConnectionPlan, ConnectionPlanWithActions, ConnectionPlanAction, EmailTemplate } from '../../lib/supabase';
 import { connectionPlanService } from '../../services/connectionPlanService';
+import { emailTemplateService } from '../../services/emailTemplateService';
+import { ActionFieldRenderer } from '../actions/ActionFieldRenderer';
+import { getActionTypeFields, validateActionConfig, ACTION_TYPE_FIELDS } from '../../data/actionTypeFields';
 
 const getActionTypeIcon = (actionType: string) => {
   const iconMap: Record<string, any> = {
@@ -63,16 +66,20 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
   const [actionName, setActionName] = useState('');
   const [addNotifications, setAddNotifications] = useState(false);
   const [deliveryType, setDeliveryType] = useState('Immediate');
+  const [actionConfig, setActionConfig] = useState<Record<string, any>>({});
+  const [actionConfigErrors, setActionConfigErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [availablePlans, setAvailablePlans] = useState<ConnectionPlan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(false);
+  const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>([]);
 
   const isEditMode = !!plan;
 
   useEffect(() => {
     if (show) {
       loadAvailablePlans();
+      loadEmailTemplates();
       if (plan) {
         setName(plan.name || '');
         setIsActive(plan.is_active);
@@ -104,6 +111,25 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
     }
   };
 
+  const loadEmailTemplates = async () => {
+    try {
+      const templates = await emailTemplateService.getAll();
+      setEmailTemplates(templates);
+
+      if (ACTION_TYPE_FIELDS['Email'] && ACTION_TYPE_FIELDS['Email'].fields) {
+        const templateField = ACTION_TYPE_FIELDS['Email'].fields.find(f => f.name === 'template');
+        if (templateField) {
+          templateField.options = templates.map(t => ({
+            value: t.id,
+            label: t.name
+          }));
+        }
+      }
+    } catch (err) {
+      console.error('Error loading email templates:', err);
+    }
+  };
+
   const loadPlanActions = async (planId: string) => {
     try {
       const planWithActions = await connectionPlanService.getById(planId);
@@ -131,6 +157,8 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
     setActionName('');
     setAddNotifications(false);
     setDeliveryType('Immediate');
+    setActionConfig({});
+    setActionConfigErrors({});
   };
 
   const handleSave = async () => {
@@ -184,6 +212,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
           delivery_timing: action.delivery_timing,
           delivery_type: action.delivery_type || 'Immediate',
           add_notifications: action.add_notifications || false,
+          action_config: action.action_config || {},
           display_order: index,
         }));
         await connectionPlanService.createActions(actionsToSave);
@@ -279,8 +308,34 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
     setSelectedActionIndex(actions.length);
   };
 
-  const handleSaveAction = () => {
-    if (selectedActionIndex !== null && actionName.trim()) {
+  const handleSaveAction = async () => {
+    if (selectedActionIndex !== null && actionName.trim() && actionType) {
+      const validation = validateActionConfig(actionType, actionConfig);
+
+      if (!validation.isValid) {
+        setActionConfigErrors(validation.errors);
+        return;
+      }
+
+      if (actionType === 'Email' && actionConfig.saveAsTemplate && actionConfig.subject && actionConfig.body) {
+        try {
+          await emailTemplateService.create({
+            name: actionName.trim(),
+            subject: actionConfig.subject,
+            content: actionConfig.body,
+            contact_type: 'All',
+            exclude_client: false,
+            bcc_email: actionConfig.bccEmail || undefined,
+            additional_emails: actionConfig.additionalEmails || undefined,
+            select_token: actionConfig.selectToken || undefined,
+          });
+
+          await loadEmailTemplates();
+        } catch (err) {
+          console.error('Error saving email template:', err);
+        }
+      }
+
       const updatedActions = [...actions];
       updatedActions[selectedActionIndex] = {
         ...updatedActions[selectedActionIndex],
@@ -288,12 +343,15 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
         action_type: actionType,
         delivery_type: deliveryType,
         add_notifications: addNotifications,
+        action_config: actionConfig,
       };
       setActions(updatedActions);
       setActionName('');
       setActionType('');
       setAddNotifications(false);
       setDeliveryType('Immediate');
+      setActionConfig({});
+      setActionConfigErrors({});
       setSelectedActionIndex(null);
     }
   };
@@ -309,6 +367,8 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
       setActionType('');
       setAddNotifications(false);
       setDeliveryType('Immediate');
+      setActionConfig({});
+      setActionConfigErrors({});
       setSelectedActionIndex(null);
     }
   };
@@ -320,7 +380,33 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
     setActionType(action.action_type || '');
     setAddNotifications(action.add_notifications || false);
     setDeliveryType(action.delivery_type || 'Immediate');
+    setActionConfig(action.action_config || {});
+    setActionConfigErrors({});
   };
+
+  const handleActionTypeChange = (newActionType: string) => {
+    if (newActionType !== actionType) {
+      setActionType(newActionType);
+      setActionConfig({});
+      setActionConfigErrors({});
+    }
+  };
+
+  useEffect(() => {
+    if (actionType === 'Email' && actionConfig.template) {
+      const selectedTemplate = emailTemplates.find(t => t.id === actionConfig.template);
+      if (selectedTemplate) {
+        setActionConfig(prev => ({
+          ...prev,
+          subject: selectedTemplate.subject || prev.subject,
+          body: selectedTemplate.content || prev.body,
+          bccEmail: selectedTemplate.bcc_email || prev.bccEmail,
+          additionalEmails: selectedTemplate.additional_emails || prev.additionalEmails,
+          selectToken: selectedTemplate.select_token || prev.selectToken,
+        }));
+      }
+    }
+  }, [actionConfig.template, actionType, emailTemplates]);
 
   return (
     <Modal
@@ -630,20 +716,20 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                     <FloatingSelect
                       label="Action Type"
                       value={actionType}
-                      onChange={(e) => setActionType(e.target.value)}
+                      onChange={(e) => handleActionTypeChange(e.target.value)}
                     >
                       <FloatingSelectOption value="">Select Action Type</FloatingSelectOption>
-                      <FloatingSelectOption value="Assign User">Assign User</FloatingSelectOption>
-                      <FloatingSelectOption value="Automated Call">Automated Call</FloatingSelectOption>
-                      <FloatingSelectOption value="Change Contact Type">Change Contact Type</FloatingSelectOption>
-                      <FloatingSelectOption value="Contact Reminder">Contact Reminder</FloatingSelectOption>
-                      <FloatingSelectOption value="Dispatch.me Integration">Dispatch.me Integration</FloatingSelectOption>
+                      <FloatingSelectOption value="Add To Campaign">Add To Campaign</FloatingSelectOption>
+                      <FloatingSelectOption value="Add To Pipeline">Add To Pipeline</FloatingSelectOption>
+                      <FloatingSelectOption value="Appointment">Appointment</FloatingSelectOption>
+                      <FloatingSelectOption value="Change Stage">Change Stage</FloatingSelectOption>
+                      <FloatingSelectOption value="Drip Sequence">Drip Sequence</FloatingSelectOption>
                       <FloatingSelectOption value="Email">Email</FloatingSelectOption>
                       <FloatingSelectOption value="Google Sheet">Google Sheet</FloatingSelectOption>
                       <FloatingSelectOption value="Mailbox Power">Mailbox Power</FloatingSelectOption>
                       <FloatingSelectOption value="Proposal Invoice Status">Proposal Invoice Status</FloatingSelectOption>
-                      <FloatingSelectOption value="Remove Seasonal/Event Actions">Remove Seasonal/Event Actions</FloatingSelectOption>
                       <FloatingSelectOption value="Remove Parallel Trigger's Actions">Remove Parallel Trigger's Actions</FloatingSelectOption>
+                      <FloatingSelectOption value="Remove Seasonal/Event Actions">Remove Seasonal/Event Actions</FloatingSelectOption>
                       <FloatingSelectOption value="SMS">SMS</FloatingSelectOption>
                       <FloatingSelectOption value="Sendjim">Sendjim</FloatingSelectOption>
                       <FloatingSelectOption value="Task">Task</FloatingSelectOption>
@@ -691,6 +777,29 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                     />
                   </div>
                 </div>
+
+                {actionType && (
+                  <div className="border-top pt-3 mt-3">
+                    <h6 className="mb-3 text-secondary">Action Configuration</h6>
+                    {getActionTypeFields(actionType).map((field) => (
+                      <ActionFieldRenderer
+                        key={field.name}
+                        field={field}
+                        value={actionConfig[field.name]}
+                        onChange={(value) => {
+                          setActionConfig({ ...actionConfig, [field.name]: value });
+                          if (actionConfigErrors[field.name]) {
+                            const newErrors = { ...actionConfigErrors };
+                            delete newErrors[field.name];
+                            setActionConfigErrors(newErrors);
+                          }
+                        }}
+                        error={actionConfigErrors[field.name]}
+                        formValues={actionConfig}
+                      />
+                    ))}
+                  </div>
+                )}
                 <div className="d-flex justify-content-end gap-2">
                   <button
                     className="btn btn-link p-2"
@@ -700,6 +809,8 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                       setActionType('');
                       setAddNotifications(false);
                       setDeliveryType('Immediate');
+                      setActionConfig({});
+                      setActionConfigErrors({});
                     }}
                   >
                     <RefreshCw size={18} />
