@@ -354,31 +354,19 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 placeholder="Enter plan name..."
               />
             </div>
-            <div className="col-md-2 d-flex align-items-center">
-              <Form.Check
-                type="switch"
-                id="active-switch"
-                label="Active"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
+            <div className="col-md-9 d-flex align-items-center gap-2">
+              <span className="text-secondary" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>
+                Build Pending Action:
+              </span>
+              <ChipCheck
+                label="Traditional"
+                isActive={buildPendingMethod === 'traditional'}
+                onClick={() => setBuildPendingMethod('traditional')}
               />
-            </div>
-            <div className="col-md-7 d-flex align-items-center justify-content-end gap-3">
-              <Form.Check
-                type="checkbox"
-                id="show-only-here"
-                label="Show only here"
-                checked={showOnlyHere}
-                onChange={(e) => setShowOnlyHere(e.target.checked)}
-                style={{ whiteSpace: 'nowrap' }}
-              />
-              <Form.Check
-                type="checkbox"
-                id="protect-overwriting"
-                label="Protect from Overwriting"
-                checked={protectFromOverwriting}
-                onChange={(e) => setProtectFromOverwriting(e.target.checked)}
-                style={{ whiteSpace: 'nowrap' }}
+              <ChipCheck
+                label="Domino"
+                isActive={buildPendingMethod === 'domino'}
+                onClick={() => setBuildPendingMethod('domino')}
               />
             </div>
           </div>
@@ -537,19 +525,29 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
           </div>
 
           <div className="row align-items-center">
-            <div className="col-md-7 d-flex align-items-center gap-2">
-              <span className="text-secondary" style={{ fontWeight: 500, whiteSpace: 'nowrap' }}>
-                Build Pending Action:
-              </span>
-              <ChipCheck
-                label="Traditional"
-                isActive={buildPendingMethod === 'traditional'}
-                onClick={() => setBuildPendingMethod('traditional')}
+            <div className="col-md-7 d-flex align-items-center gap-3">
+              <Form.Check
+                type="checkbox"
+                id="show-only-here"
+                label="Show only here"
+                checked={showOnlyHere}
+                onChange={(e) => setShowOnlyHere(e.target.checked)}
+                style={{ whiteSpace: 'nowrap' }}
               />
-              <ChipCheck
-                label="Domino"
-                isActive={buildPendingMethod === 'domino'}
-                onClick={() => setBuildPendingMethod('domino')}
+              <Form.Check
+                type="checkbox"
+                id="protect-overwriting"
+                label="Protect from Overwriting"
+                checked={protectFromOverwriting}
+                onChange={(e) => setProtectFromOverwriting(e.target.checked)}
+                style={{ whiteSpace: 'nowrap' }}
+              />
+              <Form.Check
+                type="switch"
+                id="active-switch"
+                label="Active"
+                checked={isActive}
+                onChange={(e) => setIsActive(e.target.checked)}
               />
             </div>
             <div className="col-md-5 d-flex justify-content-end">
