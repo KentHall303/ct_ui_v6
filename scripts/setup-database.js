@@ -79,7 +79,9 @@ async function checkDatabaseStatus() {
     { name: 'calendar_events', description: 'Calendar appointments', expected: 60 },
     { name: 'opportunities', description: 'Sales pipeline', expected: 40 },
     { name: 'sales_cycles', description: 'Pipeline stages', expected: 7 },
-    { name: 'templates', description: 'Email templates', expected: 5 }
+    { name: 'templates', description: 'Email/Text/Task templates', expected: 15 },
+    { name: 'connection_plans', description: 'Automated action plans', expected: 3 },
+    { name: 'connection_plan_actions', description: 'Plan action steps', expected: 9 }
   ];
 
   console.log('\n📊 Database Status\n');
@@ -172,47 +174,19 @@ async function setupDatabase() {
     return;
   }
 
-  console.log('\n🔧 Your database needs to be set up with migrations.\n');
-  console.log('📋 Here\'s what you need to do:\n');
-  console.log('1. Open the Supabase Dashboard: ' + SUPABASE_URL.replace('//', '//app.'));
-  console.log('2. Click "SQL Editor" in the left sidebar');
-  console.log('3. Click the "+" button to create a new query\n');
-  console.log('4. Copy and paste the SQL from these files (in order):\n');
-
-  const migrations = await getMigrationFiles();
-  const essentialMigrations = migrations.filter(m =>
-    ESSENTIAL_MIGRATIONS.includes(m.filename)
-  );
-
-  console.log('   📁 Essential Migrations (copy these in order):\n');
-  essentialMigrations.forEach((m, i) => {
-    console.log(`   ${i + 1}. ${m.filename}`);
-  });
-
-  console.log('\n5. After each SQL paste, click "Run" to execute it');
-  console.log('6. Come back here and run "npm run db:check" to verify\n');
-
-  console.log('💡 TIP: The SQL files are in: supabase/migrations/\n');
-  console.log('❓ Need help? Check QUICK_START_MIGRATIONS.md for detailed steps\n');
-
-  // Show a helpful sample of what they need to copy
+  console.log('\n🔧 Your database needs to be set up.\n');
+  console.log('📋 SIMPLE FIX - Just copy & paste ONE file:\n');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
-  console.log('📝 EXAMPLE: Here\'s what to copy from the first file:\n');
-
-  if (essentialMigrations.length > 0) {
-    const firstMigration = essentialMigrations[0];
-    const content = await readFile(firstMigration.path, 'utf-8');
-    const preview = content.split('\n').slice(0, 15).join('\n');
-    console.log('   File: ' + firstMigration.filename);
-    console.log('   ─────────────────────────────────────────');
-    console.log(preview);
-    if (content.split('\n').length > 15) {
-      console.log('   ... (and more)');
-    }
-    console.log('   ─────────────────────────────────────────\n');
-  }
-
-  console.log('Copy ALL the content from each file and paste it into SQL Editor!\n');
+  console.log('1. Open your Supabase Dashboard:');
+  console.log('   → ' + SUPABASE_URL.replace('//', '//app.'));
+  console.log('\n2. Click "SQL Editor" in the left sidebar (looks like </>)\n');
+  console.log('3. Open the file APPLY_THIS_FIRST.sql in this project\n');
+  console.log('4. Copy the ENTIRE file (Ctrl+A, Ctrl+C)\n');
+  console.log('5. Paste it into Supabase SQL Editor and click "Run"\n');
+  console.log('6. Come back here and run "npm run db:check" to verify\n');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+  console.log('📖 Full instructions: DATABASE_SETUP_FOR_TEAM.md\n');
+  console.log('💡 This fixes ALL missing tables at once!\n');
 }
 
 async function main() {
