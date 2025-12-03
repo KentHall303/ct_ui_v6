@@ -127,9 +127,9 @@ export const BrandedQuoteFSModal: React.FC<BrandedQuoteFSModalProps> = ({
       if (Math.abs(currentTotal - tableWidth) > 10) {
         const ratio = tableWidth / currentTotal;
         setLineItemColumnWidths(prev => ({
-          category: Math.round(prev.category * ratio),
+          category: lineItemSettings.showCategoryColumn ? Math.round(prev.category * ratio) : prev.category,
           lineItem: Math.round(prev.lineItem * ratio),
-          customLineItem: Math.round(prev.customLineItem * ratio),
+          customLineItem: lineItemSettings.combineLineItems ? prev.customLineItem : Math.round(prev.customLineItem * ratio),
           description: Math.round(prev.description * ratio),
           lineTotal: Math.round(prev.lineTotal * ratio)
         }));
