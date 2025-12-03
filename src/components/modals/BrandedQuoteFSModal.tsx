@@ -289,10 +289,23 @@ export const BrandedQuoteFSModal: React.FC<BrandedQuoteFSModalProps> = ({
         const customLineItemWidth = lineItemSettings.combineLineItems ? 0 : prev.customLineItem;
 
         if (column === 'lineItem') {
-          const minOtherColumns = customLineItemWidth + prev.description + prev.lineTotal + 50;
-          const newCategory = Math.max(50, Math.min(totalWidth - minOtherColumns, x));
-          newWidths.category = newCategory;
-          newWidths.lineItem = totalWidth - newCategory - customLineItemWidth - prev.description - prev.lineTotal;
+          if (lineItemSettings.showCategoryColumn) {
+            const minOtherColumns = customLineItemWidth + prev.description + prev.lineTotal + 50;
+            const newCategory = Math.max(50, Math.min(totalWidth - minOtherColumns, x));
+            newWidths.category = newCategory;
+            newWidths.lineItem = totalWidth - newCategory - customLineItemWidth - prev.description - prev.lineTotal;
+          } else {
+            const minOtherColumns = customLineItemWidth + prev.description + prev.lineTotal + 50;
+            const combinedLineItemWidth = Math.max(50, Math.min(totalWidth - minOtherColumns, x));
+            if (lineItemSettings.combineLineItems) {
+              const ratio = combinedLineItemWidth / (prev.lineItem + prev.customLineItem);
+              newWidths.lineItem = Math.round(prev.lineItem * ratio);
+              newWidths.customLineItem = combinedLineItemWidth - newWidths.lineItem;
+            } else {
+              newWidths.lineItem = combinedLineItemWidth;
+            }
+            newWidths.description = totalWidth - combinedLineItemWidth - customLineItemWidth - prev.lineTotal;
+          }
         } else if (column === 'customLineItem') {
           const minOtherColumns = (lineItemSettings.combineLineItems ? 0 : 50) + 50 + 50;
           const combinedWidth = Math.max(categoryWidth + 50, Math.min(totalWidth - minOtherColumns, x));
@@ -301,10 +314,17 @@ export const BrandedQuoteFSModal: React.FC<BrandedQuoteFSModalProps> = ({
           newWidths.customLineItem = lineItemSettings.combineLineItems ? 0 : totalWidth - categoryWidth - newLineItem - prev.description - prev.lineTotal;
         } else if (column === 'description') {
           const minOtherColumns = 50 + 50;
-          const combinedWidth = Math.max(categoryWidth + prev.lineItem + 50, Math.min(totalWidth - minOtherColumns, x));
-          const newCustomLineItem = combinedWidth - categoryWidth - prev.lineItem;
-          newWidths.customLineItem = newCustomLineItem;
-          newWidths.description = totalWidth - categoryWidth - prev.lineItem - newCustomLineItem - prev.lineTotal;
+          const combinedWidth = Math.max(categoryWidth + prev.lineItem + customLineItemWidth, Math.min(totalWidth - minOtherColumns, x));
+          if (lineItemSettings.combineLineItems) {
+            const newCombinedLineItem = combinedWidth - categoryWidth;
+            const ratio = newCombinedLineItem / (prev.lineItem + prev.customLineItem);
+            newWidths.lineItem = Math.round(prev.lineItem * ratio);
+            newWidths.customLineItem = newCombinedLineItem - newWidths.lineItem;
+          } else {
+            const newCustomLineItem = combinedWidth - categoryWidth - prev.lineItem;
+            newWidths.customLineItem = newCustomLineItem;
+          }
+          newWidths.description = totalWidth - combinedWidth - prev.lineTotal;
         } else if (column === 'lineTotal') {
           const precedingWidth = categoryWidth + prev.lineItem + customLineItemWidth;
           const minLineTotal = 50;
