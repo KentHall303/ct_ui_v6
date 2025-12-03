@@ -20,9 +20,11 @@
     - All templates are active (is_active = true)
     - Usage count initialized to 0
     - Content includes formatted HTML for rich text display
-*/
 
-DELETE FROM templates WHERE category = 'notes_logs';
+  ## Safety Note
+    - Uses ON CONFLICT DO NOTHING to prevent overwriting existing templates
+    - NEVER deletes existing user data
+*/
 
 INSERT INTO templates (name, content, category, is_active, usage_count)
 VALUES
@@ -366,4 +368,5 @@ VALUES
     'notes_logs',
     true,
     0
-  );
+  )
+ON CONFLICT DO NOTHING;

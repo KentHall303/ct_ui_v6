@@ -10,9 +10,11 @@
       2. Signature process templates
     - All templates set to contact_type 'All' and exclude_client false
     - Sets proper category, contact_type, and exclude_client values
-*/
 
-DELETE FROM templates WHERE category = 'email';
+  ## Safety Note
+    - Uses ON CONFLICT DO NOTHING to prevent overwriting existing templates
+    - NEVER deletes existing user data
+*/
 
 INSERT INTO templates (name, subject, contact_type, exclude_client, content, category, is_active, usage_count)
 VALUES
@@ -240,4 +242,5 @@ Best regards,
     'email',
     true,
     0
-  );
+  )
+ON CONFLICT DO NOTHING;

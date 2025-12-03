@@ -23,11 +23,14 @@
 
   ## Notes
     - This migration is idempotent - it can be run multiple times safely
-    - Existing templates will be deleted before inserting new ones
+    - Uses ON CONFLICT DO NOTHING to prevent overwriting existing templates
+    - NEVER deletes existing user data
     - Template content includes placeholder text that can be customized
-*/
 
-DELETE FROM templates WHERE category = 'email';
+  ## Safety Note
+    - Original version had destructive DELETE statement - REMOVED FOR SAFETY
+    - Now preserves all existing user-created templates
+*/
 
 INSERT INTO templates (name, subject, contact_type, exclude_client, content, category, is_active, usage_count)
 VALUES
@@ -745,4 +748,5 @@ Best regards,
     'email',
     true,
     0
-  );
+  )
+ON CONFLICT DO NOTHING;
