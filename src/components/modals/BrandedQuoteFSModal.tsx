@@ -294,13 +294,13 @@ export const BrandedQuoteFSModal: React.FC<BrandedQuoteFSModalProps> = ({
           newWidths.category = newCategory;
           newWidths.lineItem = totalWidth - newCategory - customLineItemWidth - prev.description - prev.lineTotal;
         } else if (column === 'customLineItem') {
-          const minOtherColumns = customLineItemWidth + prev.description + prev.lineTotal + 50;
+          const minOtherColumns = (lineItemSettings.combineLineItems ? 0 : 50) + 50 + 50;
           const combinedWidth = Math.max(categoryWidth + 50, Math.min(totalWidth - minOtherColumns, x));
           const newLineItem = combinedWidth - categoryWidth;
           newWidths.lineItem = newLineItem;
           newWidths.customLineItem = lineItemSettings.combineLineItems ? 0 : totalWidth - categoryWidth - newLineItem - prev.description - prev.lineTotal;
         } else if (column === 'description') {
-          const minOtherColumns = prev.description + prev.lineTotal + 50;
+          const minOtherColumns = 50 + 50;
           const combinedWidth = Math.max(categoryWidth + prev.lineItem + 50, Math.min(totalWidth - minOtherColumns, x));
           const newCustomLineItem = combinedWidth - categoryWidth - prev.lineItem;
           newWidths.customLineItem = newCustomLineItem;
