@@ -1249,12 +1249,30 @@ const PDFDetailsTab = () => (
 
 const BidTypesTab = () => <BidTypesDesigner />;
 
-const TemplatesTab = () => (
-  <>
-    <h5 className="mb-3">Templates</h5>
-    <p className="text-muted">Create and manage proposal templates.</p>
-  </>
-);
+const TemplatesTab = () => {
+  const [showBrandedQuoteModal, setShowBrandedQuoteModal] = React.useState(false);
+
+  return (
+    <>
+      <h5 className="mb-3">Templates</h5>
+      <p className="text-muted">Create and manage proposal templates.</p>
+
+      <div className="mt-4">
+        <Button
+          variant="primary"
+          onClick={() => setShowBrandedQuoteModal(true)}
+        >
+          Open Branded Quote Designer
+        </Button>
+      </div>
+
+      <BrandedQuoteFSModal
+        show={showBrandedQuoteModal}
+        onHide={() => setShowBrandedQuoteModal(false)}
+      />
+    </>
+  );
+};
 
 
 
