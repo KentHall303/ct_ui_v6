@@ -3,7 +3,7 @@ import { Modal, Form } from 'react-bootstrap';
 import { Button } from '../bootstrap/Button';
 import { FloatingInput, FloatingSelect, FloatingSelectOption } from '../bootstrap/FormControls';
 import { ChipCheck } from '../bootstrap/ChipCheck';
-import { Plus, RefreshCw, Mail, MessageSquare, Phone, CheckSquare, Tag, UserPlus, PhoneCall, Users, Bell, Zap, Sheet, Send, FileText, X, Webhook, ThumbsUp, MessageCircle, HelpCircle, Trash2, Info } from 'lucide-react';
+import { Plus, RefreshCw, Mail, MessageSquare, Phone, CheckSquare, Tag, UserPlus, PhoneCall, Users, Bell, Zap, Sheet, Send, FileText, X, Webhook, ThumbsUp, MessageCircle, HelpCircle, Trash2, Info, Landmark, LibraryBig } from 'lucide-react';
 import { ConnectionPlan, ConnectionPlanWithActions, ConnectionPlanAction, EmailTemplate } from '../../lib/supabase';
 import { connectionPlanService } from '../../services/connectionPlanService';
 import { emailTemplateService } from '../../services/emailTemplateService';
@@ -582,11 +582,15 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 label="Traditional"
                 isActive={buildPendingMethod === 'traditional'}
                 onClick={() => setBuildPendingMethod('traditional')}
+                icon={Landmark}
+                iconColor="#198754"
               />
               <ChipCheck
                 label="Domino"
                 isActive={buildPendingMethod === 'domino'}
                 onClick={() => setBuildPendingMethod('domino')}
+                icon={LibraryBig}
+                iconColor="#0dcaf0"
               />
             </div>
           </div>

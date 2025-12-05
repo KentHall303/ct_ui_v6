@@ -2,7 +2,7 @@ import React from 'react';
 import { BodyLayout } from '../../components/layout/BodyLayout/BodyLayout';
 import { Button } from '../../components/bootstrap/Button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/bootstrap/Table';
-import { Plus, Copy, ChevronDown, ChevronRight } from 'lucide-react';
+import { Plus, Copy, ChevronDown, ChevronRight, Landmark, LibraryBig } from 'lucide-react';
 import { Collapse } from 'react-bootstrap';
 import { AddConnectionPlanModal } from '../../components/modals/AddConnectionPlanModal';
 import { connectionPlanService } from '../../services/connectionPlanService';
@@ -302,16 +302,42 @@ const ConnectionPlans = (): JSX.Element => {
                 >
                   <TableCell role="gridcell">
                     <div
-                      className="text-dark"
+                      className="d-flex align-items-center gap-2"
                       style={{
                         overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
                         fontSize: '0.9375rem'
                       }}
-                      title={plan.name}
                     >
-                      {plan.name}
+                      <span
+                        className={`badge rounded-circle d-flex align-items-center justify-content-center ${
+                          plan.build_pending_domino ? 'bg-info' : 'bg-success'
+                        }`}
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          padding: '4px',
+                          flexShrink: 0
+                        }}
+                        title={plan.build_pending_domino ? 'Domino' : 'Traditional'}
+                        aria-label={plan.build_pending_domino ? 'Domino method' : 'Traditional method'}
+                      >
+                        {plan.build_pending_domino ? (
+                          <LibraryBig size={14} color="white" />
+                        ) : (
+                          <Landmark size={14} color="white" />
+                        )}
+                      </span>
+                      <span
+                        className="text-dark"
+                        style={{
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}
+                        title={plan.name}
+                      >
+                        {plan.name}
+                      </span>
                     </div>
                   </TableCell>
 
