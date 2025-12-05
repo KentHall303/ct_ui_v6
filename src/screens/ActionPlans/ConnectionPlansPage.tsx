@@ -310,7 +310,7 @@ const ConnectionPlans = (): JSX.Element => {
                     >
                       <span
                         className={`badge rounded-circle d-flex align-items-center justify-content-center ${
-                          plan.build_pending_domino ? 'bg-info' : 'bg-success'
+                          plan.build_pending_domino ? 'badge-domino-bg' : 'badge-traditional-bg'
                         }`}
                         style={{
                           width: '24px',
