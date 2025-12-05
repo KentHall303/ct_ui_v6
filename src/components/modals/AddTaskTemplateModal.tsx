@@ -108,7 +108,7 @@ export const AddTaskTemplateModal: React.FC<AddTaskTemplateModalProps> = ({
             </div>
           )}
 
-          <Row>
+          <Row className="g-3">
             <Col md={12}>
               <TokenDropdown
                 label="Select Token"
@@ -119,7 +119,7 @@ export const AddTaskTemplateModal: React.FC<AddTaskTemplateModalProps> = ({
             </Col>
           </Row>
 
-          <Row>
+          <Row className="g-3">
             <Col md={12}>
               <FloatingInput
                 label="Title"
@@ -131,7 +131,7 @@ export const AddTaskTemplateModal: React.FC<AddTaskTemplateModalProps> = ({
             </Col>
           </Row>
 
-          <Row>
+          <Row className="g-3">
             <Col md={12}>
               <div className="form-floating-compact">
                 <label className="mb-2">Detail:</label>
@@ -403,7 +403,7 @@ export const AddTaskTemplateModal: React.FC<AddTaskTemplateModalProps> = ({
             </Col>
           </Row>
 
-          <Row>
+          <Row className="g-3">
             <Col md={12}>
               <FloatingInput
                 label="Due In 'X' Days"
@@ -415,7 +415,7 @@ export const AddTaskTemplateModal: React.FC<AddTaskTemplateModalProps> = ({
             </Col>
           </Row>
 
-          <Row>
+          <Row className="g-3">
             <Col md={12}>
               <div className="form-floating-compact">
                 <label className="mb-4">Assignee:</label>
@@ -478,7 +478,7 @@ export const AddTaskTemplateModal: React.FC<AddTaskTemplateModalProps> = ({
             </Col>
           </Row>
 
-          <Row>
+          <Row className="g-3">
             <Col md={12}>
               <FloatingInput
                 label="Priority"
@@ -490,7 +490,7 @@ export const AddTaskTemplateModal: React.FC<AddTaskTemplateModalProps> = ({
             </Col>
           </Row>
 
-          <Row>
+          <Row className="g-3">
             <Col md={12} className="d-flex justify-content-end">
               <Button
                 variant="success"

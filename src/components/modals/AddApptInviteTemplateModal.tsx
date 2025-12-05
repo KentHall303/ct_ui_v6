@@ -164,7 +164,7 @@ export const AddApptInviteTemplateModal: React.FC<AddApptInviteTemplateModalProp
               {error}
             </div>
           )}
-          <Row>
+          <Row className="g-3">
             <Col md={6}>
               <FloatingInput
                 label="Template Name"
@@ -175,7 +175,7 @@ export const AddApptInviteTemplateModal: React.FC<AddApptInviteTemplateModalProp
               />
             </Col>
             <Col md={6}>
-              <Row>
+              <Row className="g-3">
                 <Col md={6}>
                   <div className="position-relative" ref={contactTypeDropdownRef}>
                     <div className="form-floating-compact">
@@ -268,7 +268,7 @@ export const AddApptInviteTemplateModal: React.FC<AddApptInviteTemplateModalProp
             </Col>
           </Row>
 
-          <Row>
+          <Row className="g-3">
             <Col md={6}>
               <FloatingInput
                 label="Email Subject"
@@ -289,7 +289,7 @@ export const AddApptInviteTemplateModal: React.FC<AddApptInviteTemplateModalProp
             </Col>
           </Row>
 
-          <Row>
+          <Row className="g-3">
             <Col md={6}>
               <FloatingInput
                 label="Addt'l Emails"
@@ -521,7 +521,7 @@ export const AddApptInviteTemplateModal: React.FC<AddApptInviteTemplateModalProp
             </div>
           </div>
 
-          <Row className="mt-2">
+          <Row className="g-3 mt-2">
             <Col md={12}>
               <div className="d-flex align-items-center justify-content-between">
                 <Form.Group className="d-flex align-items-center gap-2 mb-0">

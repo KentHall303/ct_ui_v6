@@ -185,13 +185,13 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
         </Modal.Title>
       </Modal.Header>
       <Modal.Body className="pt-3 pb-4" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
-        <div className="d-flex flex-column gap-2">
+        <div className="d-flex flex-column gap-3">
           {error && (
             <div className="alert alert-danger mb-0" role="alert">
               {error}
             </div>
           )}
-          <Row>
+          <Row className="g-3">
             <Col md={6}>
               <FloatingInput
                 label="Subject"
@@ -212,7 +212,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
             </Col>
           </Row>
 
-          <Row>
+          <Row className="g-3">
             <Col md={6}>
               <FloatingInput
                 label="Additional Emails"
@@ -223,7 +223,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
               />
             </Col>
             <Col md={6}>
-              <Row>
+              <Row className="g-3">
                 <Col md={6}>
                   <TokenDropdown
                     label="Select Token"
@@ -316,7 +316,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
             </Col>
           </Row>
 
-          <Row>
+          <Row className="g-3">
             <Col md={6}>
               <FloatingInput
                 label="BCC"
@@ -384,7 +384,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
             </Col>
           </Row>
 
-          <Row className="mb-0">
+          <Row className="g-3 mb-0">
             <Col md={12}>
               <div className="d-flex align-items-end gap-2">
                 <div className="flex-grow-1">
@@ -845,7 +845,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
               </Card.Body>
             </Card>
 
-          <Row className="mt-2">
+          <Row className="g-3 mt-2">
             <Col md={3}>
               <FloatingSelect
                 label="Content TCPA"

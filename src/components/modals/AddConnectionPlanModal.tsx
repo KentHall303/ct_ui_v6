@@ -716,7 +716,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                     <span>Add Action Step</span>
                   </Button>
                 </div>
-                <div className="d-flex flex-column gap-2">
+                <div className="d-flex flex-column gap-3">
                   {actions.length === 0 ? (
                     <div className="text-center text-muted py-5" style={{ fontSize: '0.875rem' }}>
                       Currently there are no Action Steps defined for this plan

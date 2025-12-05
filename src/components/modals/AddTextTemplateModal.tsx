@@ -159,7 +159,7 @@ export const AddTextTemplateModal: React.FC<AddTextTemplateModalProps> = ({
             </div>
           )}
 
-          <Row>
+          <Row className="g-3">
             <Col md={6}>
               <FloatingInput
                 label="Name"
@@ -179,7 +179,7 @@ export const AddTextTemplateModal: React.FC<AddTextTemplateModalProps> = ({
             </Col>
           </Row>
 
-          <Row>
+          <Row className="g-3">
             <Col md={6}>
               <div className="position-relative" ref={contactTypeDropdownRef}>
                 <div className="form-floating-compact">
@@ -284,7 +284,7 @@ export const AddTextTemplateModal: React.FC<AddTextTemplateModalProps> = ({
             </Col>
           </Row>
 
-          <Row>
+          <Row className="g-3">
             <Col md={12}>
               <div className="form-floating-compact">
                 <label className="mb-2">Content:</label>
@@ -303,7 +303,7 @@ export const AddTextTemplateModal: React.FC<AddTextTemplateModalProps> = ({
             </Col>
           </Row>
 
-          <Row>
+          <Row className="g-3">
             <Col md={4}>
               <FloatingSelect
                 label="Content TCPA"
