@@ -466,13 +466,22 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
           )}
 
           <div className="row align-items-center">
-            <div className="col-md-6">
+            <div className="col-md-3">
               <FloatingInput
                 label="Action plan Name"
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter plan name..."
+              />
+            </div>
+            <div className="col-md-3 d-flex align-items-center">
+              <Form.Check
+                type="switch"
+                id="active-switch"
+                label="Active"
+                checked={isActive}
+                onChange={(e) => setIsActive(e.target.checked)}
               />
             </div>
             <div className="col-md-6 d-flex align-items-center gap-2">
@@ -646,16 +655,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
           </div>
 
           <div className="row align-items-center">
-            <div className="col-md-3">
-              <Form.Check
-                type="switch"
-                id="active-switch"
-                label="Active"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
-              />
-            </div>
-            <div className="col-md-6 d-flex align-items-center gap-3">
+            <div className="col-md-9 d-flex align-items-center gap-3">
               <Form.Check
                 type="checkbox"
                 id="show-only-here"
