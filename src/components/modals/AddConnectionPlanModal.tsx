@@ -75,6 +75,8 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
   const [availablePlans, setAvailablePlans] = useState<ConnectionPlan[]>([]);
   const [loadingPlans, setLoadingPlans] = useState(false);
   const [emailTemplates, setEmailTemplates] = useState<EmailTemplate[]>([]);
+  const [basicInfoSaved, setBasicInfoSaved] = useState(false);
+  const [savedPlanId, setSavedPlanId] = useState<string | null>(null);
 
   const isEditMode = !!plan;
 
@@ -92,6 +94,8 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
         setLeadSources(plan.lead_sources ? plan.lead_sources.split(',').map(s => s.trim()).filter(s => s) : []);
         setSpecificDate(plan.specific_date ? plan.specific_date.slice(0, 16) : '');
         setProtectFromOverwriting(plan.protect_from_overwriting || false);
+        setBasicInfoSaved(true);
+        setSavedPlanId(plan.id);
         loadPlanActions(plan.id);
       } else {
         resetForm();
@@ -163,25 +167,17 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
     setDeliveryUnit('Minutes');
     setActionConfig({});
     setActionConfigErrors({});
+    setBasicInfoSaved(false);
+    setSavedPlanId(null);
   };
 
-  const handleSave = async () => {
+  const handleSaveBasicInfo = async () => {
     try {
       setError(null);
       setSaving(true);
 
       if (!name.trim()) {
-        setError('Connection plan name is required');
-        return;
-      }
-
-      if (actions.length === 0) {
-        setError('At least one action step is required');
-        return;
-      }
-
-      if (leadSources.length === 0) {
-        setError('At least one lead source is required');
+        setError('Action plan name is required');
         return;
       }
 
@@ -200,16 +196,43 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
 
       let savedPlan: ConnectionPlan;
 
-      if (isEditMode && plan) {
-        savedPlan = await connectionPlanService.update(plan.id, planData);
-        await connectionPlanService.deleteAllActions(plan.id);
+      if (savedPlanId) {
+        savedPlan = await connectionPlanService.update(savedPlanId, planData);
       } else {
         savedPlan = await connectionPlanService.create(planData);
       }
 
+      setSavedPlanId(savedPlan.id);
+      setBasicInfoSaved(true);
+      setError(null);
+    } catch (err) {
+      console.error('Error saving basic info:', err);
+      setError(err instanceof Error ? err.message : 'Failed to save connection plan');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleFinalSave = async () => {
+    try {
+      setError(null);
+      setSaving(true);
+
+      if (!savedPlanId) {
+        setError('Please save basic information first');
+        return;
+      }
+
+      if (actions.length === 0) {
+        setError('At least one action step is required');
+        return;
+      }
+
+      await connectionPlanService.deleteAllActions(savedPlanId);
+
       if (actions.length > 0) {
         const actionsToSave = actions.map((action, index) => ({
-          connection_plan_id: savedPlan.id,
+          connection_plan_id: savedPlanId,
           step_number: action.step_number || index + 1,
           action_name: action.action_name || '',
           action_type: action.action_type,
@@ -232,6 +255,73 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
       setError(err instanceof Error ? err.message : 'Failed to save connection plan');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (isEditMode) {
+      try {
+        setError(null);
+        setSaving(true);
+
+        if (!name.trim()) {
+          setError('Connection plan name is required');
+          return;
+        }
+
+        if (actions.length === 0) {
+          setError('At least one action step is required');
+          return;
+        }
+
+        const planData: Partial<ConnectionPlan> = {
+          name: name.trim(),
+          is_active: isActive,
+          show_only_here: showOnlyHere,
+          build_pending_traditional: buildPendingMethod === 'traditional',
+          build_pending_domino: buildPendingMethod === 'domino',
+          contact_types: contactTypes.join(', '),
+          next_plan: nextPlan.trim() || undefined,
+          lead_sources: leadSources.join(', ') || undefined,
+          specific_date: specificDate.trim() ? `${specificDate.trim()}:00` : undefined,
+          protect_from_overwriting: protectFromOverwriting,
+        };
+
+        const savedPlan = await connectionPlanService.update(plan!.id, planData);
+        await connectionPlanService.deleteAllActions(plan!.id);
+
+        if (actions.length > 0) {
+          const actionsToSave = actions.map((action, index) => ({
+            connection_plan_id: savedPlan.id,
+            step_number: action.step_number || index + 1,
+            action_name: action.action_name || '',
+            action_type: action.action_type,
+            delivery_timing: action.delivery_timing,
+            delivery_type: action.delivery_type || 'Immediate',
+            add_notifications: action.add_notifications || false,
+            action_config: action.action_config || {},
+            display_order: index,
+          }));
+          await connectionPlanService.createActions(actionsToSave);
+        }
+
+        if (onSave) {
+          onSave();
+        }
+
+        onHide();
+      } catch (err) {
+        console.error('Error saving connection plan:', err);
+        setError(err instanceof Error ? err.message : 'Failed to save connection plan');
+      } finally {
+        setSaving(false);
+      }
+    } else {
+      if (!basicInfoSaved) {
+        await handleSaveBasicInfo();
+      } else {
+        await handleFinalSave();
+      }
     }
   };
 
@@ -674,27 +764,53 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
               />
             </div>
             <div className="col-md-3 d-flex justify-content-end">
-              <Button
-                variant="success"
-                onClick={handleSave}
-                disabled={saving || actions.length === 0 || !name.trim() || leadSources.length === 0}
-                style={{
-                  backgroundColor: '#28a745',
-                  border: 'none',
-                  padding: '8px 24px',
-                  fontSize: '0.875rem',
-                  fontWeight: 500,
-                  opacity: (saving || actions.length === 0 || !name.trim() || leadSources.length === 0) ? 0.6 : 1
-                }}
-              >
-                {saving ? 'SAVING...' : 'SAVE'}
-              </Button>
+              {!isEditMode && !basicInfoSaved ? (
+                <Button
+                  variant="success"
+                  onClick={handleSaveBasicInfo}
+                  disabled={saving || !name.trim()}
+                  style={{
+                    backgroundColor: '#28a745',
+                    border: 'none',
+                    padding: '8px 24px',
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    opacity: (saving || !name.trim()) ? 0.6 : 1
+                  }}
+                >
+                  {saving ? 'SAVING...' : 'SAVE & CONTINUE'}
+                </Button>
+              ) : isEditMode ? (
+                <Button
+                  variant="success"
+                  onClick={handleSave}
+                  disabled={saving || actions.length === 0 || !name.trim()}
+                  style={{
+                    backgroundColor: '#28a745',
+                    border: 'none',
+                    padding: '8px 24px',
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    opacity: (saving || actions.length === 0 || !name.trim()) ? 0.6 : 1
+                  }}
+                >
+                  {saving ? 'SAVING...' : 'SAVE'}
+                </Button>
+              ) : null}
             </div>
           </div>
 
-          <hr className="my-1" style={{ borderTop: '1px solid #dee2e6' }} />
+          {!isEditMode && basicInfoSaved && (
+            <div className="alert alert-success mb-0" role="alert">
+              <strong>Basic information saved!</strong> You can now add action steps to your connection plan.
+            </div>
+          )}
 
-          <div className="row">
+          {(isEditMode || basicInfoSaved) && (
+            <>
+              <hr className="my-1" style={{ borderTop: '1px solid #dee2e6' }} />
+
+              <div className="row">
             <div className="col-md-3">
               <div className="bg-light p-3 rounded" style={{ minHeight: '400px', maxHeight: '400px', overflowY: 'auto', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
                 <div className="d-flex justify-content-center mb-3">
@@ -915,6 +1031,28 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
               </div>
             </div>
           </div>
+
+          {!isEditMode && basicInfoSaved && (
+            <div className="d-flex justify-content-end mt-3">
+              <Button
+                variant="success"
+                onClick={handleFinalSave}
+                disabled={saving || actions.length === 0}
+                style={{
+                  backgroundColor: '#28a745',
+                  border: 'none',
+                  padding: '8px 24px',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  opacity: (saving || actions.length === 0) ? 0.6 : 1
+                }}
+              >
+                {saving ? 'SAVING...' : 'SAVE CONNECTION PLAN'}
+              </Button>
+            </div>
+          )}
+            </>
+          )}
         </div>
       </Modal.Body>
     </Modal>
