@@ -293,8 +293,9 @@ export const AddTextTemplateModal: React.FC<AddTextTemplateModalProps> = ({
                   placeholder="Add content here..."
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
+                  rows={5}
                   style={{
-                    minHeight: '200px',
+                    minHeight: '120px',
                     resize: 'vertical',
                     fontSize: '0.9375rem'
                   }}
