@@ -601,40 +601,22 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                 )}
 
                 {activeTab === 'editor' && editorSubTab === 'block' && (
-                  <div>
-                    <div
-                      className="border rounded d-flex align-items-center justify-content-center"
-                      style={{
-                        minHeight: '250px',
-                        backgroundColor: '#f8f9fa'
-                      }}
+                  <div
+                    className="border rounded d-flex align-items-center justify-content-center"
+                    style={{
+                      minHeight: '250px',
+                      backgroundColor: '#f8f9fa'
+                    }}
+                  >
+                    <Button
+                      variant="primary"
+                      onClick={handleOpenBlockEditor}
+                      className="d-flex align-items-center gap-2"
+                      style={{ padding: '12px 32px', fontSize: '1rem' }}
                     >
-                      <Button
-                        variant="primary"
-                        onClick={handleOpenBlockEditor}
-                        className="d-flex align-items-center gap-2"
-                        style={{ padding: '12px 32px', fontSize: '1rem' }}
-                      >
-                        <Grid3x3 size={20} />
-                        Open Block Editor
-                      </Button>
-                    </div>
-                    <div className="d-flex justify-content-end gap-2 mt-3">
-                      <Button
-                        variant="outline-secondary"
-                        onClick={handleSaveAsDraft}
-                        style={{ padding: '6px 20px', fontSize: '0.875rem' }}
-                      >
-                        SAVE AS A DRAFT ONLY
-                      </Button>
-                      <Button
-                        variant="primary"
-                        onClick={handlePublish}
-                        style={{ padding: '6px 32px', fontSize: '0.875rem' }}
-                      >
-                        PUBLISH
-                      </Button>
-                    </div>
+                      <Grid3x3 size={20} />
+                      Open Block Editor
+                    </Button>
                   </div>
                 )}
 
