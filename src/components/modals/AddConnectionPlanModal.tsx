@@ -780,6 +780,22 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 >
                   {saving ? 'SAVING...' : 'SAVE & CONTINUE'}
                 </Button>
+              ) : !isEditMode && basicInfoSaved ? (
+                <Button
+                  variant="success"
+                  onClick={handleFinalSave}
+                  disabled={saving || actions.length === 0}
+                  style={{
+                    backgroundColor: '#28a745',
+                    border: 'none',
+                    padding: '8px 24px',
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    opacity: (saving || actions.length === 0) ? 0.6 : 1
+                  }}
+                >
+                  {saving ? 'SAVING...' : 'SAVE CONNECTION PLAN'}
+                </Button>
               ) : isEditMode ? (
                 <Button
                   variant="success"
@@ -1031,26 +1047,6 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
               </div>
             </div>
           </div>
-
-          {!isEditMode && basicInfoSaved && (
-            <div className="d-flex justify-content-end mt-3">
-              <Button
-                variant="success"
-                onClick={handleFinalSave}
-                disabled={saving || actions.length === 0}
-                style={{
-                  backgroundColor: '#28a745',
-                  border: 'none',
-                  padding: '8px 24px',
-                  fontSize: '0.875rem',
-                  fontWeight: 500,
-                  opacity: (saving || actions.length === 0) ? 0.6 : 1
-                }}
-              >
-                {saving ? 'SAVING...' : 'SAVE CONNECTION PLAN'}
-              </Button>
-            </div>
-          )}
             </>
           )}
         </div>
