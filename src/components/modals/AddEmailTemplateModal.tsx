@@ -3,7 +3,7 @@ import { Modal, Form, Row, Col, Card, Nav, Tab } from 'react-bootstrap';
 import { Button } from '../bootstrap/Button';
 import { FloatingInput, FloatingSelect, FloatingSelectOption } from '../bootstrap/FormControls';
 import { TokenDropdown } from '../bootstrap/TokenDropdown';
-import { Eye, Edit, Sun, Grid3x3, Code } from 'lucide-react';
+import { Eye, Edit, Sun, Grid3x3, Code, CheckCircle, Bold, Italic, Underline, Strikethrough, List, ListOrdered, Link, Image as ImageIcon } from 'lucide-react';
 import { EmailTemplate } from '../../lib/supabase';
 import { emailTemplateService } from '../../services/emailTemplateService';
 
@@ -40,6 +40,8 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [htmlValidationError, setHtmlValidationError] = useState<string | null>(null);
+  const [htmlValidationSuccess, setHtmlValidationSuccess] = useState(false);
 
   const isEditMode = !!template;
 
@@ -168,6 +170,46 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
 
   const handlePublish = () => {
     console.log('Publish clicked');
+  };
+
+  const validateHTML = () => {
+    setHtmlValidationError(null);
+    setHtmlValidationSuccess(false);
+
+    if (!content.trim()) {
+      setHtmlValidationError('HTML content is empty');
+      return;
+    }
+
+    try {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(content, 'text/html');
+      const parseErrors = doc.querySelector('parsererror');
+
+      if (parseErrors) {
+        setHtmlValidationError('HTML syntax error: ' + parseErrors.textContent);
+        return;
+      }
+
+      // Check for common issues
+      const openTags = content.match(/<[^/][^>]*>/g) || [];
+      const closeTags = content.match(/<\/[^>]*>/g) || [];
+
+      if (openTags.length !== closeTags.length) {
+        setHtmlValidationError('Warning: Unmatched tags detected. Check that all tags are properly closed.');
+        return;
+      }
+
+      setHtmlValidationSuccess(true);
+      setTimeout(() => setHtmlValidationSuccess(false), 3000);
+    } catch (err) {
+      setHtmlValidationError('Validation error: ' + (err instanceof Error ? err.message : 'Unknown error'));
+    }
+  };
+
+  const handleOpenBlockEditor = () => {
+    console.log('Open Block Editor clicked');
+    // TODO: Implement block editor modal
   };
 
   return (
@@ -560,13 +602,78 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
 
                 {activeTab === 'editor' && editorSubTab === 'block' && (
                   <div>
-                    <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Align left"
-                        style={{ width: '36px', height: '36px' }}
+                    <div
+                      className="border rounded d-flex align-items-center justify-content-center"
+                      style={{
+                        minHeight: '250px',
+                        backgroundColor: '#f8f9fa'
+                      }}
+                    >
+                      <Button
+                        variant="primary"
+                        onClick={handleOpenBlockEditor}
+                        className="d-flex align-items-center gap-2"
+                        style={{ padding: '12px 32px', fontSize: '1rem' }}
                       >
+                        <Grid3x3 size={20} />
+                        Open Block Editor
+                      </Button>
+                    </div>
+                    <div className="d-flex justify-content-end gap-2 mt-3">
+                      <Button
+                        variant="outline-secondary"
+                        onClick={handleSaveAsDraft}
+                        style={{ padding: '6px 20px', fontSize: '0.875rem' }}
+                      >
+                        SAVE AS A DRAFT ONLY
+                      </Button>
+                      <Button
+                        variant="primary"
+                        onClick={handlePublish}
+                        style={{ padding: '6px 32px', fontSize: '0.875rem' }}
+                      >
+                        PUBLISH
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'editor' && editorSubTab === 'sun' && (
+                  <div>
+                    <div className="d-flex flex-wrap gap-2 mb-3 pb-2 border-bottom">
+                      {/* Text Formatting */}
+                      <button type="button" className="btn btn-light border p-2" title="Bold" style={{ width: '36px', height: '36px' }}>
+                        <Bold size={16} />
+                      </button>
+                      <button type="button" className="btn btn-light border p-2" title="Italic" style={{ width: '36px', height: '36px' }}>
+                        <Italic size={16} />
+                      </button>
+                      <button type="button" className="btn btn-light border p-2" title="Underline" style={{ width: '36px', height: '36px' }}>
+                        <Underline size={16} />
+                      </button>
+                      <button type="button" className="btn btn-light border p-2" title="Strikethrough" style={{ width: '36px', height: '36px' }}>
+                        <Strikethrough size={16} />
+                      </button>
+
+                      <div className="border-end mx-1"></div>
+
+                      {/* Font Color */}
+                      <button type="button" className="btn btn-light border p-2" title="Text color" style={{ width: '36px', height: '36px' }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M12 2L3 22h18L12 2z"></path>
+                          <rect x="3" y="20" width="18" height="2" fill="currentColor"></rect>
+                        </svg>
+                      </button>
+                      <button type="button" className="btn btn-light border p-2" title="Background color" style={{ width: '36px', height: '36px' }}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M12 2v20M2 12h20"></path>
+                        </svg>
+                      </button>
+
+                      <div className="border-end mx-1"></div>
+
+                      {/* Alignment */}
+                      <button type="button" className="btn btn-light border p-2" title="Align left" style={{ width: '36px', height: '36px' }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <line x1="17" y1="10" x2="3" y2="10"></line>
                           <line x1="21" y1="6" x2="3" y2="6"></line>
@@ -574,12 +681,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                           <line x1="17" y1="18" x2="3" y2="18"></line>
                         </svg>
                       </button>
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Align center"
-                        style={{ width: '36px', height: '36px' }}
-                      >
+                      <button type="button" className="btn btn-light border p-2" title="Align center" style={{ width: '36px', height: '36px' }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <line x1="18" y1="10" x2="6" y2="10"></line>
                           <line x1="21" y1="6" x2="3" y2="6"></line>
@@ -587,12 +689,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                           <line x1="18" y1="18" x2="6" y2="18"></line>
                         </svg>
                       </button>
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Align right"
-                        style={{ width: '36px', height: '36px' }}
-                      >
+                      <button type="button" className="btn btn-light border p-2" title="Align right" style={{ width: '36px', height: '36px' }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <line x1="21" y1="10" x2="7" y2="10"></line>
                           <line x1="21" y1="6" x2="3" y2="6"></line>
@@ -600,12 +697,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                           <line x1="21" y1="18" x2="7" y2="18"></line>
                         </svg>
                       </button>
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Justify"
-                        style={{ width: '36px', height: '36px' }}
-                      >
+                      <button type="button" className="btn btn-light border p-2" title="Justify" style={{ width: '36px', height: '36px' }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <line x1="21" y1="10" x2="3" y2="10"></line>
                           <line x1="21" y1="6" x2="3" y2="6"></line>
@@ -613,23 +705,39 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                           <line x1="21" y1="18" x2="3" y2="18"></line>
                         </svg>
                       </button>
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Insert image"
-                        style={{ width: '36px', height: '36px' }}
-                      >
+
+                      <div className="border-end mx-1"></div>
+
+                      {/* Lists */}
+                      <button type="button" className="btn btn-light border p-2" title="Bullet list" style={{ width: '36px', height: '36px' }}>
+                        <List size={16} />
+                      </button>
+                      <button type="button" className="btn btn-light border p-2" title="Numbered list" style={{ width: '36px', height: '36px' }}>
+                        <ListOrdered size={16} />
+                      </button>
+
+                      <div className="border-end mx-1"></div>
+
+                      {/* Insert */}
+                      <button type="button" className="btn btn-light border p-2" title="Insert link" style={{ width: '36px', height: '36px' }}>
+                        <Link size={16} />
+                      </button>
+                      <button type="button" className="btn btn-light border p-2" title="Insert image" style={{ width: '36px', height: '36px' }}>
+                        <ImageIcon size={16} />
+                      </button>
+                      <button type="button" className="btn btn-light border p-2" title="Insert table" style={{ width: '36px', height: '36px' }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                          <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                          <polyline points="21 15 16 10 5 21"></polyline>
+                          <line x1="3" y1="9" x2="21" y2="9"></line>
+                          <line x1="3" y1="15" x2="21" y2="15"></line>
+                          <line x1="12" y1="3" x2="12" y2="21"></line>
                         </svg>
                       </button>
                     </div>
                     <div
                       className="border rounded p-3"
                       style={{
-                        minHeight: '150px',
+                        minHeight: '200px',
                         backgroundColor: '#f8f9fa',
                         cursor: 'text'
                       }}
@@ -658,171 +766,43 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                   </div>
                 )}
 
-                {activeTab === 'editor' && editorSubTab === 'sun' && (
-                  <div>
-                    <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Align left"
-                        style={{ width: '36px', height: '36px' }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="17" y1="10" x2="3" y2="10"></line>
-                          <line x1="21" y1="6" x2="3" y2="6"></line>
-                          <line x1="21" y1="14" x2="3" y2="14"></line>
-                          <line x1="17" y1="18" x2="3" y2="18"></line>
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Align center"
-                        style={{ width: '36px', height: '36px' }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="18" y1="10" x2="6" y2="10"></line>
-                          <line x1="21" y1="6" x2="3" y2="6"></line>
-                          <line x1="21" y1="14" x2="3" y2="14"></line>
-                          <line x1="18" y1="18" x2="6" y2="18"></line>
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Align right"
-                        style={{ width: '36px', height: '36px' }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="21" y1="10" x2="7" y2="10"></line>
-                          <line x1="21" y1="6" x2="3" y2="6"></line>
-                          <line x1="21" y1="14" x2="3" y2="14"></line>
-                          <line x1="21" y1="18" x2="7" y2="18"></line>
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Justify"
-                        style={{ width: '36px', height: '36px' }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="21" y1="10" x2="3" y2="10"></line>
-                          <line x1="21" y1="6" x2="3" y2="6"></line>
-                          <line x1="21" y1="14" x2="3" y2="14"></line>
-                          <line x1="21" y1="18" x2="3" y2="18"></line>
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Insert image"
-                        style={{ width: '36px', height: '36px' }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                          <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                          <polyline points="21 15 16 10 5 21"></polyline>
-                        </svg>
-                      </button>
-                    </div>
-                    <div className="text-muted text-center py-5">
-                      SUN EDITOR content area
-                    </div>
-                    <div className="d-flex justify-content-end gap-2 mt-3">
-                      <Button
-                        variant="outline-secondary"
-                        onClick={handleSaveAsDraft}
-                        style={{ padding: '6px 20px', fontSize: '0.875rem' }}
-                      >
-                        SAVE AS A DRAFT ONLY
-                      </Button>
-                      <Button
-                        variant="primary"
-                        onClick={handlePublish}
-                        style={{ padding: '6px 32px', fontSize: '0.875rem' }}
-                      >
-                        PUBLISH
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
                 {activeTab === 'editor' && editorSubTab === 'raw' && (
                   <div>
-                    <div className="d-flex gap-2 mb-3 pb-2 border-bottom">
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Align left"
-                        style={{ width: '36px', height: '36px' }}
+                    <div className="d-flex justify-content-end mb-3 pb-2 border-bottom">
+                      <Button
+                        variant="outline-primary"
+                        onClick={validateHTML}
+                        className="d-flex align-items-center gap-2"
+                        style={{ padding: '8px 24px', fontSize: '0.875rem' }}
                       >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="17" y1="10" x2="3" y2="10"></line>
-                          <line x1="21" y1="6" x2="3" y2="6"></line>
-                          <line x1="21" y1="14" x2="3" y2="14"></line>
-                          <line x1="17" y1="18" x2="3" y2="18"></line>
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Align center"
-                        style={{ width: '36px', height: '36px' }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="18" y1="10" x2="6" y2="10"></line>
-                          <line x1="21" y1="6" x2="3" y2="6"></line>
-                          <line x1="21" y1="14" x2="3" y2="14"></line>
-                          <line x1="18" y1="18" x2="6" y2="18"></line>
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Align right"
-                        style={{ width: '36px', height: '36px' }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="21" y1="10" x2="7" y2="10"></line>
-                          <line x1="21" y1="6" x2="3" y2="6"></line>
-                          <line x1="21" y1="14" x2="3" y2="14"></line>
-                          <line x1="21" y1="18" x2="7" y2="18"></line>
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Justify"
-                        style={{ width: '36px', height: '36px' }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <line x1="21" y1="10" x2="3" y2="10"></line>
-                          <line x1="21" y1="6" x2="3" y2="6"></line>
-                          <line x1="21" y1="14" x2="3" y2="14"></line>
-                          <line x1="21" y1="18" x2="3" y2="18"></line>
-                        </svg>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-light border p-2"
-                        title="Insert image"
-                        style={{ width: '36px', height: '36px' }}
-                      >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                          <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                          <polyline points="21 15 16 10 5 21"></polyline>
-                        </svg>
-                      </button>
+                        <CheckCircle size={16} />
+                        Validate HTML
+                      </Button>
                     </div>
+
+                    {htmlValidationError && (
+                      <div className="alert alert-danger py-2 mb-3" role="alert">
+                        <small>{htmlValidationError}</small>
+                      </div>
+                    )}
+
+                    {htmlValidationSuccess && (
+                      <div className="alert alert-success py-2 mb-3" role="alert">
+                        <small>HTML validation passed successfully!</small>
+                      </div>
+                    )}
+
                     <Form.Control
                       as="textarea"
                       rows={8}
                       placeholder="Enter HTML code..."
-                      style={{ fontFamily: 'monospace', fontSize: '0.875rem', resize: 'none' }}
+                      style={{ fontFamily: 'monospace', fontSize: '0.875rem', resize: 'vertical' }}
                       value={content}
-                      onChange={(e) => setContent(e.target.value)}
+                      onChange={(e) => {
+                        setContent(e.target.value);
+                        setHtmlValidationError(null);
+                        setHtmlValidationSuccess(false);
+                      }}
                     />
                     <div className="d-flex justify-content-end gap-2 mt-3">
                       <Button
