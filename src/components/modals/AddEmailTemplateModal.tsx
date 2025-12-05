@@ -750,18 +750,6 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
 
                 {activeTab === 'editor' && editorSubTab === 'raw' && (
                   <div>
-                    <div className="d-flex justify-content-end mb-3 pb-2 border-bottom">
-                      <Button
-                        variant="outline-primary"
-                        onClick={validateHTML}
-                        className="d-flex align-items-center gap-2"
-                        style={{ padding: '8px 24px', fontSize: '0.875rem' }}
-                      >
-                        <CheckCircle size={16} />
-                        Validate HTML
-                      </Button>
-                    </div>
-
                     {htmlValidationError && (
                       <div className="alert alert-danger py-2 mb-3" role="alert">
                         <small>{htmlValidationError}</small>
@@ -786,21 +774,32 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                         setHtmlValidationSuccess(false);
                       }}
                     />
-                    <div className="d-flex justify-content-end gap-2 mt-3">
+                    <div className="d-flex justify-content-between align-items-center mt-3">
                       <Button
                         variant="outline-secondary"
-                        onClick={handleSaveAsDraft}
+                        onClick={validateHTML}
+                        className="d-flex align-items-center gap-2"
                         style={{ padding: '6px 20px', fontSize: '0.875rem' }}
                       >
-                        SAVE AS A DRAFT ONLY
+                        <CheckCircle size={16} />
+                        Validate HTML
                       </Button>
-                      <Button
-                        variant="primary"
-                        onClick={handlePublish}
-                        style={{ padding: '6px 32px', fontSize: '0.875rem' }}
-                      >
-                        PUBLISH
-                      </Button>
+                      <div className="d-flex gap-2">
+                        <Button
+                          variant="outline-secondary"
+                          onClick={handleSaveAsDraft}
+                          style={{ padding: '6px 20px', fontSize: '0.875rem' }}
+                        >
+                          SAVE AS A DRAFT ONLY
+                        </Button>
+                        <Button
+                          variant="primary"
+                          onClick={handlePublish}
+                          style={{ padding: '6px 32px', fontSize: '0.875rem' }}
+                        >
+                          PUBLISH
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 )}
