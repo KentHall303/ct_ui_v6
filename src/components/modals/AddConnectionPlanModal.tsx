@@ -38,7 +38,7 @@ interface AddConnectionPlanModalProps {
   show: boolean;
   onHide: () => void;
   plan?: ConnectionPlan | null;
-  onSave?: () => void;
+  onSave?: () => void | Promise<void>;
 }
 
 export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
@@ -246,7 +246,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
       }
 
       if (onSave) {
-        onSave();
+        await onSave();
       }
 
       onHide();
@@ -306,7 +306,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
         }
 
         if (onSave) {
-          onSave();
+          await onSave();
         }
 
         onHide();
