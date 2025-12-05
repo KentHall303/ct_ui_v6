@@ -81,7 +81,9 @@ async function checkDatabaseStatus() {
     { name: 'sales_cycles', description: 'Pipeline stages', expected: 7 },
     { name: 'templates', description: 'Email/Text/Task templates', expected: 15 },
     { name: 'connection_plans', description: 'Automated action plans', expected: 3 },
-    { name: 'connection_plan_actions', description: 'Plan action steps', expected: 9 }
+    { name: 'connection_plan_actions', description: 'Plan action steps', expected: 9 },
+    { name: 'token_categories', description: 'Token categories', expected: 14 },
+    { name: 'tokens', description: 'Template tokens', expected: 185 }
   ];
 
   console.log('\n📊 Database Status\n');
