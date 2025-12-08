@@ -315,8 +315,8 @@ export const BrandedQuoteFSModal: React.FC<BrandedQuoteFSModalProps> = ({
               newWidths.customLineItem = clampedX - newWidths.lineItem;
             } else {
               newWidths.lineItem = clampedX;
+              newWidths.customLineItem = totalWidth - clampedX - prev.description - prev.lineTotal;
             }
-            newWidths.description = totalWidth - clampedX - customLineItemWidth - prev.lineTotal;
           }
         } else if (column === 'customLineItem') {
           const minLineItem = 50;
