@@ -296,7 +296,7 @@ export const BrandedQuoteFSModal: React.FC<BrandedQuoteFSModalProps> = ({
             const minDescription = 50;
             const minLineTotal = 50;
             const minLeftBoundary = minCategory;
-            const maxRightBoundary = totalWidth - minLineItem - minCustomLineItem - minDescription - minLineTotal;
+            const maxRightBoundary = prev.category + prev.lineItem - minLineItem;
             const clampedX = Math.max(minLeftBoundary, Math.min(maxRightBoundary, x));
             newWidths.category = clampedX;
             newWidths.lineItem = totalWidth - clampedX - customLineItemWidth - prev.description - prev.lineTotal;
@@ -306,7 +306,7 @@ export const BrandedQuoteFSModal: React.FC<BrandedQuoteFSModalProps> = ({
             const minDescription = 50;
             const minLineTotal = 50;
             const minLeftBoundary = minLineItem;
-            const maxRightBoundary = totalWidth - minCustomLineItem - minDescription - minLineTotal;
+            const maxRightBoundary = prev.lineItem + prev.customLineItem - minCustomLineItem;
             const clampedX = Math.max(minLeftBoundary, Math.min(maxRightBoundary, x));
 
             if (lineItemSettings.combineLineItems) {
@@ -324,7 +324,7 @@ export const BrandedQuoteFSModal: React.FC<BrandedQuoteFSModalProps> = ({
           const minDescription = 50;
           const minLineTotal = 50;
           const minLeftBoundary = categoryWidth + minLineItem;
-          const maxRightBoundary = totalWidth - minCustomLineItem - minDescription - minLineTotal;
+          const maxRightBoundary = categoryWidth + prev.lineItem + prev.customLineItem + prev.description - minDescription;
           const clampedX = Math.max(minLeftBoundary, Math.min(maxRightBoundary, x));
           const newLineItem = clampedX - categoryWidth;
           newWidths.lineItem = newLineItem;
