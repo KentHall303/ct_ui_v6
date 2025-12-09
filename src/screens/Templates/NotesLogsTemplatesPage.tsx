@@ -199,7 +199,7 @@ const NotesLogsTemplates = (): JSX.Element => {
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
-                        fontSize: '0.9375rem'
+                        fontSize: '0.8125rem'
                       }}
                       title={template.name}
                     >
@@ -213,15 +213,15 @@ const NotesLogsTemplates = (): JSX.Element => {
                         className="btn btn-link p-0 border rounded-circle d-flex align-items-center justify-content-center"
                         title="Edit template"
                         style={{
-                          width: '32px',
-                          height: '32px',
+                          width: '24px',
+                          height: '24px',
                           borderColor: '#dee2e6',
                           color: '#6c757d',
                           backgroundColor: 'white'
                         }}
                         onClick={() => handleEditTemplate(template)}
                       >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
                         </svg>
                       </button>
@@ -229,8 +229,8 @@ const NotesLogsTemplates = (): JSX.Element => {
                         className="btn btn-link p-0 border rounded-circle d-flex align-items-center justify-content-center"
                         title="Duplicate template"
                         style={{
-                          width: '32px',
-                          height: '32px',
+                          width: '24px',
+                          height: '24px',
                           borderColor: '#dee2e6',
                           color: '#6c757d',
                           backgroundColor: 'white',
@@ -239,7 +239,7 @@ const NotesLogsTemplates = (): JSX.Element => {
                         onClick={() => handleDuplicateTemplate(template)}
                         disabled={duplicating === template.id}
                       >
-                        <Copy size={16} />
+                        <Copy size={12} />
                       </button>
                     </div>
                   </TableCell>

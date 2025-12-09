@@ -323,7 +323,7 @@ const ConnectionPlans = (): JSX.Element => {
                       className="d-flex align-items-center gap-2"
                       style={{
                         overflow: 'hidden',
-                        fontSize: '0.9375rem'
+                        fontSize: '0.8125rem'
                       }}
                     >
                       <span
@@ -331,18 +331,18 @@ const ConnectionPlans = (): JSX.Element => {
                           plan.build_pending_domino ? 'badge-domino-bg' : 'badge-traditional-bg'
                         }`}
                         style={{
-                          width: '24px',
-                          height: '24px',
-                          padding: '4px',
+                          width: '20px',
+                          height: '20px',
+                          padding: '3px',
                           flexShrink: 0
                         }}
                         title={plan.build_pending_domino ? 'Domino' : 'Traditional'}
                         aria-label={plan.build_pending_domino ? 'Domino method' : 'Traditional method'}
                       >
                         {plan.build_pending_domino ? (
-                          <LibraryBig size={14} color="white" />
+                          <LibraryBig size={12} color="white" />
                         ) : (
-                          <Landmark size={14} color="white" />
+                          <Landmark size={12} color="white" />
                         )}
                       </span>
                       <span
@@ -360,37 +360,37 @@ const ConnectionPlans = (): JSX.Element => {
                   </TableCell>
 
                   <TableCell role="gridcell">
-                    <div className="text-dark" style={{ fontSize: '0.9375rem' }}>
+                    <div className="text-dark" style={{ fontSize: '0.8125rem' }}>
                       {plan.contact_types || 'All'}
                     </div>
                   </TableCell>
 
                   <TableCell role="gridcell">
-                    <div className="text-dark" style={{ fontSize: '0.9375rem' }}>
+                    <div className="text-dark" style={{ fontSize: '0.8125rem' }}>
                       {plan.next_plan || ''}
                     </div>
                   </TableCell>
 
                   <TableCell role="gridcell">
-                    <div className="text-dark" style={{ fontSize: '0.9375rem' }}>
+                    <div className="text-dark" style={{ fontSize: '0.8125rem' }}>
                       {plan.lead_sources || ''}
                     </div>
                   </TableCell>
 
                   <TableCell role="gridcell">
-                    <div className="text-dark" style={{ fontSize: '0.9375rem' }}>
+                    <div className="text-dark" style={{ fontSize: '0.8125rem' }}>
                       {plan.specific_date ? formatDateTime(plan.specific_date) : ''}
                     </div>
                   </TableCell>
 
                   <TableCell role="gridcell">
-                    <div className="text-dark" style={{ fontSize: '0.9375rem' }}>
+                    <div className="text-dark" style={{ fontSize: '0.8125rem' }}>
                       {plan.plan_id || '-1'}
                     </div>
                   </TableCell>
 
                   <TableCell role="gridcell">
-                    <div className="text-dark" style={{ fontSize: '0.9375rem' }}>
+                    <div className="text-dark" style={{ fontSize: '0.8125rem' }}>
                       {plan.count}
                     </div>
                   </TableCell>
@@ -401,15 +401,15 @@ const ConnectionPlans = (): JSX.Element => {
                         className="btn btn-link p-0 border rounded-circle d-flex align-items-center justify-content-center"
                         title="Edit connection plan"
                         style={{
-                          width: '32px',
-                          height: '32px',
+                          width: '24px',
+                          height: '24px',
                           borderColor: '#dee2e6',
                           color: '#6c757d',
                           backgroundColor: 'white'
                         }}
                         onClick={() => handleEditPlan(plan)}
                       >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
                         </svg>
                       </button>
@@ -417,8 +417,8 @@ const ConnectionPlans = (): JSX.Element => {
                         className="btn btn-link p-0 border rounded-circle d-flex align-items-center justify-content-center"
                         title="Duplicate connection plan"
                         style={{
-                          width: '32px',
-                          height: '32px',
+                          width: '24px',
+                          height: '24px',
                           borderColor: '#dee2e6',
                           color: '#6c757d',
                           backgroundColor: 'white',
@@ -427,7 +427,7 @@ const ConnectionPlans = (): JSX.Element => {
                         onClick={() => handleDuplicatePlan(plan)}
                         disabled={duplicating === plan.id}
                       >
-                        <Copy size={16} />
+                        <Copy size={12} />
                       </button>
                     </div>
                   </TableCell>
