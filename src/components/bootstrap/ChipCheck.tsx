@@ -34,7 +34,7 @@ export const ChipCheck: React.FC<ChipCheckProps> = ({
   return (
     <span className={chipClasses} onClick={isDisabled ? undefined : onClick} style={{ cursor: isDisabled ? 'not-allowed' : 'pointer' }}>
       {Icon && (
-        <Icon size={16} style={{ marginRight: '6px', color: iconColor }} />
+        <Icon size={16} style={{ marginRight: '6px', color: isActive ? 'white' : iconColor }} />
       )}
       {shortLabel ? (
         <>
