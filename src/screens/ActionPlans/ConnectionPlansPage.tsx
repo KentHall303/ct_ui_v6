@@ -169,7 +169,7 @@ const ConnectionPlans = (): JSX.Element => {
           <div className="d-flex align-items-start justify-content-between">
             <div className="flex-grow-1" style={{ maxWidth: 'calc(100% - 140px)' }}>
               <div className="d-flex align-items-center gap-2 mb-1">
-                <h2 className="h2 fw-bold text-dark mb-0">Connection Plans</h2>
+                <h2 className="h4 fw-bold text-dark mb-0">Connection Plans</h2>
                 <button
                   onClick={toggleInfo}
                   className="btn btn-link p-0 text-secondary border-0"
@@ -210,13 +210,15 @@ const ConnectionPlans = (): JSX.Element => {
             </div>
             <Button
               variant="success"
+              size="sm"
               className="rounded-pill d-flex align-items-center gap-2 flex-shrink-0"
+              style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
               title="Add new connection plan"
               onClick={() => {
                 setShowAddModal(true);
               }}
             >
-              <Plus size={16} />
+              <Plus size={14} />
               <span>Add New</span>
             </Button>
           </div>

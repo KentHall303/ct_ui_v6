@@ -148,17 +148,19 @@ const EmailTemplates = (): JSX.Element => {
       <div className="px-3 pt-3 flex-shrink-0">
         <div className="bg-white rounded-3 pt-3 pb-3 px-4 border shadow-sm">
           <div className="d-flex align-items-center justify-content-between">
-            <h2 className="h2 fw-bold text-dark mb-0">Email Templates</h2>
+            <h2 className="h4 fw-bold text-dark mb-0">Email Templates</h2>
             <Button
               variant="success"
+              size="sm"
               className="rounded-pill d-flex align-items-center gap-2"
+              style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
               title="Add new template"
               onClick={() => {
                 console.log('Add new button clicked');
                 setShowAddModal(true);
               }}
             >
-              <Plus size={16} />
+              <Plus size={14} />
               <span>Add New</span>
             </Button>
           </div>
