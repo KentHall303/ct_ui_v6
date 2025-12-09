@@ -1,8 +1,8 @@
 import React from "react";
 import { Button } from "../../components/bootstrap/Button";
-import { FloatingInput } from "../../components/bootstrap/FormControls";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/bootstrap/Table";
 import { StandardSearch } from "../../components/bootstrap/StandardSearch";
+import { ChevronUp, ChevronDown } from 'lucide-react';
 
 type Account = {
   id: number;
@@ -183,27 +183,22 @@ const AccountsHeader = () => {
   };
 
   return (
-    <div className="px-3 pt-3">
+    <div className="px-3 pt-3 flex-shrink-0">
       <div className="bg-white rounded-3 pt-3 pb-3 px-4 border shadow-sm">
-        <div className="d-flex flex-column gap-3">
-          <div className="d-flex align-items-baseline gap-3">
-            <h1 className="h2 fw-bold text-dark mb-0">Accounts</h1>
-            <p className="text-secondary mb-0" style={{ fontSize: '0.875rem' }}>
-              {multiLevelCount} Multi Level Accounts and {singleLevelCount} Single Level Accounts
-            </p>
-          </div>
-
-          <div className="d-flex justify-content-end">
-            <div style={{ width: '420px' }}>
-              <StandardSearch
-                placeholder="Search Account..."
-                searchFocusOptions={searchFocusOptions}
-                onSearch={handleSearch}
-                showDropdown={true}
-              />
-            </div>
+        <div className="d-flex align-items-center justify-content-between mb-2">
+          <h2 className="h4 fw-bold text-dark mb-0">Accounts</h2>
+          <div style={{ width: '420px' }}>
+            <StandardSearch
+              placeholder="Search Account..."
+              searchFocusOptions={searchFocusOptions}
+              onSearch={handleSearch}
+              showDropdown={true}
+            />
           </div>
         </div>
+        <p className="text-secondary mb-0" style={{ fontSize: '0.875rem' }}>
+          {multiLevelCount} Multi Level Accounts and {singleLevelCount} Single Level Accounts
+        </p>
       </div>
     </div>
   );
@@ -214,9 +209,6 @@ export const Accounts = (): JSX.Element => {
     key: string;
     direction: 'asc' | 'desc';
   } | null>({ key: 'company', direction: 'asc' });
-
-  const scrollRef = React.useRef<HTMLDivElement | null>(null);
-  const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
 
   const handleSort = (key: string) => {
     setSortConfig(current => {
@@ -229,9 +221,13 @@ export const Accounts = (): JSX.Element => {
 
   const getSortIcon = (key: string) => {
     if (sortConfig?.key === key) {
-      return sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
+      return sortConfig.direction === 'asc' ? (
+        <ChevronUp size={14} style={{ marginLeft: '8px' }} />
+      ) : (
+        <ChevronDown size={14} style={{ marginLeft: '8px' }} />
+      );
     }
-    return ' ▲';
+    return <ChevronUp size={14} style={{ marginLeft: '8px', opacity: 0.3 }} />;
   };
 
   const getSortProps = (key: string) => ({
@@ -250,34 +246,17 @@ export const Accounts = (): JSX.Element => {
     style: { cursor: 'pointer' }
   });
 
-  React.useLayoutEffect(() => {
-    function computeHeight() {
-      if (!scrollRef.current) return;
-      const rect = scrollRef.current.getBoundingClientRect();
-      const vh = window.innerHeight;
-      // 16px bottom buffer to avoid touching the viewport edge
-      const h = Math.max(200, Math.floor(vh - rect.top - 16));
-      setMaxHeight(h);
-    }
-    computeHeight();
-    window.addEventListener("resize", computeHeight);
-    return () => window.removeEventListener("resize", computeHeight);
-  }, []);
-
   return (
     <div className="d-flex flex-column w-100 h-100">
-      <div className="flex-shrink-0">
-        <AccountsHeader />
-      </div>
+      <AccountsHeader />
 
-      <div className="px-3 pt-3">
+      <div className="px-3 pt-3 pb-3 flex-fill" style={{ minHeight: 0, overflow: 'hidden' }}>
         <div
-          ref={scrollRef}
-          className="bg-white rounded-3 overflow-auto border shadow-sm"
-          style={{ maxHeight: maxHeight ?? undefined }}
+          className="bg-white rounded-3 border shadow-sm h-100"
+          style={{ overflow: 'auto' }}
         >
           <div style={{ minWidth: '1000px' }}>
-            <Table className="contacts-table position-relative">
+            <Table className="standard-table table-striped mb-0">
               <caption className="visually-hidden">
                 Accounts table showing {accountsData.length} records.
                 Use arrow keys to navigate, Enter or Space to sort columns.
@@ -290,49 +269,63 @@ export const Accounts = (): JSX.Element => {
                     {...getSortProps('company')}
                     aria-label={`Sort by company ${sortConfig?.key === 'company' ? sortConfig.direction : 'ascending'}`}
                   >
-                    Company{getSortIcon('company')}
+                    <span style={{ display: 'flex', alignItems: 'center' }}>
+                      Company{getSortIcon('company')}
+                    </span>
                   </TableHead>
                   <TableHead
                     scope="col"
                     {...getSortProps('accountAdmin')}
                     aria-label={`Sort by account admin ${sortConfig?.key === 'accountAdmin' ? sortConfig.direction : 'ascending'}`}
                   >
-                    Account Admin{getSortIcon('accountAdmin')}
+                    <span style={{ display: 'flex', alignItems: 'center' }}>
+                      Account Admin{getSortIcon('accountAdmin')}
+                    </span>
                   </TableHead>
                   <TableHead
                     scope="col"
                     {...getSortProps('lastLogin')}
                     aria-label={`Sort by last login ${sortConfig?.key === 'lastLogin' ? sortConfig.direction : 'ascending'}`}
                   >
-                    Last Login{getSortIcon('lastLogin')}
+                    <span style={{ display: 'flex', alignItems: 'center' }}>
+                      Last Login{getSortIcon('lastLogin')}
+                    </span>
                   </TableHead>
                   <TableHead
                     scope="col"
                     {...getSortProps('createdDate')}
                     aria-label={`Sort by created date ${sortConfig?.key === 'createdDate' ? sortConfig.direction : 'ascending'}`}
                   >
-                    Created Date{getSortIcon('createdDate')}
+                    <span style={{ display: 'flex', alignItems: 'center' }}>
+                      Created Date{getSortIcon('createdDate')}
+                    </span>
                   </TableHead>
                   <TableHead
                     scope="col"
                     {...getSortProps('trialExpires')}
                     aria-label={`Sort by trial expires ${sortConfig?.key === 'trialExpires' ? sortConfig.direction : 'ascending'}`}
                   >
-                    Trial Expires{getSortIcon('trialExpires')}
+                    <span style={{ display: 'flex', alignItems: 'center' }}>
+                      Trial Expires{getSortIcon('trialExpires')}
+                    </span>
                   </TableHead>
                   <TableHead
                     scope="col"
                     {...getSortProps('subscriptionPlan')}
                     aria-label={`Sort by subscription plan ${sortConfig?.key === 'subscriptionPlan' ? sortConfig.direction : 'ascending'}`}
                   >
-                    Subscription Plan{getSortIcon('subscriptionPlan')}
+                    <span style={{ display: 'flex', alignItems: 'center' }}>
+                      Subscription Plan{getSortIcon('subscriptionPlan')}
+                    </span>
                   </TableHead>
                   <TableHead
                     scope="col"
                     {...getSortProps('status')}
                     aria-label={`Sort by status ${sortConfig?.key === 'status' ? sortConfig.direction : 'ascending'}`}
                   >
-                    Status{getSortIcon('status')}
+                    <span style={{ display: 'flex', alignItems: 'center' }}>
+                      Status{getSortIcon('status')}
+                    </span>
                   </TableHead>
                   <TableHead scope="col">
                     Actions
