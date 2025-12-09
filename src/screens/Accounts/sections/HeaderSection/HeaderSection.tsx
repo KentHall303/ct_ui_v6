@@ -17,28 +17,27 @@ export const HeaderSection = (): JSX.Element => {
   };
 
   return (
-    <div className="bg-white">
-      {/* Title Section */}
-      <div className="d-flex align-items-baseline gap-4 mb-1 px-4 pt-2">
-        <h1 className="h2 fw-bold text-dark">
-          Accounts
-        </h1>
-        <p className="small text-secondary">
-          11 Multi Level Accounts and 1 Single Level Accounts
-        </p>
-      </div>
+    <div className="bg-white px-4 py-3">
+      <div className="d-flex align-items-center justify-content-between">
+        {/* Left Section: Title and Subtitle */}
+        <div>
+          <h1 className="h2 fw-bold text-dark mb-1">
+            Accounts
+          </h1>
+          <p className="small text-secondary mb-0">
+            11 Multi Level Accounts and 1 Single Level Accounts
+          </p>
+        </div>
 
-      {/* Search Controls */}
-      <div className="py-0 px-4 pb-4">
-        <div className="d-flex align-items-center justify-content-end">
-          <div style={{ width: '420px' }}>
-            <StandardSearch
-              placeholder="Search Account..."
-              searchFocusOptions={searchFocusOptions}
-              onSearch={handleSearch}
-              showDropdown={true}
-            />
-          </div>
+        {/* Right Section: Search Controls */}
+        <div style={{ width: '380px' }}>
+          <StandardSearch
+            placeholder="Search Account..."
+            searchFocusOptions={searchFocusOptions}
+            onSearch={handleSearch}
+            showDropdown={true}
+            size="sm"
+          />
         </div>
       </div>
     </div>

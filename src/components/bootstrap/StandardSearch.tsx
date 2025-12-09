@@ -7,13 +7,15 @@ interface StandardSearchProps {
   searchFocusOptions?: string[];
   onSearch?: (searchValue: string, searchFocus: string) => void;
   showDropdown?: boolean;
+  size?: 'sm' | 'lg';
 }
 
 export const StandardSearch: React.FC<StandardSearchProps> = ({
   placeholder = "Search...",
   searchFocusOptions = ['Combo'],
   onSearch,
-  showDropdown: showDropdownProp = true
+  showDropdown: showDropdownProp = true,
+  size
 }) => {
   const [searchValue, setSearchValue] = React.useState<string>('');
   const [searchFocus, setSearchFocus] = React.useState<string>(searchFocusOptions[0]);
@@ -70,6 +72,7 @@ export const StandardSearch: React.FC<StandardSearchProps> = ({
           value={searchValue}
           onChange={handleSearchChange}
           onKeyPress={handleKeyPress}
+          size={size}
           style={{
             borderRight: 'none',
             paddingRight: searchValue ? '36px' : '12px',
@@ -101,18 +104,19 @@ export const StandardSearch: React.FC<StandardSearchProps> = ({
       <Button
         variant="primary"
         onClick={handleSearch}
+        size={size}
         style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '0.375rem 0.5rem',
+          padding: size === 'sm' ? '0.25rem 0.5rem' : '0.375rem 0.5rem',
           borderTopRightRadius: showDropdownProp ? 0 : undefined,
           borderBottomRightRadius: showDropdownProp ? 0 : undefined
         }}
       >
         <svg
-          width="18"
-          height="18"
+          width={size === 'sm' ? '16' : '18'}
+          height={size === 'sm' ? '16' : '18'}
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -129,6 +133,7 @@ export const StandardSearch: React.FC<StandardSearchProps> = ({
           <Button
             variant="secondary"
             onClick={() => setShowDropdown(!showDropdown)}
+            size={size}
             style={{
               borderTopLeftRadius: 0,
               borderBottomLeftRadius: 0,
@@ -136,8 +141,8 @@ export const StandardSearch: React.FC<StandardSearchProps> = ({
               alignItems: 'center',
               gap: '8px',
               whiteSpace: 'nowrap',
-              paddingLeft: '12px',
-              paddingRight: '12px',
+              paddingLeft: size === 'sm' ? '10px' : '12px',
+              paddingRight: size === 'sm' ? '10px' : '12px',
               maxWidth: '150px',
               overflow: 'hidden',
               textOverflow: 'ellipsis'
