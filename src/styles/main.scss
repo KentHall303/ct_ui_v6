@@ -503,24 +503,14 @@ body {
       top: 0 !important;
       z-index: 10 !important;
       background-color: #ffffff !important;
-      border-bottom: 2px solid #dee2e6 !important;
-      border-top: 1px solid #dee2e6 !important;
-      font-weight: 600 !important;
+      border-bottom: 1px solid #dee2e6 !important;
+      border-top: none !important;
+      font-weight: 400 !important;
       font-size: 0.8125rem !important;
-      text-transform: uppercase;
-      letter-spacing: 0.025em;
-      color: #212529 !important;
+      color: #6c757d !important;
       padding: 0.875rem 1rem !important;
       white-space: nowrap;
       vertical-align: middle !important;
-
-      &:first-child {
-        border-left: 1px solid #dee2e6;
-      }
-
-      &:last-child {
-        border-right: 1px solid #dee2e6;
-      }
     }
   }
 

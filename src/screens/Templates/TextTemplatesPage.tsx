@@ -2,7 +2,7 @@ import React from 'react';
 import { BodyLayout } from '../../components/layout/BodyLayout/BodyLayout';
 import { Button } from '../../components/bootstrap/Button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/bootstrap/Table';
-import { Plus, Copy } from 'lucide-react';
+import { Plus, Copy, ChevronUp, ChevronDown } from 'lucide-react';
 import { AddTextTemplateModal } from '../../components/modals/AddTextTemplateModal';
 import { textTemplateService } from '../../services/textTemplateService';
 import { TextTemplate } from '../../lib/supabase';
@@ -71,9 +71,13 @@ const TextTemplates = (): JSX.Element => {
 
   const getSortIcon = (key: string) => {
     if (sortConfig?.key === key) {
-      return sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
+      return sortConfig.direction === 'asc' ? (
+        <ChevronUp size={14} style={{ marginLeft: '8px' }} />
+      ) : (
+        <ChevronDown size={14} style={{ marginLeft: '8px' }} />
+      );
     }
-    return ' ▲';
+    return <ChevronUp size={14} style={{ marginLeft: '8px', opacity: 0.3 }} />;
   };
 
   const sortedTemplates = React.useMemo(() => {
@@ -172,7 +176,9 @@ const TextTemplates = (): JSX.Element => {
                   aria-label={`Sort by name ${sortConfig?.key === 'name' ? sortConfig.direction : 'ascending'}`}
                   style={{ width: '60%' }}
                 >
-                  Name{getSortIcon('name')}
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    Name{getSortIcon('name')}
+                  </span>
                 </TableHead>
                 <TableHead
                   scope="col"
@@ -180,7 +186,9 @@ const TextTemplates = (): JSX.Element => {
                   aria-label={`Sort by contact types ${sortConfig?.key === 'contact_type' ? sortConfig.direction : 'ascending'}`}
                   style={{ width: '30%' }}
                 >
-                  Contact Types{getSortIcon('contact_type')}
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    Contact Types{getSortIcon('contact_type')}
+                  </span>
                 </TableHead>
                 <TableHead scope="col" style={{ textAlign: 'center', width: '10%' }}>
                   Action

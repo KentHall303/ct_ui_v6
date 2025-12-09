@@ -2,7 +2,7 @@ import React from 'react';
 import { BodyLayout } from '../../components/layout/BodyLayout/BodyLayout';
 import { Button } from '../../components/bootstrap/Button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/bootstrap/Table';
-import { Plus, Copy } from 'lucide-react';
+import { Plus, Copy, ChevronUp, ChevronDown } from 'lucide-react';
 import { formatDateTime } from '../../utils/dateUtils';
 import { AddEmailTemplateModal } from '../../components/modals/AddEmailTemplateModal';
 import { emailTemplateService } from '../../services/emailTemplateService';
@@ -72,9 +72,13 @@ const EmailTemplates = (): JSX.Element => {
 
   const getSortIcon = (key: string) => {
     if (sortConfig?.key === key) {
-      return sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
+      return sortConfig.direction === 'asc' ? (
+        <ChevronUp size={14} style={{ marginLeft: '8px' }} />
+      ) : (
+        <ChevronDown size={14} style={{ marginLeft: '8px' }} />
+      );
     }
-    return ' ▲';
+    return <ChevronUp size={14} style={{ marginLeft: '8px', opacity: 0.3 }} />;
   };
 
   const sortedTemplates = React.useMemo(() => {
@@ -180,7 +184,9 @@ const EmailTemplates = (): JSX.Element => {
                   aria-label={`Sort by name ${sortConfig?.key === 'name' ? sortConfig.direction : 'ascending'}`}
                   style={{ width: '60%' }}
                 >
-                  Name{getSortIcon('name')}
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    Name{getSortIcon('name')}
+                  </span>
                 </TableHead>
                 <TableHead
                   scope="col"
@@ -188,7 +194,9 @@ const EmailTemplates = (): JSX.Element => {
                   aria-label={`Sort by last updated ${sortConfig?.key === 'updated_at' ? sortConfig.direction : 'ascending'}`}
                   style={{ width: '30%' }}
                 >
-                  Last Updated{getSortIcon('updated_at')}
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    Last Updated{getSortIcon('updated_at')}
+                  </span>
                 </TableHead>
                 <TableHead scope="col" style={{ textAlign: 'center', width: '10%' }}>
                   Actions

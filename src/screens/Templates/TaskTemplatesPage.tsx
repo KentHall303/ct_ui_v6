@@ -2,7 +2,7 @@ import React from 'react';
 import { BodyLayout } from '../../components/layout/BodyLayout/BodyLayout';
 import { Button } from '../../components/bootstrap/Button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/bootstrap/Table';
-import { Plus, Copy } from 'lucide-react';
+import { Plus, Copy, ChevronUp, ChevronDown } from 'lucide-react';
 import { AddTaskTemplateModal } from '../../components/modals/AddTaskTemplateModal';
 import { taskTemplateService } from '../../services/taskTemplateService';
 import { TaskTemplate } from '../../lib/supabase';
@@ -71,9 +71,13 @@ const TaskTemplates = (): JSX.Element => {
 
   const getSortIcon = (key: string) => {
     if (sortConfig?.key === key) {
-      return sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
+      return sortConfig.direction === 'asc' ? (
+        <ChevronUp size={14} style={{ marginLeft: '8px' }} />
+      ) : (
+        <ChevronDown size={14} style={{ marginLeft: '8px' }} />
+      );
     }
-    return ' ▲';
+    return <ChevronUp size={14} style={{ marginLeft: '8px', opacity: 0.3 }} />;
   };
 
   const getAssigneeLabel = (assigneeType: string) => {
@@ -185,7 +189,9 @@ const TaskTemplates = (): JSX.Element => {
                   aria-label={`Sort by title ${sortConfig?.key === 'title' ? sortConfig.direction : 'ascending'}`}
                   style={{ width: '50%' }}
                 >
-                  Title{getSortIcon('title')}
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    Title{getSortIcon('title')}
+                  </span>
                 </TableHead>
                 <TableHead
                   scope="col"
@@ -193,7 +199,9 @@ const TaskTemplates = (): JSX.Element => {
                   aria-label={`Sort by assignee ${sortConfig?.key === 'assignee_type' ? sortConfig.direction : 'ascending'}`}
                   style={{ width: '25%' }}
                 >
-                  Assignee{getSortIcon('assignee_type')}
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    Assignee{getSortIcon('assignee_type')}
+                  </span>
                 </TableHead>
                 <TableHead
                   scope="col"
@@ -201,7 +209,9 @@ const TaskTemplates = (): JSX.Element => {
                   aria-label={`Sort by priority ${sortConfig?.key === 'priority' ? sortConfig.direction : 'ascending'}`}
                   style={{ width: '15%' }}
                 >
-                  Priority{getSortIcon('priority')}
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    Priority{getSortIcon('priority')}
+                  </span>
                 </TableHead>
                 <TableHead scope="col" style={{ textAlign: 'center', width: '10%' }}>
                   Actions

@@ -2,7 +2,7 @@ import React from 'react';
 import { BodyLayout } from '../../components/layout/BodyLayout/BodyLayout';
 import { Button } from '../../components/bootstrap/Button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/bootstrap/Table';
-import { Plus, Copy, ChevronDown, ChevronRight, Landmark, LibraryBig } from 'lucide-react';
+import { Plus, Copy, ChevronDown, ChevronRight, Landmark, LibraryBig, ChevronUp } from 'lucide-react';
 import { Collapse } from 'react-bootstrap';
 import { AddConnectionPlanModal } from '../../components/modals/AddConnectionPlanModal';
 import { connectionPlanService } from '../../services/connectionPlanService';
@@ -85,9 +85,13 @@ const ConnectionPlans = (): JSX.Element => {
 
   const getSortIcon = (key: string) => {
     if (sortConfig?.key === key) {
-      return sortConfig.direction === 'asc' ? ' ▲' : ' ▼';
+      return sortConfig.direction === 'asc' ? (
+        <ChevronUp size={14} style={{ marginLeft: '8px' }} />
+      ) : (
+        <ChevronDown size={14} style={{ marginLeft: '8px' }} />
+      );
     }
-    return ' ▲';
+    return <ChevronUp size={14} style={{ marginLeft: '8px', opacity: 0.3 }} />;
   };
 
   const sortedPlans = React.useMemo(() => {
@@ -238,7 +242,9 @@ const ConnectionPlans = (): JSX.Element => {
                   aria-label={`Sort by name ${sortConfig?.key === 'name' ? sortConfig.direction : 'ascending'}`}
                   style={{ width: '20%' }}
                 >
-                  Name{getSortIcon('name')}
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    Name{getSortIcon('name')}
+                  </span>
                 </TableHead>
                 <TableHead
                   scope="col"
@@ -246,7 +252,9 @@ const ConnectionPlans = (): JSX.Element => {
                   aria-label={`Sort by contact types ${sortConfig?.key === 'contact_types' ? sortConfig.direction : 'ascending'}`}
                   style={{ width: '12%' }}
                 >
-                  Contact Types{getSortIcon('contact_types')}
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    Contact Types{getSortIcon('contact_types')}
+                  </span>
                 </TableHead>
                 <TableHead
                   scope="col"
@@ -254,7 +262,9 @@ const ConnectionPlans = (): JSX.Element => {
                   aria-label={`Sort by next plan ${sortConfig?.key === 'next_plan' ? sortConfig.direction : 'ascending'}`}
                   style={{ width: '15%' }}
                 >
-                  Next Plan
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    Next Plan{getSortIcon('next_plan')}
+                  </span>
                 </TableHead>
                 <TableHead
                   scope="col"
@@ -262,7 +272,9 @@ const ConnectionPlans = (): JSX.Element => {
                   aria-label={`Sort by lead source ${sortConfig?.key === 'lead_sources' ? sortConfig.direction : 'ascending'}`}
                   style={{ width: '15%' }}
                 >
-                  Lead Source
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    Lead Source{getSortIcon('lead_sources')}
+                  </span>
                 </TableHead>
                 <TableHead
                   scope="col"
@@ -270,7 +282,9 @@ const ConnectionPlans = (): JSX.Element => {
                   aria-label={`Sort by specific date ${sortConfig?.key === 'specific_date' ? sortConfig.direction : 'ascending'}`}
                   style={{ width: '12%' }}
                 >
-                  Specific Date
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    Specific Date{getSortIcon('specific_date')}
+                  </span>
                 </TableHead>
                 <TableHead
                   scope="col"
@@ -278,7 +292,9 @@ const ConnectionPlans = (): JSX.Element => {
                   aria-label={`Sort by plan id ${sortConfig?.key === 'plan_id' ? sortConfig.direction : 'ascending'}`}
                   style={{ width: '10%' }}
                 >
-                  Plan Id
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    Plan Id{getSortIcon('plan_id')}
+                  </span>
                 </TableHead>
                 <TableHead
                   scope="col"
@@ -286,7 +302,9 @@ const ConnectionPlans = (): JSX.Element => {
                   aria-label={`Sort by count ${sortConfig?.key === 'count' ? sortConfig.direction : 'ascending'}`}
                   style={{ width: '8%' }}
                 >
-                  Count
+                  <span style={{ display: 'flex', alignItems: 'center' }}>
+                    Count{getSortIcon('count')}
+                  </span>
                 </TableHead>
                 <TableHead scope="col" style={{ textAlign: 'center', width: '8%' }}>
                   Action
