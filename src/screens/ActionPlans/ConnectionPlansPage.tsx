@@ -238,11 +238,12 @@ const ConnectionPlans = (): JSX.Element => {
             </caption>
             <TableHeader>
               <TableRow>
+                <TableHead scope="col" style={{ width: '5%' }} />
                 <TableHead
                   scope="col"
                   {...getSortProps('name')}
                   aria-label={`Sort by name ${sortConfig?.key === 'name' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '20%' }}
+                  style={{ width: '17%' }}
                 >
                   <span style={{ display: 'flex', alignItems: 'center' }}>
                     Name{getSortIcon('name')}
@@ -321,13 +322,7 @@ const ConnectionPlans = (): JSX.Element => {
                   aria-rowindex={index + 2}
                 >
                   <TableCell role="gridcell">
-                    <div
-                      className="d-flex align-items-center gap-2"
-                      style={{
-                        overflow: 'hidden',
-                        fontSize: '0.8125rem'
-                      }}
-                    >
+                    <div className="d-flex align-items-center justify-content-center">
                       <span
                         className={`badge rounded-circle d-flex align-items-center justify-content-center ${
                           plan.build_pending_domino ? 'badge-domino-bg' : 'badge-traditional-bg'
@@ -342,22 +337,26 @@ const ConnectionPlans = (): JSX.Element => {
                         aria-label={plan.build_pending_domino ? 'Domino method' : 'Traditional method'}
                       >
                         {plan.build_pending_domino ? (
-                          <LibraryBig size={12} color="white" />
+                          <LibraryBig size={12} color="#6c757d" />
                         ) : (
-                          <Landmark size={12} color="white" />
+                          <Landmark size={12} color="#6c757d" />
                         )}
                       </span>
-                      <span
-                        className="text-dark"
-                        style={{
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
-                        }}
-                        title={plan.name}
-                      >
-                        {plan.name}
-                      </span>
+                    </div>
+                  </TableCell>
+
+                  <TableCell role="gridcell">
+                    <div
+                      className="text-dark"
+                      style={{
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        fontSize: '0.8125rem'
+                      }}
+                      title={plan.name}
+                    >
+                      {plan.name}
                     </div>
                   </TableCell>
 
