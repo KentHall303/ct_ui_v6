@@ -37,25 +37,41 @@
 CREATE TABLE IF NOT EXISTS templates (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   name text NOT NULL,
-  type text NOT NULL CHECK (type IN (
-    'email',
-    'text',
-    'task',
-    'appointment_invite',
-    'notes_logs',
-    'export_list'
-  )),
-  category text,
-  subject text,
-  content text,
-  tcpa_disclosure text,
-  task_category text,
-  task_due_in_days integer,
-  appt_title text,
-  appt_duration_minutes integer,
-  appt_location text,
+  description text,
+  category text NOT NULL CHECK (category IN ('email', 'task', 'text', 'appt_invites', 'notes_logs', 'export_list')),
+  content text NOT NULL,
+  variables jsonb DEFAULT '{}',
+  tags text[] DEFAULT '{}',
+  is_active boolean DEFAULT true,
+  usage_count integer DEFAULT 0,
+  last_used_at timestamptz,
+  created_by uuid,
   created_at timestamptz DEFAULT now(),
-  updated_at timestamptz DEFAULT now()
+  updated_at timestamptz DEFAULT now(),
+
+  -- Email template specific fields
+  subject text,
+  contact_type text DEFAULT 'All',
+  exclude_client boolean DEFAULT false,
+  additional_emails text,
+  bcc_email text,
+  content_tcpa text CHECK (content_tcpa IN ('Promotional', 'Transactional', 'Mixed')),
+
+  -- Text template specific fields
+  select_token text,
+  protect_from_overwriting boolean DEFAULT false,
+  protect_from_sharing boolean DEFAULT false,
+
+  -- Task template specific fields
+  title text,
+  detail text,
+  due_in_days integer,
+  assignee_type text CHECK (assignee_type IN ('account_owner', 'assigned_user', 'specific_user')),
+  priority text,
+
+  -- Appointment template specific fields
+  calendar_title text,
+  external_calendar_title text
 );
 
 -- Enable Row Level Security
@@ -197,7 +213,7 @@ CREATE INDEX IF NOT EXISTS idx_connection_plan_actions_plan_id
 -- 4. SEED EMAIL TEMPLATES
 -- ============================================================
 
-INSERT INTO templates (name, type, category, subject, content, tcpa_disclosure)
+INSERT INTO templates (name, category, description, subject, content, content_tcpa, contact_type, exclude_client, is_active, usage_count)
 SELECT * FROM (VALUES
   (
     'Initial Contact - Residential',
@@ -224,7 +240,11 @@ Best regards,
 {user_name}
 {company_name}
 {phone_number}',
-    'By responding, you consent to receive calls/texts about our services. Reply STOP to opt out.'
+    'Promotional',
+    'All',
+    false,
+    true,
+    0
   ),
   (
     'Follow-up After Estimate',
@@ -249,7 +269,11 @@ Best regards,
 {user_name}
 {company_name}
 {phone_number}',
-    'Message and data rates may apply. Reply STOP to opt out.'
+    'Promotional',
+    'All',
+    false,
+    true,
+    0
   ),
   (
     'Storm Damage Alert',
@@ -275,175 +299,222 @@ Stay safe,
 {user_name}
 {company_name}
 {phone_number}',
-    'By responding, you consent to receive communications. Reply STOP to opt out.'
+    'Promotional',
+    'All',
+    false,
+    true,
+    0
   )
-) AS v(name, type, category, subject, content, tcpa_disclosure)
+) AS v(name, category, description, subject, content, content_tcpa, contact_type, exclude_client, is_active, usage_count)
 WHERE NOT EXISTS (
-  SELECT 1 FROM templates WHERE name = v.name AND type = 'email'
+  SELECT 1 FROM templates WHERE name = v.name AND category = 'email'
 );
 
 -- ============================================================
 -- 5. SEED TEXT TEMPLATES
 -- ============================================================
 
-INSERT INTO templates (name, type, category, content, tcpa_disclosure)
+INSERT INTO templates (name, category, content, content_tcpa, contact_type, is_active, usage_count)
 SELECT * FROM (VALUES
   (
     'Quick Check-in',
     'text',
-    'Follow-up',
     'Hi {contact_name}, this is {user_name} from {company_name}. Just checking in about your roofing project. Do you have any questions I can answer?',
-    'Reply STOP to opt out'
+    'Promotional',
+    'All',
+    true,
+    0
   ),
   (
     'Appointment Reminder',
     'text',
-    'Reminders',
     'Hi {contact_name}, friendly reminder about our appointment tomorrow at {appointment_time} for your property at {property_address}. See you then! - {user_name}',
-    'Reply STOP to opt out'
+    'Transactional',
+    'All',
+    true,
+    0
   ),
   (
     'Estimate Ready',
     'text',
-    'Sales',
     'Hi {contact_name}, your roofing estimate is ready! I''ve sent it to your email. Let me know if you''d like to discuss any details. - {user_name} at {company_name}',
-    'Reply STOP to opt out'
+    'Promotional',
+    'All',
+    true,
+    0
   )
-) AS v(name, type, category, content, tcpa_disclosure)
+) AS v(name, category, content, content_tcpa, contact_type, is_active, usage_count)
 WHERE NOT EXISTS (
-  SELECT 1 FROM templates WHERE name = v.name AND type = 'text'
+  SELECT 1 FROM templates WHERE name = v.name AND category = 'text'
 );
 
 -- ============================================================
 -- 6. SEED TASK TEMPLATES
 -- ============================================================
 
-INSERT INTO templates (name, type, task_category, content, task_due_in_days)
+INSERT INTO templates (name, category, title, detail, due_in_days, assignee_type, priority, is_active, usage_count)
 SELECT * FROM (VALUES
   (
     'Follow up on estimate',
     'task',
-    'Sales',
+    'Follow up on estimate',
     'Call {contact_name} to discuss the estimate provided for {property_address}. Address any questions or concerns.',
-    3
+    3,
+    'account_owner',
+    'High',
+    true,
+    0
   ),
   (
     'Send insurance documentation',
     'task',
-    'Administrative',
+    'Send insurance documentation',
     'Prepare and send insurance claim documentation for {contact_name} - {property_address}',
-    1
+    1,
+    'account_owner',
+    'High',
+    true,
+    0
   ),
   (
     'Schedule final walkthrough',
     'task',
-    'Project Management',
+    'Schedule final walkthrough',
     'Coordinate final walkthrough with {contact_name} for completed project at {property_address}',
+    0,
+    'account_owner',
+    'Medium',
+    true,
     0
   ),
   (
     'Order materials',
     'task',
-    'Operations',
+    'Order materials',
     'Order materials for {contact_name} project at {property_address}. Confirm delivery date.',
-    7
+    7,
+    'assigned_user',
+    'Medium',
+    true,
+    0
   )
-) AS v(name, type, task_category, content, task_due_in_days)
+) AS v(name, category, title, detail, due_in_days, assignee_type, priority, is_active, usage_count)
 WHERE NOT EXISTS (
-  SELECT 1 FROM templates WHERE name = v.name AND type = 'task'
+  SELECT 1 FROM templates WHERE name = v.name AND category = 'task'
 );
 
 -- ============================================================
 -- 7. SEED APPOINTMENT INVITE TEMPLATES
 -- ============================================================
 
-INSERT INTO templates (name, type, appt_title, appt_duration_minutes, appt_location, content)
+INSERT INTO templates (name, category, subject, contact_type, calendar_title, external_calendar_title, content, is_active, usage_count)
 SELECT * FROM (VALUES
   (
     'Initial Consultation',
-    'appointment_invite',
+    'appt_invites',
+    'Roofing Consultation Scheduled',
+    'All',
     'Roofing Consultation - {contact_name}',
-    60,
-    '{property_address}',
-    'Initial consultation to assess roofing needs and provide estimate.'
+    'Roofing Consultation',
+    'Initial consultation to assess roofing needs and provide estimate.',
+    true,
+    0
   ),
   (
     'Follow-up Meeting',
-    'appointment_invite',
+    'appt_invites',
+    'Follow-up Meeting Scheduled',
+    'All',
     'Follow-up Discussion - {contact_name}',
-    30,
-    'Office or Phone',
-    'Follow-up meeting to discuss estimate and answer questions.'
+    'Follow-up Discussion',
+    'Follow-up meeting to discuss estimate and answer questions.',
+    true,
+    0
   ),
   (
     'Project Kickoff',
-    'appointment_invite',
+    'appt_invites',
+    'Project Kickoff Meeting',
+    'All',
     'Project Kickoff - {property_address}',
-    45,
-    '{property_address}',
-    'Project kickoff meeting to review scope, timeline, and answer any final questions.'
+    'Project Kickoff',
+    'Project kickoff meeting to review scope, timeline, and answer any final questions.',
+    true,
+    0
   )
-) AS v(name, type, appt_title, appt_duration_minutes, appt_location, content)
+) AS v(name, category, subject, contact_type, calendar_title, external_calendar_title, content, is_active, usage_count)
 WHERE NOT EXISTS (
-  SELECT 1 FROM templates WHERE name = v.name AND type = 'appointment_invite'
+  SELECT 1 FROM templates WHERE name = v.name AND category = 'appt_invites'
 );
 
 -- ============================================================
 -- 8. SEED NOTES/LOGS TEMPLATES
 -- ============================================================
 
-INSERT INTO templates (name, type, category, content)
+INSERT INTO templates (name, category, description, content, is_active, usage_count)
 SELECT * FROM (VALUES
   (
     'Initial Contact Note',
     'notes_logs',
     'Contact Notes',
-    'Initial contact with {contact_name}. Discussed: {discussion_points}. Next steps: {next_steps}'
+    'Initial contact with {contact_name}. Discussed: {discussion_points}. Next steps: {next_steps}',
+    true,
+    0
   ),
   (
     'Site Visit Summary',
     'notes_logs',
     'Inspection Notes',
-    'Site visit completed at {property_address}. Observations: {observations}. Recommendations: {recommendations}'
+    'Site visit completed at {property_address}. Observations: {observations}. Recommendations: {recommendations}',
+    true,
+    0
   ),
   (
     'Customer Concern',
     'notes_logs',
     'Customer Service',
-    'Customer {contact_name} raised concern: {concern_details}. Resolution plan: {resolution_plan}'
+    'Customer {contact_name} raised concern: {concern_details}. Resolution plan: {resolution_plan}',
+    true,
+    0
   )
-) AS v(name, type, category, content)
+) AS v(name, category, description, content, is_active, usage_count)
 WHERE NOT EXISTS (
-  SELECT 1 FROM templates WHERE name = v.name AND type = 'notes_logs'
+  SELECT 1 FROM templates WHERE name = v.name AND category = 'notes_logs'
 );
 
 -- ============================================================
 -- 9. SEED EXPORT LIST TEMPLATES
 -- ============================================================
 
-INSERT INTO templates (name, type, category, content)
+INSERT INTO templates (name, category, description, content, is_active, usage_count)
 SELECT * FROM (VALUES
   (
     'Sales Pipeline Export',
     'export_list',
     'Sales',
-    'Export configuration for sales pipeline data including contact info, estimate amounts, and status'
+    'Export configuration for sales pipeline data including contact info, estimate amounts, and status',
+    true,
+    0
   ),
   (
     'Active Projects Export',
     'export_list',
     'Projects',
-    'Export configuration for active project data including timelines, budgets, and completion status'
+    'Export configuration for active project data including timelines, budgets, and completion status',
+    true,
+    0
   ),
   (
     'Customer Contact List',
     'export_list',
     'Marketing',
-    'Export configuration for customer contact information for marketing campaigns'
+    'Export configuration for customer contact information for marketing campaigns',
+    true,
+    0
   )
-) AS v(name, type, category, content)
+) AS v(name, category, description, content, is_active, usage_count)
 WHERE NOT EXISTS (
-  SELECT 1 FROM templates WHERE name = v.name AND type = 'export_list'
+  SELECT 1 FROM templates WHERE name = v.name AND category = 'export_list'
 );
 
 -- ============================================================
