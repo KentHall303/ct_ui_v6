@@ -28,6 +28,7 @@ const ExportListTemplatesPage = React.lazy(() => import('./screens/Templates/Exp
 const DropdownsTemplatesPage = React.lazy(() => import('./screens/Templates/DropdownsTemplatesPage').then(m => ({ default: m.DropdownsTemplatesPage })));
 const EmailTemplateModalTestPage = React.lazy(() => import('./screens/Templates/EmailTemplateModalTestPage').then(m => ({ default: m.EmailTemplateModalTestPage })));
 const ConnectionPlansPage = React.lazy(() => import('./screens/ActionPlans/ConnectionPlansPage').then(m => ({ default: m.ConnectionPlansPage })));
+const SeedDataPage = React.lazy(() => import('./screens/SeedData/SeedDataPage'));
 
 const PlaceholderPage: React.FC<{ title: string; description: string }> = ({ title, description }) => (
   <div className="p-6">
@@ -252,5 +253,9 @@ export const routes: RouteObject[] = [
   {
     path: '/settings/webhook-monitor',
     element: <PlaceholderPage title="Webhook Monitor" description="Webhook Monitor content will be implemented here." />
+  },
+  {
+    path: '/settings/seed-data',
+    element: <SeedDataPage />
   }
 ];
