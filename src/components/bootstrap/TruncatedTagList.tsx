@@ -42,25 +42,30 @@ export const TruncatedTagList: React.FC<TruncatedTagListProps> = ({
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
       if (!context) return 0;
-      context.font = '13px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial';
+      context.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial';
       return context.measureText(text).width;
     };
 
     const tagPadding = 16;
-    const tagMargin = 4;
-    const plusBadgeWidth = 35;
+    const gapBetweenBadges = 4;
+    const plusBadgeWidth = 40;
+    const safetyMargin = 2;
 
     let currentWidth = 0;
     let visible: string[] = [];
 
     for (let i = 0; i < items.length; i++) {
-      const itemWidth = measureWidth(items[i]) + tagPadding + tagMargin;
-      const needsPlusBadge = i < items.length - 1;
-      const totalWidth = currentWidth + itemWidth + (needsPlusBadge ? plusBadgeWidth : 0);
+      const textWidth = measureWidth(items[i]);
+      const itemWidth = textWidth + tagPadding;
+      const gapWidth = visible.length > 0 ? gapBetweenBadges : 0;
+      const remainingItems = items.length - visible.length - 1;
+      const needsPlusBadge = remainingItems > 0;
+      const plusBadgeSpace = needsPlusBadge ? plusBadgeWidth + gapBetweenBadges : 0;
+      const totalWidth = currentWidth + gapWidth + itemWidth + plusBadgeSpace + safetyMargin;
 
       if (totalWidth <= maxWidth) {
         visible.push(items[i]);
-        currentWidth += itemWidth;
+        currentWidth += gapWidth + itemWidth;
       } else {
         break;
       }
@@ -93,8 +98,15 @@ export const TruncatedTagList: React.FC<TruncatedTagListProps> = ({
   return (
     <div
       ref={containerRef}
-      className="d-flex align-items-center gap-1 flex-wrap"
-      style={{ fontSize: '0.8125rem', maxWidth: `${maxWidth}px` }}
+      className="d-flex align-items-center gap-1"
+      style={{
+        fontSize: '0.8125rem',
+        width: `${maxWidth}px`,
+        maxWidth: `${maxWidth}px`,
+        overflow: 'hidden',
+        whiteSpace: 'nowrap',
+        flexWrap: 'nowrap'
+      }}
     >
       {visibleItems.map((item, index) => (
         <span
@@ -106,7 +118,8 @@ export const TruncatedTagList: React.FC<TruncatedTagListProps> = ({
             fontWeight: 'normal',
             padding: '4px 8px',
             borderRadius: '4px',
-            fontSize: '0.75rem'
+            fontSize: '0.75rem',
+            flexShrink: 0
           }}
         >
           {item}
@@ -127,7 +140,8 @@ export const TruncatedTagList: React.FC<TruncatedTagListProps> = ({
               padding: '4px 8px',
               borderRadius: '4px',
               fontSize: '0.75rem',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              flexShrink: 0
             }}
           >
             +{hiddenCount}
