@@ -43,6 +43,7 @@ export const FloatingInput: React.FC<FloatingInputProps> = ({
         onChange={onChange}
         disabled={disabled}
         readOnly={readOnly}
+        dir="ltr"
       />
       <Form.Label htmlFor={controlId}>{label}</Form.Label>
     </Form.Floating>
@@ -158,6 +159,7 @@ export const FloatingInputWithFeedback: React.FC<FloatingInputWithFeedbackProps>
         {...rest}
         isInvalid={state === "invalid"}
         isValid={state === "valid"}
+        dir="ltr"
       />
       <Form.Label htmlFor={controlId}>{rest.label}</Form.Label>
       <PopIcon state={state} popover={popover} />
@@ -234,6 +236,7 @@ export const FloatingTextarea: React.FC<FloatingTextareaProps> = ({
         disabled={disabled}
         readOnly={readOnly}
         rows={rows}
+        dir="ltr"
       />
       <Form.Label htmlFor={controlId}>{label}</Form.Label>
     </Form.Floating>

@@ -101,6 +101,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         onBlur={() => setIsFocused(false)}
         dangerouslySetInnerHTML={{ __html: value || '' }}
         data-placeholder={!value ? placeholder : ''}
+        dir="ltr"
       />
       <style>{`
         [contenteditable][data-placeholder]:empty:before {

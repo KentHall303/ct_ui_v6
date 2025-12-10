@@ -741,6 +741,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                       suppressContentEditableWarning
                       onInput={(e) => setContent(e.currentTarget.textContent || '')}
                       dangerouslySetInnerHTML={{ __html: content }}
+                      dir="ltr"
                     >
                     </div>
                     <div className="d-flex justify-content-end gap-2 mt-3">

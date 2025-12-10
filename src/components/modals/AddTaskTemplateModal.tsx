@@ -407,6 +407,7 @@ export const AddTaskTemplateModal: React.FC<AddTaskTemplateModalProps> = ({
                     suppressContentEditableWarning
                     onInput={(e) => setDetail(e.currentTarget.textContent || '')}
                     dangerouslySetInnerHTML={{ __html: detail }}
+                    dir="ltr"
                   >
                   </div>
                 </div>

@@ -102,6 +102,7 @@ export const KeyValueEditor: React.FC<KeyValueEditorProps> = ({
         rows={3}
         placeholder={`Additional ${label.toLowerCase()}...`}
         style={{ fontSize: '0.875rem' }}
+        dir="ltr"
       />
     </div>
   );

@@ -457,6 +457,7 @@ export const AddNotesLogsTemplateModal: React.FC<AddNotesLogsTemplateModalProps>
                     setContent(e.currentTarget.innerHTML);
                   }
                 }}
+                dir="ltr"
               />
             </div>
           </div>

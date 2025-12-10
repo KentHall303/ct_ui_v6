@@ -74,6 +74,7 @@ export const ActionFieldRenderer: React.FC<ActionFieldRendererProps> = ({
               onChange={(e) => onChange(e.target.value)}
               placeholder={field.placeholder}
               maxLength={field.maxLength}
+              dir="ltr"
             />
             {field.maxLength && (
               <CharacterCounter

@@ -531,6 +531,7 @@ export const AddApptInviteTemplateModal: React.FC<AddApptInviteTemplateModalProp
               suppressContentEditableWarning
               onInput={(e) => setContent(e.currentTarget.textContent || '')}
               dangerouslySetInnerHTML={{ __html: content }}
+              dir="ltr"
             >
             </div>
           </div>
