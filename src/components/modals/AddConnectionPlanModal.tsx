@@ -223,11 +223,6 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
         return;
       }
 
-      if (actions.length === 0) {
-        setError('At least one action step is required');
-        return;
-      }
-
       await connectionPlanService.deleteAllActions(savedPlanId);
 
       if (actions.length > 0) {
@@ -266,11 +261,6 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
 
         if (!name.trim()) {
           setError('Connection plan name is required');
-          return;
-        }
-
-        if (actions.length === 0) {
-          setError('At least one action step is required');
           return;
         }
 
@@ -788,14 +778,14 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 <Button
                   variant="success"
                   onClick={handleFinalSave}
-                  disabled={saving || actions.length === 0}
+                  disabled={saving}
                   style={{
                     backgroundColor: '#28a745',
                     border: 'none',
                     padding: '8px 24px',
                     fontSize: '0.875rem',
                     fontWeight: 500,
-                    opacity: (saving || actions.length === 0) ? 0.6 : 1
+                    opacity: saving ? 0.6 : 1
                   }}
                 >
                   {saving ? 'SAVING...' : 'SAVE CONNECTION PLAN'}
@@ -804,14 +794,14 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 <Button
                   variant="success"
                   onClick={handleSave}
-                  disabled={saving || actions.length === 0 || !name.trim()}
+                  disabled={saving || !name.trim()}
                   style={{
                     backgroundColor: '#28a745',
                     border: 'none',
                     padding: '8px 24px',
                     fontSize: '0.875rem',
                     fontWeight: 500,
-                    opacity: (saving || actions.length === 0 || !name.trim()) ? 0.6 : 1
+                    opacity: (saving || !name.trim()) ? 0.6 : 1
                   }}
                 >
                   {saving ? 'SAVING...' : 'SAVE'}
