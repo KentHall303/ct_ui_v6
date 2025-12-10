@@ -2,6 +2,7 @@ import React from 'react';
 import { BodyLayout } from '../../components/layout/BodyLayout/BodyLayout';
 import { Button } from '../../components/bootstrap/Button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/bootstrap/Table';
+import { TruncatedTagList } from '../../components/bootstrap/TruncatedTagList';
 import { Plus, Copy, ChevronUp, ChevronDown } from 'lucide-react';
 import { AddTextTemplateModal } from '../../components/modals/AddTextTemplateModal';
 import { textTemplateService } from '../../services/textTemplateService';
@@ -220,9 +221,11 @@ const TextTemplates = (): JSX.Element => {
                   </TableCell>
 
                   <TableCell role="gridcell">
-                    <div className="text-dark" style={{ fontSize: '0.8125rem' }}>
-                      {template.contact_type}
-                    </div>
+                    <TruncatedTagList
+                      value={template.contact_type}
+                      defaultText=""
+                      maxWidth={250}
+                    />
                   </TableCell>
 
                   <TableCell role="gridcell">

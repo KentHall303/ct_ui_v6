@@ -2,6 +2,7 @@ import React from 'react';
 import { BodyLayout } from '../../components/layout/BodyLayout/BodyLayout';
 import { Button } from '../../components/bootstrap/Button';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/bootstrap/Table';
+import { TruncatedTagList } from '../../components/bootstrap/TruncatedTagList';
 import { Plus, Copy, ChevronDown, ChevronRight, Landmark, LibraryBig, ChevronUp } from 'lucide-react';
 import { Collapse } from 'react-bootstrap';
 import { AddConnectionPlanModal } from '../../components/modals/AddConnectionPlanModal';
@@ -361,9 +362,11 @@ const ConnectionPlans = (): JSX.Element => {
                   </TableCell>
 
                   <TableCell role="gridcell">
-                    <div className="text-dark" style={{ fontSize: '0.8125rem' }}>
-                      {plan.contact_types || 'All'}
-                    </div>
+                    <TruncatedTagList
+                      value={plan.contact_types}
+                      defaultText="All"
+                      maxWidth={120}
+                    />
                   </TableCell>
 
                   <TableCell role="gridcell">
@@ -373,9 +376,11 @@ const ConnectionPlans = (): JSX.Element => {
                   </TableCell>
 
                   <TableCell role="gridcell">
-                    <div className="text-dark" style={{ fontSize: '0.8125rem' }}>
-                      {plan.lead_sources || ''}
-                    </div>
+                    <TruncatedTagList
+                      value={plan.lead_sources}
+                      defaultText=""
+                      maxWidth={140}
+                    />
                   </TableCell>
 
                   <TableCell role="gridcell">
