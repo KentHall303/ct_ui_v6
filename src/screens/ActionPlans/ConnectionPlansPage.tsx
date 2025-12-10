@@ -361,7 +361,7 @@ const ConnectionPlans = (): JSX.Element => {
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell" style={{ maxWidth: '12%', overflow: 'hidden' }}>
+                  <TableCell role="gridcell" style={{ maxWidth: '12%', width: '12%', minWidth: 0, overflow: 'hidden' }}>
                     <TruncatedTagList
                       value={plan.contact_types}
                       defaultText="All"
@@ -375,7 +375,7 @@ const ConnectionPlans = (): JSX.Element => {
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell" style={{ maxWidth: '15%', overflow: 'hidden' }}>
+                  <TableCell role="gridcell" style={{ maxWidth: '15%', width: '15%', minWidth: 0, overflow: 'hidden' }}>
                     <TruncatedTagList
                       value={plan.lead_sources}
                       defaultText=""

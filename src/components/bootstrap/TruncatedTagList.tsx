@@ -16,6 +16,11 @@ export const TruncatedTagList: React.FC<TruncatedTagListProps> = ({
   const [visibleItems, setVisibleItems] = React.useState<string[]>([]);
   const [hiddenCount, setHiddenCount] = React.useState(0);
   const [allItems, setAllItems] = React.useState<string[]>([]);
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   React.useEffect(() => {
     if (!value) {
@@ -32,52 +37,58 @@ export const TruncatedTagList: React.FC<TruncatedTagListProps> = ({
 
     setAllItems(items);
 
-    if (!containerRef.current || items.length === 0) {
-      setVisibleItems(items);
-      setHiddenCount(0);
+    if (!isMounted || items.length === 0) {
+      setVisibleItems([]);
+      setHiddenCount(items.length);
       return;
     }
 
-    const measureWidth = (text: string): number => {
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      if (!context) return 0;
-      context.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial';
-      return context.measureText(text).width;
+    const calculateVisibleItems = () => {
+      const measureWidth = (text: string): number => {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        if (!context) return text.length * 7;
+        context.font = '12px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial';
+        return context.measureText(text).width;
+      };
+
+      const tagPadding = 18;
+      const gapBetweenBadges = 4;
+      const plusBadgeWidth = 45;
+      const safetyMargin = 10;
+
+      let currentWidth = 0;
+      let visible: string[] = [];
+
+      for (let i = 0; i < items.length; i++) {
+        const textWidth = measureWidth(items[i]);
+        const itemWidth = textWidth + tagPadding;
+        const gapWidth = visible.length > 0 ? gapBetweenBadges : 0;
+        const remainingItems = items.length - visible.length - 1;
+        const needsPlusBadge = remainingItems > 0;
+        const plusBadgeSpace = needsPlusBadge ? plusBadgeWidth + gapBetweenBadges : 0;
+        const totalWidth = currentWidth + gapWidth + itemWidth + plusBadgeSpace + safetyMargin;
+
+        if (totalWidth <= maxWidth) {
+          visible.push(items[i]);
+          currentWidth += gapWidth + itemWidth;
+        } else {
+          break;
+        }
+      }
+
+      if (visible.length === 0 && items.length > 0) {
+        visible = [items[0]];
+      }
+
+      setVisibleItems(visible);
+      setHiddenCount(items.length - visible.length);
     };
 
-    const tagPadding = 16;
-    const gapBetweenBadges = 4;
-    const plusBadgeWidth = 40;
-    const safetyMargin = 2;
-
-    let currentWidth = 0;
-    let visible: string[] = [];
-
-    for (let i = 0; i < items.length; i++) {
-      const textWidth = measureWidth(items[i]);
-      const itemWidth = textWidth + tagPadding;
-      const gapWidth = visible.length > 0 ? gapBetweenBadges : 0;
-      const remainingItems = items.length - visible.length - 1;
-      const needsPlusBadge = remainingItems > 0;
-      const plusBadgeSpace = needsPlusBadge ? plusBadgeWidth + gapBetweenBadges : 0;
-      const totalWidth = currentWidth + gapWidth + itemWidth + plusBadgeSpace + safetyMargin;
-
-      if (totalWidth <= maxWidth) {
-        visible.push(items[i]);
-        currentWidth += gapWidth + itemWidth;
-      } else {
-        break;
-      }
-    }
-
-    if (visible.length === 0 && items.length > 0) {
-      visible = [items[0]];
-    }
-
-    setVisibleItems(visible);
-    setHiddenCount(items.length - visible.length);
-  }, [value, maxWidth]);
+    requestAnimationFrame(() => {
+      calculateVisibleItems();
+    });
+  }, [value, maxWidth, isMounted]);
 
   if (!value || allItems.length === 0) {
     return (
@@ -98,14 +109,16 @@ export const TruncatedTagList: React.FC<TruncatedTagListProps> = ({
   return (
     <div
       ref={containerRef}
-      className="d-flex align-items-center gap-1"
+      className="d-flex align-items-center"
       style={{
         fontSize: '0.8125rem',
         width: `${maxWidth}px`,
         maxWidth: `${maxWidth}px`,
+        minWidth: `${maxWidth}px`,
         overflow: 'hidden',
         whiteSpace: 'nowrap',
-        flexWrap: 'nowrap'
+        flexWrap: 'nowrap',
+        gap: '4px'
       }}
     >
       {visibleItems.map((item, index) => (
