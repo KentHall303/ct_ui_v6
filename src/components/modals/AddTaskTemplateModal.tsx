@@ -26,7 +26,7 @@ export const AddTaskTemplateModal: React.FC<AddTaskTemplateModalProps> = ({
   const [priority, setPriority] = useState('');
   const [selectedToken, setSelectedToken] = useState('Contact ID');
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<string[]>([]);
 
   const isEditMode = !!template;
 
@@ -50,11 +50,17 @@ export const AddTaskTemplateModal: React.FC<AddTaskTemplateModalProps> = ({
 
   const handleSaveTemplate = async () => {
     try {
-      setError(null);
+      setErrors([]);
       setSaving(true);
 
+      const validationErrors: string[] = [];
+
       if (!title.trim()) {
-        setError('Title is required');
+        validationErrors.push('Title is required');
+      }
+
+      if (validationErrors.length > 0) {
+        setErrors(validationErrors);
         return;
       }
 
@@ -81,7 +87,7 @@ export const AddTaskTemplateModal: React.FC<AddTaskTemplateModalProps> = ({
       onHide();
     } catch (err) {
       console.error('Error saving template:', err);
-      setError(err instanceof Error ? err.message : 'Failed to save template');
+      setErrors([err instanceof Error ? err.message : 'Failed to save template']);
     } finally {
       setSaving(false);
     }
@@ -102,9 +108,14 @@ export const AddTaskTemplateModal: React.FC<AddTaskTemplateModalProps> = ({
       </Modal.Header>
       <Modal.Body className="pt-3 pb-4" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
         <div className="d-flex flex-column gap-3">
-          {error && (
+          {errors.length > 0 && (
             <div className="alert alert-danger mb-0" role="alert">
-              {error}
+              <strong>Please fix the following errors:</strong>
+              <ul className="mb-0 mt-2">
+                {errors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
             </div>
           )}
 

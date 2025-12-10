@@ -39,7 +39,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
   const [contentTcpa, setContentTcpa] = useState('Promotional');
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<string[]>([]);
   const [htmlValidationError, setHtmlValidationError] = useState<string | null>(null);
   const [htmlValidationSuccess, setHtmlValidationSuccess] = useState(false);
 
@@ -79,16 +79,25 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
 
   const handleSaveTemplate = async () => {
     try {
-      setError(null);
+      setErrors([]);
       setSaving(true);
 
+      const validationErrors: string[] = [];
+
       if (!name.trim()) {
-        setError('Template name is required');
-        return;
+        validationErrors.push('Template name is required');
       }
 
       if (!subject.trim()) {
-        setError('Subject is required');
+        validationErrors.push('Subject is required');
+      }
+
+      if (!content.trim()) {
+        validationErrors.push('Content is required');
+      }
+
+      if (validationErrors.length > 0) {
+        setErrors(validationErrors);
         return;
       }
 
@@ -104,7 +113,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
         protect_from_sharing: protectFromSharing,
         description: description.trim() || undefined,
         content_tcpa: contentTcpa as 'Promotional' | 'Transactional' | 'Mixed',
-        content: content || 'Template content',
+        content: content.trim(),
       };
 
       if (isEditMode && template) {
@@ -120,7 +129,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
       onHide();
     } catch (err) {
       console.error('Error saving template:', err);
-      setError(err instanceof Error ? err.message : 'Failed to save template');
+      setErrors([err instanceof Error ? err.message : 'Failed to save template']);
     } finally {
       setSaving(false);
     }
@@ -228,9 +237,14 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
       </Modal.Header>
       <Modal.Body className="pt-3 pb-4" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
         <div className="d-flex flex-column gap-3">
-          {error && (
+          {errors.length > 0 && (
             <div className="alert alert-danger mb-0" role="alert">
-              {error}
+              <strong>Please fix the following errors:</strong>
+              <ul className="mb-0 mt-2">
+                {errors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
             </div>
           )}
           <Row className="g-3">

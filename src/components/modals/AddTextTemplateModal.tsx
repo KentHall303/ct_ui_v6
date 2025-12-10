@@ -29,7 +29,7 @@ export const AddTextTemplateModal: React.FC<AddTextTemplateModalProps> = ({
   const [protectFromOverwriting, setProtectFromOverwriting] = useState(false);
   const [protectFromSharing, setProtectFromSharing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<string[]>([]);
 
   const isEditMode = !!template;
   const charCount = content.length;
@@ -57,16 +57,21 @@ export const AddTextTemplateModal: React.FC<AddTextTemplateModalProps> = ({
 
   const handleSaveTemplate = async () => {
     try {
-      setError(null);
+      setErrors([]);
       setSaving(true);
 
+      const validationErrors: string[] = [];
+
       if (!name.trim()) {
-        setError('Template name is required');
-        return;
+        validationErrors.push('Template name is required');
       }
 
       if (!content.trim()) {
-        setError('Content is required');
+        validationErrors.push('Content is required');
+      }
+
+      if (validationErrors.length > 0) {
+        setErrors(validationErrors);
         return;
       }
 
@@ -93,7 +98,7 @@ export const AddTextTemplateModal: React.FC<AddTextTemplateModalProps> = ({
       onHide();
     } catch (err) {
       console.error('Error saving template:', err);
-      setError(err instanceof Error ? err.message : 'Failed to save template');
+      setErrors([err instanceof Error ? err.message : 'Failed to save template']);
     } finally {
       setSaving(false);
     }
@@ -153,9 +158,14 @@ export const AddTextTemplateModal: React.FC<AddTextTemplateModalProps> = ({
       </Modal.Header>
       <Modal.Body className="pt-3 pb-4" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
         <div className="d-flex flex-column gap-3">
-          {error && (
+          {errors.length > 0 && (
             <div className="alert alert-danger mb-0" role="alert">
-              {error}
+              <strong>Please fix the following errors:</strong>
+              <ul className="mb-0 mt-2">
+                {errors.map((error, index) => (
+                  <li key={index}>{error}</li>
+                ))}
+              </ul>
             </div>
           )}
 
