@@ -908,3 +908,13 @@ table.resizing {
   user-select: none;
   cursor: col-resize;
 }
+
+/* ======================================================================
+   ContentEditable Text Direction Fix
+   ====================================================================== */
+[contenteditable] {
+  direction: ltr !important;
+  text-align: left !important;
+  writing-mode: horizontal-tb !important;
+  unicode-bidi: plaintext !important;
+}

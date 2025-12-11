@@ -27,6 +27,7 @@ export const AddTaskTemplateModal: React.FC<AddTaskTemplateModalProps> = ({
   const [selectedToken, setSelectedToken] = useState('Contact ID');
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const detailEditorRef = useRef<HTMLDivElement>(null);
 
   const isEditMode = !!template;
 
@@ -47,6 +48,15 @@ export const AddTaskTemplateModal: React.FC<AddTaskTemplateModalProps> = ({
       setSelectedToken('Contact ID');
     }
   }, [show, template]);
+
+  useEffect(() => {
+    if (detailEditorRef.current) {
+      const currentContent = detailEditorRef.current.textContent || '';
+      if (currentContent !== detail) {
+        detailEditorRef.current.textContent = detail;
+      }
+    }
+  }, [detail]);
 
   const handleSaveTemplate = async () => {
     try {
@@ -397,17 +407,20 @@ export const AddTaskTemplateModal: React.FC<AddTaskTemplateModalProps> = ({
                   </div>
 
                   <div
+                    ref={detailEditorRef}
                     className="border rounded p-3"
                     style={{
                       minHeight: '200px',
                       backgroundColor: '#f8f9fa',
                       cursor: 'text',
-                      direction: 'ltr'
+                      direction: 'ltr',
+                      textAlign: 'left',
+                      writingMode: 'horizontal-tb',
+                      unicodeBidi: 'plaintext'
                     }}
                     contentEditable
                     suppressContentEditableWarning
                     onInput={(e) => setDetail(e.currentTarget.textContent || '')}
-                    dangerouslySetInnerHTML={{ __html: detail }}
                     dir="ltr"
                   >
                   </div>

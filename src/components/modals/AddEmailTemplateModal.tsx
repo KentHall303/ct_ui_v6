@@ -30,6 +30,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
   const [contactTypes, setContactTypes] = useState<string[]>(['All']);
   const [isContactTypeOpen, setIsContactTypeOpen] = useState(false);
   const contactTypeDropdownRef = useRef<HTMLDivElement>(null);
+  const sunEditorRef = useRef<HTMLDivElement>(null);
   const [protectFromOverwriting, setProtectFromOverwriting] = useState(false);
   const [protectFromSharing, setProtectFromSharing] = useState(false);
   const [excludeClient, setExcludeClient] = useState(false);
@@ -88,6 +89,15 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
       setRawHtmlDraftSaved(false);
     }
   }, [show, template]);
+
+  useEffect(() => {
+    if (sunEditorRef.current && editorSubTab === 'sun') {
+      const currentContent = sunEditorRef.current.innerHTML;
+      if (currentContent !== content) {
+        sunEditorRef.current.innerHTML = content;
+      }
+    }
+  }, [content, editorSubTab]);
 
   const handleSaveTemplate = async () => {
     try {
@@ -777,17 +787,20 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                       </button>
                     </div>
                     <div
+                      ref={sunEditorRef}
                       className="border rounded p-3"
                       style={{
                         minHeight: '200px',
                         backgroundColor: '#f8f9fa',
                         cursor: 'text',
-                        direction: 'ltr'
+                        direction: 'ltr',
+                        textAlign: 'left',
+                        writingMode: 'horizontal-tb',
+                        unicodeBidi: 'plaintext'
                       }}
                       contentEditable
                       suppressContentEditableWarning
                       onInput={(e) => handleContentChange(e.currentTarget.innerHTML || '')}
-                      dangerouslySetInnerHTML={{ __html: content }}
                       dir="ltr"
                     >
                     </div>

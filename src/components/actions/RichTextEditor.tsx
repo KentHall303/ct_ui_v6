@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Bold, Italic, Underline, List, ListOrdered, Link as LinkIcon } from 'lucide-react';
 
 interface RichTextEditorProps {
@@ -18,6 +18,15 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [isFocused, setIsFocused] = useState(false);
+
+  useEffect(() => {
+    if (editorRef.current) {
+      const currentContent = editorRef.current.innerHTML;
+      if (currentContent !== value) {
+        editorRef.current.innerHTML = value || '';
+      }
+    }
+  }, [value]);
 
   const executeCommand = (command: string, value: string | undefined = undefined) => {
     document.execCommand(command, false, value);
@@ -95,12 +104,14 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           minHeight,
           outline: 'none',
           overflowY: 'auto',
-          direction: 'ltr'
+          direction: 'ltr',
+          textAlign: 'left',
+          writingMode: 'horizontal-tb',
+          unicodeBidi: 'plaintext'
         }}
         onInput={handleInput}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        dangerouslySetInnerHTML={{ __html: value || '' }}
         data-placeholder={!value ? placeholder : ''}
         dir="ltr"
       />

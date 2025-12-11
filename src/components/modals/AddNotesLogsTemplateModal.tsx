@@ -449,7 +449,10 @@ export const AddNotesLogsTemplateModal: React.FC<AddNotesLogsTemplateModalProps>
                   overflowY: 'auto',
                   cursor: 'text',
                   backgroundColor: '#fff',
-                  direction: 'ltr'
+                  direction: 'ltr',
+                  textAlign: 'left',
+                  writingMode: 'horizontal-tb',
+                  unicodeBidi: 'plaintext'
                 }}
                 contentEditable
                 suppressContentEditableWarning

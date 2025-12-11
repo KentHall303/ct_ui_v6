@@ -28,6 +28,7 @@ export const AddApptInviteTemplateModal: React.FC<AddApptInviteTemplateModalProp
   const [contactTypes, setContactTypes] = useState<string[]>(['All']);
   const [isContactTypeOpen, setIsContactTypeOpen] = useState(false);
   const contactTypeDropdownRef = useRef<HTMLDivElement>(null);
+  const contentEditorRef = useRef<HTMLDivElement>(null);
   const [protectFromOverwriting, setProtectFromOverwriting] = useState(false);
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
@@ -58,6 +59,15 @@ export const AddApptInviteTemplateModal: React.FC<AddApptInviteTemplateModalProp
       setContent('');
     }
   }, [show, template]);
+
+  useEffect(() => {
+    if (contentEditorRef.current) {
+      const currentContent = contentEditorRef.current.textContent || '';
+      if (currentContent !== content) {
+        contentEditorRef.current.textContent = content;
+      }
+    }
+  }, [content]);
 
   const handleSaveTemplate = async () => {
     try {
@@ -521,17 +531,20 @@ export const AddApptInviteTemplateModal: React.FC<AddApptInviteTemplateModalProp
               </button>
             </div>
             <div
+              ref={contentEditorRef}
               className="border rounded p-3"
               style={{
                 minHeight: '250px',
                 backgroundColor: '#f8f9fa',
                 cursor: 'text',
-                direction: 'ltr'
+                direction: 'ltr',
+                textAlign: 'left',
+                writingMode: 'horizontal-tb',
+                unicodeBidi: 'plaintext'
               }}
               contentEditable
               suppressContentEditableWarning
               onInput={(e) => setContent(e.currentTarget.textContent || '')}
-              dangerouslySetInnerHTML={{ __html: content }}
               dir="ltr"
             >
             </div>
