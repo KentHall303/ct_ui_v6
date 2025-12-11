@@ -35,7 +35,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
   const [excludeClient, setExcludeClient] = useState(false);
   const [description, setDescription] = useState('');
   const [activeTab, setActiveTab] = useState<'preview' | 'editor'>('preview');
-  const [editorSubTab, setEditorSubTab] = useState<'sun' | 'block' | 'raw'>('sun');
+  const [editorSubTab, setEditorSubTab] = useState<'sun' | 'raw'>('sun');
   const [contentTcpa, setContentTcpa] = useState('Promotional');
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
@@ -623,13 +623,12 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                       </Nav.Item>
                       <Nav.Item>
                         <Nav.Link
-                          active={editorSubTab === 'block'}
-                          onClick={() => setEditorSubTab('block')}
+                          onClick={handleOpenBlockEditor}
                           className="d-flex align-items-center gap-2"
                           style={{
                             cursor: 'pointer',
-                            color: editorSubTab === 'block' ? '#0d6efd' : '#6c757d',
-                            borderBottomColor: editorSubTab === 'block' ? '#0d6efd' : 'transparent',
+                            color: '#6c757d',
+                            borderBottomColor: 'transparent',
                             fontSize: '0.9rem',
                             whiteSpace: 'nowrap'
                           }}
@@ -655,24 +654,6 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                           Raw HTML
                         </Nav.Link>
                       </Nav.Item>
-                      {editorSubTab === 'raw' && rawHtmlDraftSaved && (
-                        <Nav.Item>
-                          <Nav.Link
-                            onClick={handleOpenPreview}
-                            className="d-flex align-items-center gap-2"
-                            style={{
-                              cursor: 'pointer',
-                              color: '#28a745',
-                              fontSize: '0.9rem',
-                              whiteSpace: 'nowrap',
-                              borderBottom: 'none'
-                            }}
-                          >
-                            <Eye size={15} />
-                            PREVIEW
-                          </Nav.Link>
-                        </Nav.Item>
-                      )}
                     </Nav>
                   </div>
                   )}
@@ -696,26 +677,6 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                         <polyline points="21 15 16 10 5 21"></polyline>
                       </svg>
                     </div>
-                  </div>
-                )}
-
-                {activeTab === 'editor' && editorSubTab === 'block' && (
-                  <div
-                    className="border rounded d-flex align-items-center justify-content-center"
-                    style={{
-                      minHeight: '250px',
-                      backgroundColor: '#f8f9fa'
-                    }}
-                  >
-                    <Button
-                      variant="primary"
-                      onClick={handleOpenBlockEditor}
-                      className="d-flex align-items-center gap-2"
-                      style={{ padding: '12px 32px', fontSize: '1rem' }}
-                    >
-                      <Grid3x3 size={20} />
-                      Open Block Editor
-                    </Button>
                   </div>
                 )}
 
@@ -892,6 +853,22 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                         >
                           SAVE AS A DRAFT ONLY
                         </Button>
+                        {rawHtmlDraftSaved && (
+                          <Button
+                            variant="success"
+                            onClick={handleOpenPreview}
+                            className="d-flex align-items-center gap-2"
+                            style={{
+                              padding: '6px 20px',
+                              fontSize: '0.875rem',
+                              backgroundColor: '#28a745',
+                              border: 'none'
+                            }}
+                          >
+                            <Eye size={16} />
+                            PREVIEW
+                          </Button>
+                        )}
                         <Button
                           variant="primary"
                           onClick={handlePublish}
