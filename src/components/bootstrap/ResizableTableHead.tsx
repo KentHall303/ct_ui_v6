@@ -8,6 +8,9 @@ export interface ResizableTableHeadProps {
   resizingColumn: string | null;
   onResizeStart: (columnId: string, event: React.MouseEvent) => void;
   className?: string;
+  sortConfig?: { key: string; direction: 'asc' | 'desc' } | null;
+  onSort?: (key: string) => void;
+  getSortIcon?: (key: string) => React.ReactNode;
 }
 
 export const ResizableTableHead: React.FC<ResizableTableHeadProps> = ({
@@ -17,13 +20,35 @@ export const ResizableTableHead: React.FC<ResizableTableHeadProps> = ({
   resizingColumn,
   onResizeStart,
   className = '',
+  sortConfig,
+  onSort,
+  getSortIcon,
 }) => {
+  const handleHeaderClick = (columnId: string, e: React.MouseEvent) => {
+    if ((e.target as HTMLElement).closest('.resize-handle')) {
+      return;
+    }
+    if (onSort) {
+      onSort(columnId);
+    }
+  };
+
+  const handleHeaderKeyDown = (columnId: string, e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (onSort) {
+        onSort(columnId);
+      }
+    }
+  };
+
   return (
     <thead>
       <tr>
         {columns.map((column, index) => {
           const isLastColumn = index === columns.length - 1;
           const isCurrentlyResizing = resizingColumn === column.id;
+          const isSortable = onSort && column.label;
 
           return (
             <th
@@ -35,15 +60,34 @@ export const ResizableTableHead: React.FC<ResizableTableHeadProps> = ({
                 position: 'relative',
                 userSelect: isResizing ? 'none' : 'auto',
               }}
+              aria-sort={
+                sortConfig?.key === column.id
+                  ? sortConfig.direction === 'asc'
+                    ? 'ascending'
+                    : 'descending'
+                  : 'none'
+              }
+              role={isSortable ? 'button' : undefined}
+              tabIndex={isSortable ? 0 : undefined}
             >
-              <div className="column-header-content">
-                {column.label}
+              <div
+                className="column-header-content"
+                onClick={isSortable ? (e) => handleHeaderClick(column.id, e) : undefined}
+                onKeyDown={isSortable ? (e) => handleHeaderKeyDown(column.id, e) : undefined}
+              >
+                <span>{column.label}</span>
+                {isSortable && getSortIcon && (
+                  <span className="sort-icon">{getSortIcon(column.id)}</span>
+                )}
               </div>
 
               {!isLastColumn && (
                 <div
                   className={`resize-handle ${isCurrentlyResizing ? 'resizing' : ''}`}
-                  onMouseDown={(e) => onResizeStart(column.id, e)}
+                  onMouseDown={(e) => {
+                    e.stopPropagation();
+                    onResizeStart(column.id, e);
+                  }}
                   role="separator"
                   aria-orientation="vertical"
                   aria-label={`Resize ${column.label} column`}

@@ -199,6 +199,9 @@ const EmailTemplates = (): JSX.Element => {
               isResizing={isResizing}
               resizingColumn={resizingColumn}
               onResizeStart={handleMouseDown}
+              sortConfig={sortConfig}
+              onSort={handleSort}
+              getSortIcon={getSortIcon}
             />
             <TableBody>
               {sortedTemplates.map((template, index) => (

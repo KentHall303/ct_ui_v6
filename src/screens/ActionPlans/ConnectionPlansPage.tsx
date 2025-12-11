@@ -264,6 +264,9 @@ const ConnectionPlans = (): JSX.Element => {
               isResizing={isResizing}
               resizingColumn={resizingColumn}
               onResizeStart={handleMouseDown}
+              sortConfig={sortConfig}
+              onSort={handleSort}
+              getSortIcon={getSortIcon}
             />
             <TableBody>
               {sortedPlans.map((plan, index) => (
