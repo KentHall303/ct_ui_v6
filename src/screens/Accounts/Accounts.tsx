@@ -187,12 +187,13 @@ const AccountsHeader = () => {
       <div className="bg-white rounded-3 pt-3 pb-3 px-4 border shadow-sm">
         <div className="d-flex align-items-center justify-content-between mb-2">
           <h2 className="h4 fw-bold text-dark mb-0">Accounts</h2>
-          <div style={{ width: '420px' }}>
+          <div style={{ width: '400px', fontSize: '0.8125rem' }}>
             <StandardSearch
               placeholder="Search Account..."
               searchFocusOptions={searchFocusOptions}
               onSearch={handleSearch}
               showDropdown={true}
+              size="sm"
             />
           </div>
         </div>
