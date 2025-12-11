@@ -35,13 +35,19 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
   const [excludeClient, setExcludeClient] = useState(false);
   const [description, setDescription] = useState('');
   const [activeTab, setActiveTab] = useState<'preview' | 'editor'>('preview');
-  const [editorSubTab, setEditorSubTab] = useState<'sun' | 'block' | 'raw'>('block');
+  const [editorSubTab, setEditorSubTab] = useState<'sun' | 'block' | 'raw'>('sun');
   const [contentTcpa, setContentTcpa] = useState('Promotional');
   const [content, setContent] = useState('');
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
   const [htmlValidationError, setHtmlValidationError] = useState<string | null>(null);
   const [htmlValidationSuccess, setHtmlValidationSuccess] = useState(false);
+  const [showBlockEditorModal, setShowBlockEditorModal] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [rawHtmlDraftSaved, setRawHtmlDraftSaved] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [savedContent, setSavedContent] = useState('');
+  const [showUnsavedChangesDialog, setShowUnsavedChangesDialog] = useState(false);
 
   const isEditMode = !!template;
 
@@ -59,6 +65,9 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
       setDescription(template.description || '');
       setContentTcpa(template.content_tcpa || 'Promotional');
       setContent(template.content || '');
+      setSavedContent(template.content || '');
+      setHasUnsavedChanges(false);
+      setRawHtmlDraftSaved(false);
     } else if (show && !template) {
       setName('');
       setSubject('');
@@ -72,8 +81,11 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
       setDescription('');
       setContentTcpa('Promotional');
       setContent('');
+      setSavedContent('');
       setActiveTab('preview');
-      setEditorSubTab('block');
+      setEditorSubTab('sun');
+      setHasUnsavedChanges(false);
+      setRawHtmlDraftSaved(false);
     }
   }, [show, template]);
 
@@ -121,6 +133,10 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
       } else {
         await emailTemplateService.create(templateData);
       }
+
+      setSavedContent(content.trim());
+      setHasUnsavedChanges(false);
+      setRawHtmlDraftSaved(false);
 
       if (onSave) {
         onSave();
@@ -175,10 +191,18 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
 
   const handleSaveAsDraft = () => {
     console.log('Save as Draft clicked');
+    setSavedContent(content);
+    setHasUnsavedChanges(false);
+    if (editorSubTab === 'raw') {
+      setRawHtmlDraftSaved(true);
+    }
   };
 
   const handlePublish = () => {
     console.log('Publish clicked');
+    setSavedContent(content);
+    setHasUnsavedChanges(false);
+    setRawHtmlDraftSaved(false);
   };
 
   const validateHTML = () => {
@@ -217,14 +241,54 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
   };
 
   const handleOpenBlockEditor = () => {
-    console.log('Open Block Editor clicked');
-    // TODO: Implement block editor modal
+    setShowBlockEditorModal(true);
+  };
+
+  const handleCloseBlockEditor = () => {
+    setShowBlockEditorModal(false);
+    setActiveTab('preview');
+  };
+
+  const handleOpenPreview = () => {
+    setShowPreviewModal(true);
+  };
+
+  const handleClosePreview = () => {
+    setShowPreviewModal(false);
+    setEditorSubTab('raw');
+  };
+
+  const handleContentChange = (newContent: string) => {
+    setContent(newContent);
+    setHasUnsavedChanges(newContent !== savedContent);
+    if (editorSubTab === 'raw' && rawHtmlDraftSaved) {
+      setRawHtmlDraftSaved(false);
+    }
+  };
+
+  const handleModalClose = () => {
+    if (hasUnsavedChanges) {
+      setShowUnsavedChangesDialog(true);
+    } else {
+      onHide();
+    }
+  };
+
+  const handleConfirmClose = () => {
+    setShowUnsavedChangesDialog(false);
+    setHasUnsavedChanges(false);
+    onHide();
+  };
+
+  const handleCancelClose = () => {
+    setShowUnsavedChangesDialog(false);
   };
 
   return (
+    <>
     <Modal
       show={show}
-      onHide={onHide}
+      onHide={handleModalClose}
       size="xl"
       centered
       backdrop="static"
@@ -514,7 +578,10 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                     <Nav.Item>
                       <Nav.Link
                         active={activeTab === 'editor'}
-                        onClick={() => setActiveTab('editor')}
+                        onClick={() => {
+                          setActiveTab('editor');
+                          setEditorSubTab('sun');
+                        }}
                         className="d-flex align-items-center gap-2"
                         style={{
                           cursor: 'pointer',
@@ -588,6 +655,24 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                           Raw HTML
                         </Nav.Link>
                       </Nav.Item>
+                      {editorSubTab === 'raw' && rawHtmlDraftSaved && (
+                        <Nav.Item>
+                          <Nav.Link
+                            onClick={handleOpenPreview}
+                            className="d-flex align-items-center gap-2"
+                            style={{
+                              cursor: 'pointer',
+                              color: '#28a745',
+                              fontSize: '0.9rem',
+                              whiteSpace: 'nowrap',
+                              borderBottom: 'none'
+                            }}
+                          >
+                            <Eye size={15} />
+                            PREVIEW
+                          </Nav.Link>
+                        </Nav.Item>
+                      )}
                     </Nav>
                   </div>
                   )}
@@ -739,7 +824,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                       }}
                       contentEditable
                       suppressContentEditableWarning
-                      onInput={(e) => setContent(e.currentTarget.textContent || '')}
+                      onInput={(e) => handleContentChange(e.currentTarget.innerHTML || '')}
                       dangerouslySetInnerHTML={{ __html: content }}
                       dir="ltr"
                     >
@@ -784,7 +869,7 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                       style={{ fontFamily: 'monospace', fontSize: '0.875rem', resize: 'vertical' }}
                       value={content}
                       onChange={(e) => {
-                        setContent(e.target.value);
+                        handleContentChange(e.target.value);
                         setHtmlValidationError(null);
                         setHtmlValidationSuccess(false);
                       }}
@@ -837,5 +922,77 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
         </div>
       </Modal.Body>
     </Modal>
+
+    <Modal
+      show={showBlockEditorModal}
+      onHide={handleCloseBlockEditor}
+      fullscreen
+      centered
+    >
+      <Modal.Header closeButton className="border-0">
+        <Modal.Title>Block Editor</Modal.Title>
+      </Modal.Header>
+      <Modal.Body className="d-flex align-items-center justify-content-center" style={{ minHeight: '80vh' }}>
+        <div className="text-center">
+          <Grid3x3 size={64} className="text-muted mb-4" />
+          <h3 className="text-muted mb-3">Block Editor</h3>
+          <p className="text-muted">Block Editor configuration coming soon...</p>
+        </div>
+      </Modal.Body>
+    </Modal>
+
+    <Modal
+      show={showPreviewModal}
+      onHide={handleClosePreview}
+      fullscreen
+      centered
+    >
+      <Modal.Header closeButton className="border-0">
+        <Modal.Title>HTML Preview</Modal.Title>
+      </Modal.Header>
+      <Modal.Body style={{ padding: '2rem', backgroundColor: '#f8f9fa' }}>
+        <div
+          style={{
+            backgroundColor: 'white',
+            padding: '2rem',
+            borderRadius: '8px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            minHeight: '80vh'
+          }}
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      </Modal.Body>
+    </Modal>
+
+    <Modal
+      show={showUnsavedChangesDialog}
+      onHide={handleCancelClose}
+      centered
+      size="sm"
+    >
+      <Modal.Header closeButton className="border-0">
+        <Modal.Title style={{ fontSize: '1.25rem' }}>Unsaved Changes</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p className="mb-0">You have unsaved changes. Are you sure you want to close without saving?</p>
+      </Modal.Body>
+      <Modal.Footer className="border-0">
+        <Button
+          variant="outline-secondary"
+          onClick={handleCancelClose}
+          style={{ padding: '6px 20px', fontSize: '0.875rem' }}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant="danger"
+          onClick={handleConfirmClose}
+          style={{ padding: '6px 20px', fontSize: '0.875rem' }}
+        >
+          Discard Changes
+        </Button>
+      </Modal.Footer>
+    </Modal>
+    </>
   );
 };
