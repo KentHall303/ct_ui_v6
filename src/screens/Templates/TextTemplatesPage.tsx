@@ -1,7 +1,9 @@
 import React from 'react';
 import { BodyLayout } from '../../components/layout/BodyLayout/BodyLayout';
 import { Button } from '../../components/bootstrap/Button';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/bootstrap/Table';
+import { Table, TableBody, TableRow, TableCell } from '../../components/bootstrap/Table';
+import { ResizableTableHead } from '../../components/bootstrap/ResizableTableHead';
+import { useResizableColumns, ColumnConfig } from '../../hooks/useResizableColumns';
 import { TruncatedTagList } from '../../components/bootstrap/TruncatedTagList';
 import { Plus, Copy, ChevronUp, ChevronDown } from 'lucide-react';
 import { AddTextTemplateModal } from '../../components/modals/AddTextTemplateModal';
@@ -19,6 +21,19 @@ const TextTemplates = (): JSX.Element => {
   } | null>({ key: 'name', direction: 'asc' });
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [editingTemplate, setEditingTemplate] = React.useState<TextTemplate | null>(null);
+
+  const columns: ColumnConfig[] = [
+    { id: 'name', label: 'Name', defaultWidth: 600, minWidth: 200 },
+    { id: 'contact_type', label: 'Contact Types', defaultWidth: 250, minWidth: 150 },
+    { id: 'action', label: 'Action', defaultWidth: 120, minWidth: 100 },
+  ];
+
+  const {
+    columnWidths,
+    isResizing,
+    resizingColumn,
+    handleMouseDown,
+  } = useResizableColumns(columns, 'textTemplatesColumns');
 
   React.useEffect(() => {
     loadTemplates();
@@ -165,39 +180,19 @@ const TextTemplates = (): JSX.Element => {
           className="bg-white rounded-3 border shadow-sm h-100"
           style={{ overflow: 'auto' }}
         >
-          <Table className="standard-table table-striped mb-0">
+          <Table className={`standard-table table-striped mb-0 ${isResizing ? 'resizing' : ''}`}>
             <caption className="visually-hidden">
               Text templates table showing {templates.length} records.
               Use arrow keys to navigate, Enter or Space to sort columns.
               {sortConfig && ` Currently sorted by ${sortConfig.key} in ${sortConfig.direction}ending order.`}
             </caption>
-            <TableHeader>
-              <TableRow>
-                <TableHead
-                  scope="col"
-                  {...getSortProps('name')}
-                  aria-label={`Sort by name ${sortConfig?.key === 'name' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '60%' }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    Name{getSortIcon('name')}
-                  </span>
-                </TableHead>
-                <TableHead
-                  scope="col"
-                  {...getSortProps('contact_type')}
-                  aria-label={`Sort by contact types ${sortConfig?.key === 'contact_type' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '30%' }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    Contact Types{getSortIcon('contact_type')}
-                  </span>
-                </TableHead>
-                <TableHead scope="col" style={{ textAlign: 'center', width: '10%' }}>
-                  Action
-                </TableHead>
-              </TableRow>
-            </TableHeader>
+            <ResizableTableHead
+              columns={columns}
+              columnWidths={columnWidths}
+              isResizing={isResizing}
+              resizingColumn={resizingColumn}
+              onResizeStart={handleMouseDown}
+            />
             <TableBody>
               {sortedTemplates.map((template, index) => (
                 <TableRow
@@ -205,7 +200,7 @@ const TextTemplates = (): JSX.Element => {
                   role="row"
                   aria-rowindex={index + 2}
                 >
-                  <TableCell role="gridcell">
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.name}px` }}>
                     <div
                       className="text-dark"
                       style={{
@@ -220,15 +215,15 @@ const TextTemplates = (): JSX.Element => {
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell">
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.contact_type}px`, overflow: 'hidden' }}>
                     <TruncatedTagList
                       value={template.contact_type}
                       defaultText=""
-                      maxWidth={250}
+                      maxWidth={columnWidths.contact_type - 20}
                     />
                   </TableCell>
 
-                  <TableCell role="gridcell">
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.action}px` }}>
                     <div className="d-flex gap-2 justify-content-center">
                       <button
                         className="btn btn-link p-0 border rounded-circle d-flex align-items-center justify-content-center"

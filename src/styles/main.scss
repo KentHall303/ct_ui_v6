@@ -822,3 +822,67 @@ body {
     size: letter;
   }
 }
+
+/* ======================================================================
+   Resizable Table Columns
+   ====================================================================== */
+.resizable-column {
+  position: relative;
+
+  .column-header-content {
+    display: inline-block;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-right: 1rem;
+  }
+
+  .resize-handle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    cursor: col-resize;
+    user-select: none;
+    z-index: 5;
+    background: transparent;
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: rgba(0, 123, 255, 0.3);
+    }
+
+    &.resizing {
+      background-color: rgba(0, 123, 255, 0.5);
+    }
+
+    &:focus {
+      outline: 2px solid #007bff;
+      outline-offset: -2px;
+    }
+
+    &:after {
+      content: '';
+      position: absolute;
+      right: 3px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 2px;
+      height: 60%;
+      background-color: #dee2e6;
+      transition: background-color 0.2s ease;
+    }
+
+    &:hover:after,
+    &.resizing:after {
+      background-color: #007bff;
+    }
+  }
+}
+
+table.resizing {
+  user-select: none;
+  cursor: col-resize;
+}

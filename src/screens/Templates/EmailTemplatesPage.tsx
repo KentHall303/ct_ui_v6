@@ -1,7 +1,9 @@
 import React from 'react';
 import { BodyLayout } from '../../components/layout/BodyLayout/BodyLayout';
 import { Button } from '../../components/bootstrap/Button';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/bootstrap/Table';
+import { Table, TableBody, TableRow, TableCell } from '../../components/bootstrap/Table';
+import { ResizableTableHead } from '../../components/bootstrap/ResizableTableHead';
+import { useResizableColumns, ColumnConfig } from '../../hooks/useResizableColumns';
 import { Plus, Copy, ChevronUp, ChevronDown } from 'lucide-react';
 import { formatDateTime } from '../../utils/dateUtils';
 import { AddEmailTemplateModal } from '../../components/modals/AddEmailTemplateModal';
@@ -19,6 +21,19 @@ const EmailTemplates = (): JSX.Element => {
   } | null>({ key: 'updated_at', direction: 'desc' });
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [editingTemplate, setEditingTemplate] = React.useState<EmailTemplate | null>(null);
+
+  const columns: ColumnConfig[] = [
+    { id: 'name', label: 'Name', defaultWidth: 600, minWidth: 200 },
+    { id: 'updated_at', label: 'Last Updated', defaultWidth: 250, minWidth: 150 },
+    { id: 'actions', label: 'Actions', defaultWidth: 120, minWidth: 100 },
+  ];
+
+  const {
+    columnWidths,
+    isResizing,
+    resizingColumn,
+    handleMouseDown,
+  } = useResizableColumns(columns, 'emailTemplatesColumns');
 
   React.useEffect(() => {
     loadTemplates();
@@ -172,39 +187,19 @@ const EmailTemplates = (): JSX.Element => {
           className="bg-white rounded-3 border shadow-sm h-100"
           style={{ overflow: 'auto' }}
         >
-          <Table className="standard-table table-striped mb-0">
+          <Table className={`standard-table table-striped mb-0 ${isResizing ? 'resizing' : ''}`}>
             <caption className="visually-hidden">
               Email templates table showing {templates.length} records.
               Use arrow keys to navigate, Enter or Space to sort columns.
               {sortConfig && ` Currently sorted by ${sortConfig.key} in ${sortConfig.direction}ending order.`}
             </caption>
-            <TableHeader>
-              <TableRow>
-                <TableHead
-                  scope="col"
-                  {...getSortProps('name')}
-                  aria-label={`Sort by name ${sortConfig?.key === 'name' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '60%' }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    Name{getSortIcon('name')}
-                  </span>
-                </TableHead>
-                <TableHead
-                  scope="col"
-                  {...getSortProps('updated_at')}
-                  aria-label={`Sort by last updated ${sortConfig?.key === 'updated_at' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '30%' }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    Last Updated{getSortIcon('updated_at')}
-                  </span>
-                </TableHead>
-                <TableHead scope="col" style={{ textAlign: 'center', width: '10%' }}>
-                  Actions
-                </TableHead>
-              </TableRow>
-            </TableHeader>
+            <ResizableTableHead
+              columns={columns}
+              columnWidths={columnWidths}
+              isResizing={isResizing}
+              resizingColumn={resizingColumn}
+              onResizeStart={handleMouseDown}
+            />
             <TableBody>
               {sortedTemplates.map((template, index) => (
                 <TableRow
@@ -212,7 +207,7 @@ const EmailTemplates = (): JSX.Element => {
                   role="row"
                   aria-rowindex={index + 2}
                 >
-                  <TableCell role="gridcell">
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.name}px` }}>
                     <div
                       className="text-dark"
                       style={{
@@ -227,13 +222,13 @@ const EmailTemplates = (): JSX.Element => {
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell">
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.updated_at}px` }}>
                     <div className="text-dark" style={{ fontSize: '0.8125rem' }}>
                       {formatDateTime(template.updated_at)}
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell">
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.actions}px` }}>
                     <div className="d-flex gap-2 justify-content-center">
                       <button
                         className="btn btn-link p-0 border rounded-circle d-flex align-items-center justify-content-center"

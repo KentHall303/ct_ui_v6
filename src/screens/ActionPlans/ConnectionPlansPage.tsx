@@ -1,7 +1,9 @@
 import React from 'react';
 import { BodyLayout } from '../../components/layout/BodyLayout/BodyLayout';
 import { Button } from '../../components/bootstrap/Button';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/bootstrap/Table';
+import { Table, TableBody, TableRow, TableCell } from '../../components/bootstrap/Table';
+import { ResizableTableHead } from '../../components/bootstrap/ResizableTableHead';
+import { useResizableColumns, ColumnConfig } from '../../hooks/useResizableColumns';
 import { TruncatedTagList } from '../../components/bootstrap/TruncatedTagList';
 import { Plus, Copy, ChevronDown, ChevronRight, Landmark, LibraryBig, ChevronUp } from 'lucide-react';
 import { Collapse } from 'react-bootstrap';
@@ -25,6 +27,25 @@ const ConnectionPlans = (): JSX.Element => {
     const saved = localStorage.getItem('connectionPlansInfoVisible');
     return saved !== null ? saved === 'true' : true;
   });
+
+  const columns: ColumnConfig[] = [
+    { id: 'icon', label: '', defaultWidth: 60, minWidth: 50 },
+    { id: 'name', label: 'Name', defaultWidth: 200, minWidth: 120 },
+    { id: 'contact_types', label: 'Contact Types', defaultWidth: 150, minWidth: 100 },
+    { id: 'next_plan', label: 'Next Plan', defaultWidth: 180, minWidth: 120 },
+    { id: 'lead_sources', label: 'Lead Source', defaultWidth: 180, minWidth: 120 },
+    { id: 'specific_date', label: 'Specific Date', defaultWidth: 140, minWidth: 100 },
+    { id: 'plan_id', label: 'Plan Id', defaultWidth: 120, minWidth: 80 },
+    { id: 'count', label: 'Count', defaultWidth: 100, minWidth: 80 },
+    { id: 'action', label: 'Action', defaultWidth: 100, minWidth: 90 },
+  ];
+
+  const {
+    columnWidths,
+    isResizing,
+    resizingColumn,
+    handleMouseDown,
+  } = useResizableColumns(columns, 'connectionPlansColumns');
 
   React.useEffect(() => {
     loadPlans();
@@ -231,90 +252,19 @@ const ConnectionPlans = (): JSX.Element => {
           className="bg-white rounded-3 border shadow-sm h-100"
           style={{ overflow: 'auto' }}
         >
-          <Table className="standard-table table-striped mb-0">
+          <Table className={`standard-table table-striped mb-0 ${isResizing ? 'resizing' : ''}`}>
             <caption className="visually-hidden">
               Connection plans table showing {plans.length} records.
               Use arrow keys to navigate, Enter or Space to sort columns.
               {sortConfig && ` Currently sorted by ${sortConfig.key} in ${sortConfig.direction}ending order.`}
             </caption>
-            <TableHeader>
-              <TableRow>
-                <TableHead scope="col" style={{ width: '5%' }} />
-                <TableHead
-                  scope="col"
-                  {...getSortProps('name')}
-                  aria-label={`Sort by name ${sortConfig?.key === 'name' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '17%' }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    Name{getSortIcon('name')}
-                  </span>
-                </TableHead>
-                <TableHead
-                  scope="col"
-                  {...getSortProps('contact_types')}
-                  aria-label={`Sort by contact types ${sortConfig?.key === 'contact_types' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '12%' }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    Contact Types{getSortIcon('contact_types')}
-                  </span>
-                </TableHead>
-                <TableHead
-                  scope="col"
-                  {...getSortProps('next_plan')}
-                  aria-label={`Sort by next plan ${sortConfig?.key === 'next_plan' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '15%' }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    Next Plan{getSortIcon('next_plan')}
-                  </span>
-                </TableHead>
-                <TableHead
-                  scope="col"
-                  {...getSortProps('lead_sources')}
-                  aria-label={`Sort by lead source ${sortConfig?.key === 'lead_sources' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '15%' }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    Lead Source{getSortIcon('lead_sources')}
-                  </span>
-                </TableHead>
-                <TableHead
-                  scope="col"
-                  {...getSortProps('specific_date')}
-                  aria-label={`Sort by specific date ${sortConfig?.key === 'specific_date' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '12%' }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    Specific Date{getSortIcon('specific_date')}
-                  </span>
-                </TableHead>
-                <TableHead
-                  scope="col"
-                  {...getSortProps('plan_id')}
-                  aria-label={`Sort by plan id ${sortConfig?.key === 'plan_id' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '10%' }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    Plan Id{getSortIcon('plan_id')}
-                  </span>
-                </TableHead>
-                <TableHead
-                  scope="col"
-                  {...getSortProps('count')}
-                  aria-label={`Sort by count ${sortConfig?.key === 'count' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '8%' }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    Count{getSortIcon('count')}
-                  </span>
-                </TableHead>
-                <TableHead scope="col" style={{ textAlign: 'center', width: '8%' }}>
-                  Action
-                </TableHead>
-              </TableRow>
-            </TableHeader>
+            <ResizableTableHead
+              columns={columns}
+              columnWidths={columnWidths}
+              isResizing={isResizing}
+              resizingColumn={resizingColumn}
+              onResizeStart={handleMouseDown}
+            />
             <TableBody>
               {sortedPlans.map((plan, index) => (
                 <TableRow
@@ -322,7 +272,7 @@ const ConnectionPlans = (): JSX.Element => {
                   role="row"
                   aria-rowindex={index + 2}
                 >
-                  <TableCell role="gridcell">
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.icon}px` }}>
                     <div className="d-flex align-items-center justify-content-center">
                       <span
                         className={`badge rounded-circle d-flex align-items-center justify-content-center ${
@@ -346,7 +296,7 @@ const ConnectionPlans = (): JSX.Element => {
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell">
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.name}px` }}>
                     <div
                       className="text-dark"
                       style={{
@@ -361,47 +311,47 @@ const ConnectionPlans = (): JSX.Element => {
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell" style={{ maxWidth: '12%', width: '12%', minWidth: 0, overflow: 'hidden' }}>
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.contact_types}px`, overflow: 'hidden' }}>
                     <TruncatedTagList
                       value={plan.contact_types}
                       defaultText="All"
-                      maxWidth={120}
+                      maxWidth={columnWidths.contact_types - 20}
                     />
                   </TableCell>
 
-                  <TableCell role="gridcell">
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.next_plan}px` }}>
                     <div className="text-dark" style={{ fontSize: '0.8125rem' }}>
                       {plan.next_plan || ''}
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell" style={{ maxWidth: '15%', width: '15%', minWidth: 0, overflow: 'hidden' }}>
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.lead_sources}px`, overflow: 'hidden' }}>
                     <TruncatedTagList
                       value={plan.lead_sources}
                       defaultText=""
-                      maxWidth={140}
+                      maxWidth={columnWidths.lead_sources - 20}
                     />
                   </TableCell>
 
-                  <TableCell role="gridcell">
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.specific_date}px` }}>
                     <div className="text-dark" style={{ fontSize: '0.8125rem' }}>
                       {plan.specific_date ? formatDateTime(plan.specific_date) : ''}
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell">
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.plan_id}px` }}>
                     <div className="text-dark" style={{ fontSize: '0.8125rem' }}>
                       {plan.plan_id || '-1'}
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell">
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.count}px` }}>
                     <div className="text-dark" style={{ fontSize: '0.8125rem' }}>
                       {plan.count}
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell">
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.action}px` }}>
                     <div className="d-flex gap-2 justify-content-center">
                       <button
                         className="btn btn-link p-0 border rounded-circle d-flex align-items-center justify-content-center"

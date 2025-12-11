@@ -1,7 +1,9 @@
 import React from 'react';
 import { BodyLayout } from '../../components/layout/BodyLayout/BodyLayout';
 import { Button } from '../../components/bootstrap/Button';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '../../components/bootstrap/Table';
+import { Table, TableBody, TableRow, TableCell } from '../../components/bootstrap/Table';
+import { ResizableTableHead } from '../../components/bootstrap/ResizableTableHead';
+import { useResizableColumns, ColumnConfig } from '../../hooks/useResizableColumns';
 import { Plus, Copy, ChevronUp, ChevronDown } from 'lucide-react';
 import { AddApptInviteTemplateModal } from '../../components/modals/AddApptInviteTemplateModal';
 import { apptInviteTemplateService } from '../../services/apptInviteTemplateService';
@@ -18,6 +20,20 @@ const ApptInviteTemplates = (): JSX.Element => {
   } | null>({ key: 'name', direction: 'asc' });
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [editingTemplate, setEditingTemplate] = React.useState<ApptInviteTemplate | null>(null);
+
+  const columns: ColumnConfig[] = [
+    { id: 'name', label: 'Name', defaultWidth: 350, minWidth: 150 },
+    { id: 'subject', label: 'Subject', defaultWidth: 350, minWidth: 150 },
+    { id: 'api_id', label: 'API ID', defaultWidth: 100, minWidth: 80 },
+    { id: 'action', label: 'Action', defaultWidth: 120, minWidth: 100 },
+  ];
+
+  const {
+    columnWidths,
+    isResizing,
+    resizingColumn,
+    handleMouseDown,
+  } = useResizableColumns(columns, 'apptInviteTemplatesColumns');
 
   React.useEffect(() => {
     loadTemplates();
@@ -164,45 +180,19 @@ const ApptInviteTemplates = (): JSX.Element => {
           className="bg-white rounded-3 border shadow-sm h-100"
           style={{ overflow: 'auto' }}
         >
-          <Table className="standard-table table-striped mb-0">
+          <Table className={`standard-table table-striped mb-0 ${isResizing ? 'resizing' : ''}`}>
             <caption className="visually-hidden">
               Appointment invite templates table showing {templates.length} records.
               Use arrow keys to navigate, Enter or Space to sort columns.
               {sortConfig && ` Currently sorted by ${sortConfig.key} in ${sortConfig.direction}ending order.`}
             </caption>
-            <TableHeader>
-              <TableRow>
-                <TableHead
-                  scope="col"
-                  {...getSortProps('name')}
-                  aria-label={`Sort by name ${sortConfig?.key === 'name' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '40%' }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    Name{getSortIcon('name')}
-                  </span>
-                </TableHead>
-                <TableHead
-                  scope="col"
-                  {...getSortProps('subject')}
-                  aria-label={`Sort by subject ${sortConfig?.key === 'subject' ? sortConfig.direction : 'ascending'}`}
-                  style={{ width: '40%' }}
-                >
-                  <span style={{ display: 'flex', alignItems: 'center' }}>
-                    Subject{getSortIcon('subject')}
-                  </span>
-                </TableHead>
-                <TableHead
-                  scope="col"
-                  style={{ width: '10%' }}
-                >
-                  API ID
-                </TableHead>
-                <TableHead scope="col" style={{ textAlign: 'center', width: '10%' }}>
-                  Action
-                </TableHead>
-              </TableRow>
-            </TableHeader>
+            <ResizableTableHead
+              columns={columns}
+              columnWidths={columnWidths}
+              isResizing={isResizing}
+              resizingColumn={resizingColumn}
+              onResizeStart={handleMouseDown}
+            />
             <TableBody>
               {sortedTemplates.map((template, index) => (
                 <TableRow
@@ -210,7 +200,7 @@ const ApptInviteTemplates = (): JSX.Element => {
                   role="row"
                   aria-rowindex={index + 2}
                 >
-                  <TableCell role="gridcell">
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.name}px` }}>
                     <div
                       className="text-dark"
                       style={{
@@ -225,7 +215,7 @@ const ApptInviteTemplates = (): JSX.Element => {
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell">
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.subject}px` }}>
                     <div
                       className="text-dark"
                       style={{
@@ -240,13 +230,13 @@ const ApptInviteTemplates = (): JSX.Element => {
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell">
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.api_id}px` }}>
                     <div className="text-dark" style={{ fontSize: '0.8125rem' }}>
                       {template.id.substring(0, 7)}
                     </div>
                   </TableCell>
 
-                  <TableCell role="gridcell">
+                  <TableCell role="gridcell" style={{ width: `${columnWidths.action}px` }}>
                     <div className="d-flex gap-2 justify-content-center">
                       <button
                         className="btn btn-link p-0 border rounded-circle d-flex align-items-center justify-content-center"
