@@ -555,13 +555,21 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 placeholder="Enter plan name..."
               />
             </div>
-            <div className="col-md-3 d-flex align-items-center">
+            <div className="col-md-3 d-flex align-items-center gap-3">
               <Form.Check
                 type="switch"
                 id="active-switch"
                 label="Active"
                 checked={isActive}
                 onChange={(e) => setIsActive(e.target.checked)}
+              />
+              <Form.Check
+                type="checkbox"
+                id="show-only-here"
+                label="Show only here"
+                checked={showOnlyHere}
+                onChange={(e) => setShowOnlyHere(e.target.checked)}
+                style={{ whiteSpace: 'nowrap' }}
               />
             </div>
             <div className="col-md-6 d-flex align-items-center gap-2">
@@ -739,15 +747,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
           </div>
 
           <div className="row align-items-center">
-            <div className="col-md-9 d-flex align-items-center gap-3">
-              <Form.Check
-                type="checkbox"
-                id="show-only-here"
-                label="Show only here"
-                checked={showOnlyHere}
-                onChange={(e) => setShowOnlyHere(e.target.checked)}
-                style={{ whiteSpace: 'nowrap' }}
-              />
+            <div className="col-md-12 d-flex justify-content-end align-items-center gap-3">
               <Form.Check
                 type="checkbox"
                 id="protect-overwriting"
@@ -756,8 +756,6 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 onChange={(e) => setProtectFromOverwriting(e.target.checked)}
                 style={{ whiteSpace: 'nowrap' }}
               />
-            </div>
-            <div className="col-md-3 d-flex justify-content-end">
               {!isEditMode && !basicInfoSaved ? (
                 <Button
                   variant="success"
