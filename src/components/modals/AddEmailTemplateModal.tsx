@@ -781,7 +781,8 @@ export const AddEmailTemplateModal: React.FC<AddEmailTemplateModalProps> = ({
                       style={{
                         minHeight: '200px',
                         backgroundColor: '#f8f9fa',
-                        cursor: 'text'
+                        cursor: 'text',
+                        direction: 'ltr'
                       }}
                       contentEditable
                       suppressContentEditableWarning

@@ -94,7 +94,8 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         style={{
           minHeight,
           outline: 'none',
-          overflowY: 'auto'
+          overflowY: 'auto',
+          direction: 'ltr'
         }}
         onInput={handleInput}
         onFocus={() => setIsFocused(true)}

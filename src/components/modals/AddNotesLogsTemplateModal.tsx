@@ -448,7 +448,8 @@ export const AddNotesLogsTemplateModal: React.FC<AddNotesLogsTemplateModalProps>
                   maxHeight: '400px',
                   overflowY: 'auto',
                   cursor: 'text',
-                  backgroundColor: '#fff'
+                  backgroundColor: '#fff',
+                  direction: 'ltr'
                 }}
                 contentEditable
                 suppressContentEditableWarning

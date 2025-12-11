@@ -525,7 +525,8 @@ export const AddApptInviteTemplateModal: React.FC<AddApptInviteTemplateModalProp
               style={{
                 minHeight: '250px',
                 backgroundColor: '#f8f9fa',
-                cursor: 'text'
+                cursor: 'text',
+                direction: 'ltr'
               }}
               contentEditable
               suppressContentEditableWarning
