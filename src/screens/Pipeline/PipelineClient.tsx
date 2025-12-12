@@ -11,6 +11,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -412,6 +413,33 @@ export const PipelineClient: React.FC = () => {
     );
   };
 
+  // Droppable Column Component
+  const DroppableColumn: React.FC<{
+    cycleId: string;
+    children: React.ReactNode;
+  }> = ({ cycleId, children }) => {
+    const { setNodeRef, isOver } = useDroppable({
+      id: cycleId,
+    });
+
+    return (
+      <div
+        ref={setNodeRef}
+        className="flex-grow-1 overflow-auto p-2 pb-4 pipeline-column-scroll"
+        style={{
+          minHeight: 0,
+          backgroundColor: isOver ? '#e8f4f8' : '#f8f9fa',
+          scrollbarWidth: 'thin',
+          scrollbarColor: '#cbd5e0 #f7fafc',
+          paddingTop: '1rem',
+          transition: 'background-color 0.2s ease'
+        }}
+      >
+        {children}
+      </div>
+    );
+  };
+
   return (
     <DndContext
       sensors={sensors}
@@ -528,7 +556,7 @@ export const PipelineClient: React.FC = () => {
                         </defs>
                         <polygon
                           points="0,0 235,0 250,25 235,50 0,50 15,25"
-                          fill="#ffffff"
+                          fill="#f8f9fa"
                           stroke="#dee2e6"
                           strokeWidth="1"
                           vectorEffect="non-scaling-stroke"
@@ -595,19 +623,11 @@ export const PipelineClient: React.FC = () => {
                       strategy={verticalListSortingStrategy}
                       id={cycle.id}
                     >
-                      <div
-                        className="flex-grow-1 overflow-auto p-2 pb-4 pipeline-column-scroll"
-                        style={{
-                          minHeight: 0,
-                          backgroundColor: '#f8f9fa',
-                          scrollbarWidth: 'thin',
-                          scrollbarColor: '#cbd5e0 #f7fafc'
-                        }}
-                      >
+                      <DroppableColumn cycleId={cycle.id}>
                         {opps.map((opp) => (
                           <SortableCard key={opp.id} opportunity={opp} />
                         ))}
-                      </div>
+                      </DroppableColumn>
                     </SortableContext>
                   </div>
                 );
