@@ -9,4 +9,7 @@ export default defineConfig({
     port: 5173,
     strictPort: false,
   },
+  optimizeDeps: {
+    include: ['@dnd-kit/core', '@dnd-kit/sortable', '@dnd-kit/utilities'],
+  },
 });
