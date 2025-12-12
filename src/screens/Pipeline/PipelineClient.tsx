@@ -115,7 +115,7 @@ export const PipelineClient: React.FC = () => {
     if (!scrollContainerRef.current) return;
 
     const container = scrollContainerRef.current;
-    const columnWidth = 280;
+    const columnWidth = 250;
 
     if (direction === 'left' && currentColumnIndex > 0) {
       const newIndex = currentColumnIndex - 1;
@@ -142,7 +142,7 @@ export const PipelineClient: React.FC = () => {
     const updateVisibleColumns = () => {
       if (scrollContainerRef.current) {
         const containerWidth = scrollContainerRef.current.clientWidth;
-        const columns = Math.floor(containerWidth / 280);
+        const columns = Math.floor(containerWidth / 250);
         setVisibleColumns(columns);
       }
     };
@@ -157,7 +157,7 @@ export const PipelineClient: React.FC = () => {
     if (!container) return;
 
     const handleScroll = () => {
-      const newIndex = Math.round(container.scrollLeft / 280);
+      const newIndex = Math.round(container.scrollLeft / 250);
       setCurrentColumnIndex(newIndex);
     };
 
@@ -232,7 +232,7 @@ export const PipelineClient: React.FC = () => {
           {currentColumnIndex > 0 && (
             <button
               className="btn btn-light position-absolute start-0 shadow-sm"
-              style={{ zIndex: 30, top: '40px', transform: 'translateY(-50%)' }}
+              style={{ zIndex: 30, top: '25px', transform: 'translateY(-50%)' }}
               onClick={() => scrollToColumn('left')}
             >
               <ChevronLeft size={20} />
@@ -242,7 +242,7 @@ export const PipelineClient: React.FC = () => {
           {currentColumnIndex < salesCycles.length - visibleColumns && (
             <button
               className="btn btn-light position-absolute end-0 shadow-sm"
-              style={{ zIndex: 30, top: '40px', transform: 'translateY(-50%)' }}
+              style={{ zIndex: 30, top: '25px', transform: 'translateY(-50%)' }}
               onClick={() => scrollToColumn('right')}
             >
               <ChevronRight size={20} />
@@ -268,20 +268,20 @@ export const PipelineClient: React.FC = () => {
                     <div
                       key={cycle.id}
                       className="flex-shrink-0 position-relative bg-light"
-                      style={{ width: '280px', minWidth: '280px', height: '80px' }}
+                      style={{ width: '250px', minWidth: '250px', height: '50px' }}
                     >
                       <svg
-                        viewBox="0 0 280 80"
+                        viewBox="0 0 250 50"
                         className="w-100 h-100"
                         style={{ display: 'block' }}
                       >
                         <defs>
                           <clipPath id={`chevron-${cycle.id}`}>
-                            <polygon points="0,0 260,0 280,40 260,80 0,80 20,40" />
+                            <polygon points="0,0 235,0 250,25 235,50 0,50 15,25" />
                           </clipPath>
                         </defs>
                         <polygon
-                          points="0,0 260,0 280,40 260,80 0,80 20,40"
+                          points="0,0 235,0 250,25 235,50 0,50 15,25"
                           fill="#f8f9fa"
                           stroke="#dee2e6"
                           strokeWidth="1"
@@ -290,21 +290,28 @@ export const PipelineClient: React.FC = () => {
                         <foreignObject
                           x="0"
                           y="0"
-                          width="280"
-                          height="80"
+                          width="250"
+                          height="50"
                           clipPath={`url(#chevron-${cycle.id})`}
                         >
-                          <div className="d-flex flex-column align-items-center justify-content-center h-100" style={{ paddingLeft: '32px', paddingRight: '32px' }}>
-                            <div className="fw-semibold text-center small mb-1" style={{
+                          <div className="d-flex flex-column align-items-center justify-content-center h-100" style={{ paddingLeft: '20px', paddingRight: '20px' }}>
+                            <div className="text-center" style={{
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
                               whiteSpace: 'nowrap',
-                              width: '100%'
+                              width: '100%',
+                              fontSize: '0.7rem',
+                              fontWeight: 600,
+                              marginBottom: '2px'
                             }}>
                               {cycle.name}
                             </div>
-                            <div className="text-center" style={{ width: '100%' }}>
-                              <div className="fw-bold" style={{
+                            <div className="text-center" style={{
+                              width: '100%',
+                              fontSize: '0.65rem',
+                              fontWeight: 500
+                            }}>
+                              <div style={{
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap'
@@ -327,66 +334,98 @@ export const PipelineClient: React.FC = () => {
                 return (
                   <div
                     key={cycle.id}
-                    className="d-flex flex-column border-end"
-                    style={{ width: '280px', minWidth: '280px', minHeight: 0 }}
+                    className="d-flex flex-column"
+                    style={{
+                      width: '250px',
+                      minWidth: '250px',
+                      minHeight: 0,
+                      borderRight: '1px solid #e9ecef'
+                    }}
                   >
                     {/* The ONLY vertical scroller */}
                     <div
                       className="flex-grow-1 overflow-auto p-2 pb-4 pipeline-column-scroll"
                       style={{
                         minHeight: 0,
-                        backgroundColor: '#fafafa',
+                        backgroundColor: '#f8f9fa',
                         scrollbarWidth: 'thin',
                         scrollbarColor: '#cbd5e0 #f7fafc'
                       }}
                     >
-                      {opps.map((opp) => (
-                        <div
-                          key={opp.id}
-                          className="card mb-2 shadow-sm"
-                          style={{ cursor: 'pointer' }}
-                        >
-                          <div className="card-body p-3">
-                            <div className="d-flex align-items-start justify-content-between mb-2">
-                              <div className="fw-semibold flex-grow-1 me-2" style={{
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap'
-                              }}>{opp.contact_name}</div>
-                              <Circle
-                                size={12}
-                                fill={priorityColors[opp.priority]}
-                                color={priorityColors[opp.priority]}
-                                className="flex-shrink-0"
-                              />
-                            </div>
+                      {opps.map((opp) => {
+                        const getCardBorderColor = () => {
+                          switch (opp.priority) {
+                            case 'high': return '#dc3545';
+                            case 'medium': return '#ffc107';
+                            case 'low': return '#6c757d';
+                            default: return '#0d6efd';
+                          }
+                        };
 
-                            {opp.company_name && (
-                              <div className="text-muted small mb-2" style={{
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap'
-                              }}>{opp.company_name}</div>
-                            )}
-
-                            <div className="d-flex align-items-center gap-1 mb-2">
-                              <Star size={12} className="text-success" />
-                              <span className="text-success small">{opp.contact_type}</span>
-                            </div>
-
-                            <div className="d-flex align-items-center justify-content-between">
-                              <div className="fw-bold text-success">
-                                {formatValue(opp.estimated_value)}
+                        return (
+                          <div
+                            key={opp.id}
+                            className="card mb-3"
+                            style={{
+                              cursor: 'pointer',
+                              borderLeft: `3px solid ${getCardBorderColor()}`,
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                              transition: 'all 0.2s ease'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.12)';
+                              e.currentTarget.style.transform = 'translateY(-2px)';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+                              e.currentTarget.style.transform = 'translateY(0)';
+                            }}
+                          >
+                            <div className="card-body p-2">
+                              <div className="d-flex align-items-start justify-content-between mb-2">
+                                <div className="fw-semibold flex-grow-1 me-2" style={{
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  fontSize: '0.85rem'
+                                }}>{opp.contact_name}</div>
+                                <Circle
+                                  size={10}
+                                  fill={priorityColors[opp.priority]}
+                                  color={priorityColors[opp.priority]}
+                                  className="flex-shrink-0"
+                                />
                               </div>
-                              {opp.lead_source && (
-                                <div className="badge bg-light text-dark small">
-                                  {opp.lead_source}
-                                </div>
+
+                              {opp.company_name && (
+                                <div className="mb-2" style={{
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  fontSize: '0.75rem',
+                                  color: '#8e8e93'
+                                }}>{opp.company_name}</div>
                               )}
+
+                              <div className="d-flex align-items-center gap-1 mb-2">
+                                <Star size={10} className="text-success" />
+                                <span className="text-success" style={{ fontSize: '0.75rem' }}>{opp.contact_type}</span>
+                              </div>
+
+                              <div className="d-flex align-items-center justify-content-between">
+                                <div className="fw-bold text-success" style={{ fontSize: '0.85rem' }}>
+                                  {formatValue(opp.estimated_value)}
+                                </div>
+                                {opp.lead_source && (
+                                  <div className="badge bg-light text-dark" style={{ fontSize: '0.65rem', padding: '2px 6px' }}>
+                                    {opp.lead_source}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 );

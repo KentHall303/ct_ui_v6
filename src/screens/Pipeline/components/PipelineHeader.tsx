@@ -1,6 +1,6 @@
 import React from "react";
-import { Form, InputGroup, Dropdown, Badge } from "react-bootstrap";
-import { Search, Settings, Circle } from "lucide-react";
+import { Form, InputGroup, Dropdown, Badge, Button } from "react-bootstrap";
+import { Search, Settings, Circle, Plus } from "lucide-react";
 
 interface PipelineHeaderProps {
   totalCount: number;
@@ -50,22 +50,26 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
 
           <div className="d-flex align-items-center justify-content-between">
             <div className="d-flex align-items-center gap-4">
-              <div className="d-flex align-items-center gap-2">
-                <Badge bg="success" className="d-flex align-items-center gap-1 px-3 py-2">
-                  <Circle size={8} fill="white" />
-                  <span>Residential Clients</span>
-                </Badge>
-              </div>
+              <Button
+                variant="success"
+                size="sm"
+                className="rounded-pill d-flex align-items-center gap-2"
+                style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
+                title="Add new client"
+              >
+                <Plus size={14} />
+                <span>Add Client</span>
+              </Button>
 
               <div className="d-flex align-items-center gap-2 ms-3">
                 <span className="text-secondary small fw-medium">Pipeline Type:</span>
+                <span className="text-secondary small fw-medium">{pipelineType}</span>
                 <Form.Check
                   type="switch"
                   id="pipeline-type-switch"
-                  label={pipelineType}
                   checked={pipelineType === "Active"}
                   onChange={() => onPipelineTypeChange(pipelineType === "Active" ? "Inactive" : "Active")}
-                  className="d-flex align-items-center ms-1"
+                  className="ms-1"
                 />
               </div>
 
