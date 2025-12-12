@@ -1,6 +1,6 @@
 import React from "react";
 import { Form, InputGroup, Dropdown, Badge, Button } from "react-bootstrap";
-import { Search, Settings, Circle, Plus } from "lucide-react";
+import { Search, Settings, Circle } from "lucide-react";
 
 interface PipelineHeaderProps {
   totalCount: number;
@@ -10,6 +10,8 @@ interface PipelineHeaderProps {
   onMainContactOnlyChange: (value: boolean) => void;
   searchTerm: string;
   onSearchChange: (value: string) => void;
+  activePriorityFilters: string[];
+  onPriorityFilterToggle: (priority: string) => void;
 }
 
 export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
@@ -20,6 +22,8 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
   onMainContactOnlyChange,
   searchTerm,
   onSearchChange,
+  activePriorityFilters,
+  onPriorityFilterToggle,
 }) => {
   return (
     <div className="px-3 pt-3">
@@ -52,15 +56,24 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                     borderBottomLeftRadius: 0,
                     borderTopRightRadius: 0,
                     borderBottomRightRadius: 0,
-                    padding: '0.375rem 0.5rem'
+                    padding: '0.375rem 0.5rem',
+                    borderRight: 'none'
                   }}
                 >
                   <Search size={16} />
                 </Button>
+                <div
+                  style={{
+                    width: '1px',
+                    height: '100%',
+                    backgroundColor: '#d0d0d0',
+                    alignSelf: 'stretch'
+                  }}
+                />
                 <Button
                   variant="success"
                   size="sm"
-                  className="d-flex align-items-center gap-2"
+                  className="d-flex align-items-center gap-2 fw-bold"
                   style={{
                     borderTopLeftRadius: 0,
                     borderBottomLeftRadius: 0,
@@ -69,8 +82,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                   }}
                   title="Add new client"
                 >
-                  <Plus size={16} />
-                  <span>Add Client</span>
+                  Add Client
                 </Button>
               </InputGroup>
             </div>
@@ -105,16 +117,60 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
             <div className="d-flex align-items-center gap-3">
               <div className="d-flex align-items-center gap-2">
                 <span className="text-secondary small">Priority:</span>
-                <Badge bg="warning" className="px-2 py-1" title="High Priority">
+                <Badge
+                  bg="warning"
+                  className="px-2 py-1"
+                  title="Missed Action"
+                  role="button"
+                  onClick={() => onPriorityFilterToggle('missed_action')}
+                  style={{
+                    cursor: 'pointer',
+                    opacity: activePriorityFilters.length === 0 || activePriorityFilters.includes('missed_action') ? 1 : 0.3,
+                    transition: 'opacity 0.2s'
+                  }}
+                >
                   <Circle size={10} fill="currentColor" />
                 </Badge>
-                <Badge bg="success" className="px-2 py-1" title="Medium Priority">
+                <Badge
+                  bg="success"
+                  className="px-2 py-1"
+                  title="Today's Action"
+                  role="button"
+                  onClick={() => onPriorityFilterToggle('today_action')}
+                  style={{
+                    cursor: 'pointer',
+                    opacity: activePriorityFilters.length === 0 || activePriorityFilters.includes('today_action') ? 1 : 0.3,
+                    transition: 'opacity 0.2s'
+                  }}
+                >
                   <Circle size={10} fill="currentColor" />
                 </Badge>
-                <Badge bg="secondary" className="px-2 py-1" title="Low Priority">
+                <Badge
+                  bg="secondary"
+                  className="px-2 py-1"
+                  title="Has Pending Action(s)"
+                  role="button"
+                  onClick={() => onPriorityFilterToggle('pending_action')}
+                  style={{
+                    cursor: 'pointer',
+                    opacity: activePriorityFilters.length === 0 || activePriorityFilters.includes('pending_action') ? 1 : 0.3,
+                    transition: 'opacity 0.2s'
+                  }}
+                >
                   <Circle size={10} fill="currentColor" />
                 </Badge>
-                <Badge bg="dark" className="px-2 py-1" title="Other">
+                <Badge
+                  bg="dark"
+                  className="px-2 py-1"
+                  title="No Pending Actions"
+                  role="button"
+                  onClick={() => onPriorityFilterToggle('no_pending')}
+                  style={{
+                    cursor: 'pointer',
+                    opacity: activePriorityFilters.length === 0 || activePriorityFilters.includes('no_pending') ? 1 : 0.3,
+                    transition: 'opacity 0.2s'
+                  }}
+                >
                   <Circle size={10} fill="currentColor" />
                 </Badge>
               </div>

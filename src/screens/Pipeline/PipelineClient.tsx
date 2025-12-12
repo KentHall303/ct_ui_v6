@@ -1,7 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ChevronLeft, ChevronRight, Circle, Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { PipelineHeader } from "./components/PipelineHeader";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  closestCorners,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface SalesCycle {
   id: string;
@@ -18,10 +34,11 @@ interface Opportunity {
   phone: string | null;
   sales_cycle_id: string;
   estimated_value: number;
-  priority: 'high' | 'medium' | 'low';
+  priority: 'new_lead' | 'missed_action' | 'today_action' | 'pending_action' | 'no_pending';
   lead_source: string | null;
   contact_type: string;
   created_at: string;
+  order_position: number;
 }
 
 interface ColumnStats {
@@ -30,9 +47,11 @@ interface ColumnStats {
 }
 
 const priorityColors: Record<string, string> = {
-  high: '#dc3545',
-  medium: '#000000',
-  low: '#6c757d'
+  new_lead: '#dc3545',       // Red
+  missed_action: '#ffc107',  // Yellow
+  today_action: '#28a745',   // Green
+  pending_action: '#6c757d', // Gray
+  no_pending: '#000000'      // Black
 };
 
 export const PipelineClient: React.FC = () => {
@@ -44,8 +63,18 @@ export const PipelineClient: React.FC = () => {
   const [mainContactOnly, setMainContactOnly] = useState(false);
   const [currentColumnIndex, setCurrentColumnIndex] = useState(0);
   const [visibleColumns, setVisibleColumns] = useState(4);
+  const [activePriorityFilters, setActivePriorityFilters] = useState<string[]>([]);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const boardRef = useRef<HTMLDivElement | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   useEffect(() => {
     loadPipelineData();
@@ -62,7 +91,7 @@ export const PipelineClient: React.FC = () => {
         supabase
           .from("opportunities")
           .select("*")
-          .order("created_at", { ascending: false })
+          .order("order_position", { ascending: true })
       ]);
 
       if (cyclesResult.error) throw cyclesResult.error;
@@ -77,8 +106,25 @@ export const PipelineClient: React.FC = () => {
     }
   };
 
+  const handlePriorityFilterToggle = (priority: string) => {
+    setActivePriorityFilters(prev => {
+      if (prev.includes(priority)) {
+        return prev.filter(p => p !== priority);
+      } else {
+        return [...prev, priority];
+      }
+    });
+  };
+
   const getOpportunitiesForCycle = (cycleId: string): Opportunity[] => {
-    return opportunities.filter(opp => opp.sales_cycle_id === cycleId);
+    let filtered = opportunities.filter(opp => opp.sales_cycle_id === cycleId);
+
+    // Apply priority filter
+    if (activePriorityFilters.length > 0) {
+      filtered = filtered.filter(opp => activePriorityFilters.includes(opp.priority));
+    }
+
+    return filtered.sort((a, b) => a.order_position - b.order_position);
   };
 
   const getColumnStats = (cycleId: string): ColumnStats => {
@@ -109,6 +155,109 @@ export const PipelineClient: React.FC = () => {
   const formatValue = (value: number) => {
     if (value === 0) return "$0";
     return formatCurrency(value);
+  };
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveId(null);
+
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    const activeOpp = opportunities.find(o => o.id === activeId);
+    if (!activeOpp) return;
+
+    // Determine target column and position
+    let targetCycleId = activeOpp.sales_cycle_id;
+    let targetPosition = activeOpp.order_position;
+
+    // Check if we're dropping over a column (sales cycle)
+    if (salesCycles.some(cycle => cycle.id === overId)) {
+      targetCycleId = overId;
+      const targetColumnOpps = opportunities.filter(o => o.sales_cycle_id === targetCycleId);
+      targetPosition = targetColumnOpps.length;
+    } else {
+      // Dropping over another opportunity
+      const overOpp = opportunities.find(o => o.id === overId);
+      if (overOpp) {
+        targetCycleId = overOpp.sales_cycle_id;
+        targetPosition = overOpp.order_position;
+      }
+    }
+
+    // Only update if something changed
+    if (targetCycleId !== activeOpp.sales_cycle_id || activeId !== overId) {
+      // Optimistic update
+      const updatedOpportunities = [...opportunities];
+      const activeIndex = updatedOpportunities.findIndex(o => o.id === activeId);
+      const activeItem = updatedOpportunities[activeIndex];
+
+      // Remove from old position
+      updatedOpportunities.splice(activeIndex, 1);
+
+      // Update sales_cycle_id
+      activeItem.sales_cycle_id = targetCycleId;
+
+      // Find new position
+      const targetColumnOpps = updatedOpportunities.filter(o => o.sales_cycle_id === targetCycleId);
+      const insertIndex = targetColumnOpps.findIndex(o => o.id === overId);
+
+      if (insertIndex === -1) {
+        // Add to end of column
+        const allBeforeTarget = updatedOpportunities.filter(o => o.sales_cycle_id !== targetCycleId);
+        const targetColumnFiltered = updatedOpportunities.filter(o => o.sales_cycle_id === targetCycleId);
+        updatedOpportunities.length = 0;
+        updatedOpportunities.push(...allBeforeTarget, ...targetColumnFiltered, activeItem);
+      } else {
+        // Insert at specific position
+        const globalInsertIndex = updatedOpportunities.findIndex(o => o.id === overId);
+        updatedOpportunities.splice(globalInsertIndex, 0, activeItem);
+      }
+
+      // Recalculate order_position for all items in affected columns
+      const affectedCycles = new Set([activeOpp.sales_cycle_id, targetCycleId]);
+      affectedCycles.forEach(cycleId => {
+        const cycleOpps = updatedOpportunities.filter(o => o.sales_cycle_id === cycleId);
+        cycleOpps.forEach((opp, index) => {
+          opp.order_position = index;
+        });
+      });
+
+      setOpportunities(updatedOpportunities);
+
+      // Update in database
+      try {
+        // Update the moved item
+        await supabase
+          .from('opportunities')
+          .update({
+            sales_cycle_id: targetCycleId,
+            order_position: activeItem.order_position
+          })
+          .eq('id', activeId);
+
+        // Update order positions for all items in affected columns
+        for (const cycleId of affectedCycles) {
+          const cycleOpps = updatedOpportunities.filter(o => o.sales_cycle_id === cycleId);
+          for (const opp of cycleOpps) {
+            await supabase
+              .from('opportunities')
+              .update({ order_position: opp.order_position })
+              .eq('id', opp.id);
+          }
+        }
+      } catch (error) {
+        console.error('Error updating opportunity:', error);
+        // Reload data on error
+        loadPipelineData();
+      }
+    }
   };
 
   const scrollToColumn = (direction: 'left' | 'right') => {
@@ -177,11 +326,103 @@ export const PipelineClient: React.FC = () => {
     );
   }
 
+  // Sortable Card Component
+  const SortableCard: React.FC<{ opportunity: Opportunity }> = ({ opportunity }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({ id: opportunity.id });
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
+    };
+
+    const getCardBorderColor = () => {
+      return priorityColors[opportunity.priority] || '#0d6efd';
+    };
+
+    return (
+      <div
+        ref={setNodeRef}
+        style={{
+          ...style,
+          cursor: isDragging ? 'grabbing' : 'grab',
+          borderLeft: `3px solid ${getCardBorderColor()}`,
+          boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+        }}
+        {...attributes}
+        {...listeners}
+        className="card mb-3"
+        onMouseEnter={(e) => {
+          if (!isDragging) {
+            e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.12)';
+            e.currentTarget.style.transform = 'translateY(-2px)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isDragging) {
+            e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }
+        }}
+      >
+        <div className="card-body p-2">
+          <div className="d-flex align-items-start justify-content-between mb-2">
+            <div className="fw-semibold flex-grow-1 me-2" style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              fontSize: '0.85rem'
+            }}>{opportunity.contact_name}</div>
+          </div>
+
+          {opportunity.company_name && (
+            <div className="mb-2" style={{
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              fontSize: '0.75rem',
+              color: '#8e8e93'
+            }}>{opportunity.company_name}</div>
+          )}
+
+          <div className="d-flex align-items-center gap-1 mb-2">
+            <Star size={10} className="text-success" />
+            <span className="text-success" style={{ fontSize: '0.75rem' }}>{opportunity.contact_type}</span>
+          </div>
+
+          <div className="d-flex align-items-center justify-content-between">
+            <div className="fw-bold text-success" style={{ fontSize: '0.85rem' }}>
+              {formatValue(opportunity.estimated_value)}
+            </div>
+            {opportunity.lead_source && (
+              <div className="badge bg-light text-dark" style={{ fontSize: '0.65rem', padding: '2px 6px' }}>
+                {opportunity.lead_source}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div
-      className="d-flex flex-column h-100"
-      style={{ minHeight: 0, overflow: 'hidden' }}
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCorners}
+      onDragStart={handleDragStart}
+      onDragEnd={handleDragEnd}
     >
+      <div
+        className="d-flex flex-column h-100"
+        style={{ minHeight: 0, overflow: 'hidden' }}
+      >
       <style>
         {`
           .pipeline-column-scroll::-webkit-scrollbar {
@@ -212,6 +453,8 @@ export const PipelineClient: React.FC = () => {
           onMainContactOnlyChange={setMainContactOnly}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
+          activePriorityFilters={activePriorityFilters}
+          onPriorityFilterToggle={handlePriorityFilterToggle}
         />
       </div>
 
@@ -267,13 +510,16 @@ export const PipelineClient: React.FC = () => {
                   return (
                     <div
                       key={cycle.id}
-                      className="flex-shrink-0 position-relative bg-light"
+                      className="flex-shrink-0 position-relative"
                       style={{ width: '250px', minWidth: '250px', height: '50px' }}
                     >
                       <svg
                         viewBox="0 0 250 50"
                         className="w-100 h-100"
-                        style={{ display: 'block' }}
+                        style={{
+                          display: 'block',
+                          filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.08))'
+                        }}
                       >
                         <defs>
                           <clipPath id={`chevron-${cycle.id}`}>
@@ -282,7 +528,7 @@ export const PipelineClient: React.FC = () => {
                         </defs>
                         <polygon
                           points="0,0 235,0 250,25 235,50 0,50 15,25"
-                          fill="#f8f9fa"
+                          fill="#ffffff"
                           stroke="#dee2e6"
                           strokeWidth="1"
                           vectorEffect="non-scaling-stroke"
@@ -330,6 +576,7 @@ export const PipelineClient: React.FC = () => {
             <div className="d-flex flex-row flex-nowrap flex-grow-1" style={{ minHeight: 0 }}>
               {salesCycles.map((cycle) => {
                 const opps = getOpportunitiesForCycle(cycle.id);
+                const oppIds = opps.map(opp => opp.id);
 
                 return (
                   <div
@@ -343,90 +590,25 @@ export const PipelineClient: React.FC = () => {
                     }}
                   >
                     {/* The ONLY vertical scroller */}
-                    <div
-                      className="flex-grow-1 overflow-auto p-2 pb-4 pipeline-column-scroll"
-                      style={{
-                        minHeight: 0,
-                        backgroundColor: '#f8f9fa',
-                        scrollbarWidth: 'thin',
-                        scrollbarColor: '#cbd5e0 #f7fafc'
-                      }}
+                    <SortableContext
+                      items={oppIds}
+                      strategy={verticalListSortingStrategy}
+                      id={cycle.id}
                     >
-                      {opps.map((opp) => {
-                        const getCardBorderColor = () => {
-                          switch (opp.priority) {
-                            case 'high': return '#dc3545';
-                            case 'medium': return '#ffc107';
-                            case 'low': return '#6c757d';
-                            default: return '#0d6efd';
-                          }
-                        };
-
-                        return (
-                          <div
-                            key={opp.id}
-                            className="card mb-3"
-                            style={{
-                              cursor: 'pointer',
-                              borderLeft: `3px solid ${getCardBorderColor()}`,
-                              boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-                              transition: 'all 0.2s ease'
-                            }}
-                            onMouseEnter={(e) => {
-                              e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.12)';
-                              e.currentTarget.style.transform = 'translateY(-2px)';
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
-                              e.currentTarget.style.transform = 'translateY(0)';
-                            }}
-                          >
-                            <div className="card-body p-2">
-                              <div className="d-flex align-items-start justify-content-between mb-2">
-                                <div className="fw-semibold flex-grow-1 me-2" style={{
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                  fontSize: '0.85rem'
-                                }}>{opp.contact_name}</div>
-                                <Circle
-                                  size={10}
-                                  fill={priorityColors[opp.priority]}
-                                  color={priorityColors[opp.priority]}
-                                  className="flex-shrink-0"
-                                />
-                              </div>
-
-                              {opp.company_name && (
-                                <div className="mb-2" style={{
-                                  overflow: 'hidden',
-                                  textOverflow: 'ellipsis',
-                                  whiteSpace: 'nowrap',
-                                  fontSize: '0.75rem',
-                                  color: '#8e8e93'
-                                }}>{opp.company_name}</div>
-                              )}
-
-                              <div className="d-flex align-items-center gap-1 mb-2">
-                                <Star size={10} className="text-success" />
-                                <span className="text-success" style={{ fontSize: '0.75rem' }}>{opp.contact_type}</span>
-                              </div>
-
-                              <div className="d-flex align-items-center justify-content-between">
-                                <div className="fw-bold text-success" style={{ fontSize: '0.85rem' }}>
-                                  {formatValue(opp.estimated_value)}
-                                </div>
-                                {opp.lead_source && (
-                                  <div className="badge bg-light text-dark" style={{ fontSize: '0.65rem', padding: '2px 6px' }}>
-                                    {opp.lead_source}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                      <div
+                        className="flex-grow-1 overflow-auto p-2 pb-4 pipeline-column-scroll"
+                        style={{
+                          minHeight: 0,
+                          backgroundColor: '#f8f9fa',
+                          scrollbarWidth: 'thin',
+                          scrollbarColor: '#cbd5e0 #f7fafc'
+                        }}
+                      >
+                        {opps.map((opp) => (
+                          <SortableCard key={opp.id} opportunity={opp} />
+                        ))}
+                      </div>
+                    </SortableContext>
                   </div>
                 );
               })}
@@ -434,6 +616,7 @@ export const PipelineClient: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </DndContext>
   );
 };
