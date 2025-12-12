@@ -10,8 +10,8 @@ interface PipelineHeaderProps {
   onMainContactOnlyChange: (value: boolean) => void;
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  activePriorityFilters: string[];
-  onPriorityFilterToggle: (priority: string) => void;
+  activePrioritySort: string | null;
+  onPrioritySortChange: (priority: string) => void;
 }
 
 export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
@@ -22,8 +22,8 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
   onMainContactOnlyChange,
   searchTerm,
   onSearchChange,
-  activePriorityFilters,
-  onPriorityFilterToggle,
+  activePrioritySort,
+  onPrioritySortChange,
 }) => {
   return (
     <div className="px-3 pt-3">
@@ -122,10 +122,10 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                   className="px-2 py-1"
                   title="New Lead"
                   role="button"
-                  onClick={() => onPriorityFilterToggle('new_lead')}
+                  onClick={() => onPrioritySortChange('new_lead')}
                   style={{
                     cursor: 'pointer',
-                    opacity: activePriorityFilters.length === 0 || activePriorityFilters.includes('new_lead') ? 1 : 0.3,
+                    opacity: activePrioritySort === null || activePrioritySort === 'new_lead' ? 1 : 0.3,
                     transition: 'opacity 0.2s'
                   }}
                 >
@@ -136,10 +136,10 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                   className="px-2 py-1"
                   title="Missed Action"
                   role="button"
-                  onClick={() => onPriorityFilterToggle('missed_action')}
+                  onClick={() => onPrioritySortChange('missed_action')}
                   style={{
                     cursor: 'pointer',
-                    opacity: activePriorityFilters.length === 0 || activePriorityFilters.includes('missed_action') ? 1 : 0.3,
+                    opacity: activePrioritySort === null || activePrioritySort === 'missed_action' ? 1 : 0.3,
                     transition: 'opacity 0.2s'
                   }}
                 >
@@ -150,10 +150,10 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                   className="px-2 py-1"
                   title="Today's Action"
                   role="button"
-                  onClick={() => onPriorityFilterToggle('today_action')}
+                  onClick={() => onPrioritySortChange('today_action')}
                   style={{
                     cursor: 'pointer',
-                    opacity: activePriorityFilters.length === 0 || activePriorityFilters.includes('today_action') ? 1 : 0.3,
+                    opacity: activePrioritySort === null || activePrioritySort === 'today_action' ? 1 : 0.3,
                     transition: 'opacity 0.2s'
                   }}
                 >
@@ -164,10 +164,10 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                   className="px-2 py-1"
                   title="Has Pending Action(s)"
                   role="button"
-                  onClick={() => onPriorityFilterToggle('pending_action')}
+                  onClick={() => onPrioritySortChange('pending_action')}
                   style={{
                     cursor: 'pointer',
-                    opacity: activePriorityFilters.length === 0 || activePriorityFilters.includes('pending_action') ? 1 : 0.3,
+                    opacity: activePrioritySort === null || activePrioritySort === 'pending_action' ? 1 : 0.3,
                     transition: 'opacity 0.2s'
                   }}
                 >
@@ -178,10 +178,10 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                   className="px-2 py-1"
                   title="No Pending Actions"
                   role="button"
-                  onClick={() => onPriorityFilterToggle('no_pending')}
+                  onClick={() => onPrioritySortChange('no_pending')}
                   style={{
                     cursor: 'pointer',
-                    opacity: activePriorityFilters.length === 0 || activePriorityFilters.includes('no_pending') ? 1 : 0.3,
+                    opacity: activePrioritySort === null || activePrioritySort === 'no_pending' ? 1 : 0.3,
                     transition: 'opacity 0.2s'
                   }}
                 >

@@ -69,7 +69,7 @@ export const PipelineClient: React.FC = () => {
   const [mainContactOnly, setMainContactOnly] = useState(false);
   const [currentColumnIndex, setCurrentColumnIndex] = useState(0);
   const [visibleColumns, setVisibleColumns] = useState(4);
-  const [activePriorityFilters, setActivePriorityFilters] = useState<string[]>([]);
+  const [activePrioritySort, setActivePrioritySort] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [originalOpportunities, setOriginalOpportunities] = useState<Opportunity[]>([]);
@@ -114,12 +114,12 @@ export const PipelineClient: React.FC = () => {
     }
   };
 
-  const handlePriorityFilterToggle = (priority: string) => {
-    setActivePriorityFilters(prev => {
-      if (prev.includes(priority)) {
-        return prev.filter(p => p !== priority);
+  const handlePrioritySortChange = (priority: string) => {
+    setActivePrioritySort(prev => {
+      if (prev === priority) {
+        return null;
       } else {
-        return [...prev, priority];
+        return priority;
       }
     });
   };
@@ -127,12 +127,40 @@ export const PipelineClient: React.FC = () => {
   const getOpportunitiesForCycle = (cycleId: string): Opportunity[] => {
     let filtered = opportunities.filter(opp => opp.sales_cycle_id === cycleId);
 
-    // Apply priority filter
-    if (activePriorityFilters.length > 0) {
-      filtered = filtered.filter(opp => activePriorityFilters.includes(opp.priority));
+    // Determine if this is the first sales cycle (New Lead list)
+    const isNewLeadList = salesCycles.length > 0 && salesCycles[0].id === cycleId;
+
+    // Apply list-specific priority restrictions
+    if (isNewLeadList) {
+      // New Lead list: only show red and yellow priorities
+      filtered = filtered.filter(opp =>
+        opp.priority === 'new_lead' || opp.priority === 'missed_action'
+      );
+    } else {
+      // Other lists: show everything except red (new_lead)
+      filtered = filtered.filter(opp => opp.priority !== 'new_lead');
     }
 
-    return filtered.sort((a, b) => a.order_position - b.order_position);
+    // Sort by order_position first
+    filtered = filtered.sort((a, b) => a.order_position - b.order_position);
+
+    // Apply priority sorting if active
+    if (activePrioritySort) {
+      filtered = filtered.sort((a, b) => {
+        // If 'a' matches the selected priority, it comes first
+        if (a.priority === activePrioritySort && b.priority !== activePrioritySort) {
+          return -1;
+        }
+        // If 'b' matches the selected priority, it comes first
+        if (b.priority === activePrioritySort && a.priority !== activePrioritySort) {
+          return 1;
+        }
+        // Otherwise maintain order_position order
+        return a.order_position - b.order_position;
+      });
+    }
+
+    return filtered;
   };
 
   const getColumnStats = (cycleId: string): ColumnStats => {
@@ -480,22 +508,20 @@ export const PipelineClient: React.FC = () => {
       }
     });
 
-    const isOverColumn = isOver || overId === cycleId;
-
     return (
       <div
         ref={setNodeRef}
         className="flex-grow-1 overflow-auto pb-4 pipeline-column-scroll"
         style={{
           minHeight: '200px',
-          backgroundColor: isOverColumn ? '#e8f4f8' : '#f8f9fa',
+          backgroundColor: isOver ? '#e8f4f8' : '#f8f9fa',
           scrollbarWidth: 'thin',
           scrollbarColor: '#cbd5e0 #f7fafc',
           paddingTop: '1rem',
           paddingLeft: '15px',
           paddingRight: '15px',
           transition: 'background-color 0.2s ease',
-          border: isOverColumn ? '2px dashed #0d6efd' : '2px dashed transparent',
+          border: isOver ? '2px dashed #0d6efd' : '2px dashed transparent',
         }}
       >
         {children}
@@ -504,10 +530,10 @@ export const PipelineClient: React.FC = () => {
             className="text-muted text-center py-4"
             style={{
               fontSize: '0.875rem',
-              opacity: isOverColumn ? 1 : 0.5
+              opacity: isOver ? 1 : 0.5
             }}
           >
-            {isOverColumn ? 'Drop here' : 'Empty'}
+            {isOver ? 'Drop here' : 'Empty'}
           </div>
         )}
       </div>
@@ -557,8 +583,8 @@ export const PipelineClient: React.FC = () => {
           onMainContactOnlyChange={setMainContactOnly}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
-          activePriorityFilters={activePriorityFilters}
-          onPriorityFilterToggle={handlePriorityFilterToggle}
+          activePrioritySort={activePrioritySort}
+          onPrioritySortChange={handlePrioritySortChange}
         />
       </div>
 
