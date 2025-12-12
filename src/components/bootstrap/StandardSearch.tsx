@@ -109,9 +109,10 @@ export const StandardSearch: React.FC<StandardSearchProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: size === 'sm' ? '0.25rem 0.5rem' : '0.375rem 0.5rem',
+          padding: size === 'sm' ? '0.375rem 0.5rem' : '0.5rem 0.75rem',
           borderTopRightRadius: showDropdownProp ? 0 : undefined,
-          borderBottomRightRadius: showDropdownProp ? 0 : undefined
+          borderBottomRightRadius: showDropdownProp ? 0 : undefined,
+          height: size === 'sm' ? '31px' : '38px'
         }}
       >
         <svg
@@ -141,10 +142,11 @@ export const StandardSearch: React.FC<StandardSearchProps> = ({
               alignItems: 'center',
               gap: '8px',
               whiteSpace: 'nowrap',
-              padding: size === 'sm' ? '0.25rem 0.5rem' : '0.375rem 0.5rem',
+              padding: size === 'sm' ? '0.375rem 0.5rem' : '0.5rem 0.75rem',
               maxWidth: '150px',
               overflow: 'hidden',
-              textOverflow: 'ellipsis'
+              textOverflow: 'ellipsis',
+              height: size === 'sm' ? '31px' : '38px'
             }}
             title={searchFocus}
           >
