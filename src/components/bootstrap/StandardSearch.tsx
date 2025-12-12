@@ -141,8 +141,7 @@ export const StandardSearch: React.FC<StandardSearchProps> = ({
               alignItems: 'center',
               gap: '8px',
               whiteSpace: 'nowrap',
-              paddingLeft: size === 'sm' ? '10px' : '12px',
-              paddingRight: size === 'sm' ? '10px' : '12px',
+              padding: size === 'sm' ? '0.25rem 0.5rem' : '0.375rem 0.5rem',
               maxWidth: '150px',
               overflow: 'hidden',
               textOverflow: 'ellipsis'
@@ -157,8 +156,8 @@ export const StandardSearch: React.FC<StandardSearchProps> = ({
               {searchFocus}
             </span>
             <svg
-              width="16"
-              height="16"
+              width={size === 'sm' ? '16' : '18'}
+              height={size === 'sm' ? '16' : '18'}
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"

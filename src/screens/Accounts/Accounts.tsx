@@ -185,8 +185,11 @@ const AccountsHeader = () => {
   return (
     <div className="px-3 pt-3 flex-shrink-0">
       <div className="bg-white rounded-3 pt-3 pb-3 px-4 border shadow-sm">
-        <div className="d-flex align-items-center justify-content-between mb-2">
-          <h2 className="h4 fw-bold text-dark mb-0">Accounts</h2>
+        <h2 className="h4 fw-bold text-dark mb-2">Accounts</h2>
+        <div className="d-flex align-items-center justify-content-between">
+          <p className="text-secondary mb-0" style={{ fontSize: '0.875rem' }}>
+            {multiLevelCount} Multi Level Accounts and {singleLevelCount} Single Level Accounts
+          </p>
           <div style={{ width: '400px', fontSize: '0.8125rem' }}>
             <StandardSearch
               placeholder="Search Account..."
@@ -197,9 +200,6 @@ const AccountsHeader = () => {
             />
           </div>
         </div>
-        <p className="text-secondary mb-0" style={{ fontSize: '0.875rem' }}>
-          {multiLevelCount} Multi Level Accounts and {singleLevelCount} Single Level Accounts
-        </p>
       </div>
     </div>
   );
