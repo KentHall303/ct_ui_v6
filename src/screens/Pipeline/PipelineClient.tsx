@@ -72,6 +72,7 @@ export const PipelineClient: React.FC = () => {
   const [activePriorityFilters, setActivePriorityFilters] = useState<string[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
+  const [originalOpportunities, setOriginalOpportunities] = useState<Opportunity[]>([]);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const boardRef = useRef<HTMLDivElement | null>(null);
 
@@ -190,11 +191,75 @@ export const PipelineClient: React.FC = () => {
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
+    setOriginalOpportunities([...opportunities]);
   };
 
   const handleDragOver = (event: DragOverEvent) => {
-    const { over } = event;
+    const { active, over } = event;
     setOverId(over ? over.id as string : null);
+
+    if (!over) return;
+
+    const activeId = active.id as string;
+    const overId = over.id as string;
+
+    if (activeId === overId) return;
+
+    const activeOpp = opportunities.find(o => o.id === activeId);
+    if (!activeOpp) return;
+
+    let targetCycleId = activeOpp.sales_cycle_id;
+    let shouldUpdate = false;
+
+    if (salesCycles.some(cycle => cycle.id === overId)) {
+      targetCycleId = overId;
+      shouldUpdate = targetCycleId !== activeOpp.sales_cycle_id;
+    } else {
+      const overOpp = opportunities.find(o => o.id === overId);
+      if (overOpp) {
+        targetCycleId = overOpp.sales_cycle_id;
+        shouldUpdate = true;
+      }
+    }
+
+    if (!shouldUpdate) return;
+
+    const updatedOpportunities = [...opportunities];
+    const activeIndex = updatedOpportunities.findIndex(o => o.id === activeId);
+    const activeItem = { ...updatedOpportunities[activeIndex] };
+
+    updatedOpportunities.splice(activeIndex, 1);
+
+    activeItem.sales_cycle_id = targetCycleId;
+
+    const targetColumnOpps = updatedOpportunities.filter(o => o.sales_cycle_id === targetCycleId);
+    const insertIndex = targetColumnOpps.findIndex(o => o.id === overId);
+
+    if (insertIndex === -1 || salesCycles.some(cycle => cycle.id === overId)) {
+      const allBeforeTarget = updatedOpportunities.filter(o => o.sales_cycle_id !== targetCycleId);
+      const targetColumnFiltered = updatedOpportunities.filter(o => o.sales_cycle_id === targetCycleId);
+      updatedOpportunities.length = 0;
+      updatedOpportunities.push(...allBeforeTarget, ...targetColumnFiltered, activeItem);
+    } else {
+      const globalInsertIndex = updatedOpportunities.findIndex(o => o.id === overId);
+      updatedOpportunities.splice(globalInsertIndex, 0, activeItem);
+    }
+
+    const affectedCycles = new Set([activeOpp.sales_cycle_id, targetCycleId]);
+    affectedCycles.forEach(cycleId => {
+      const cycleOpps = updatedOpportunities.filter(o => o.sales_cycle_id === cycleId);
+      cycleOpps.forEach((opp, index) => {
+        opp.order_position = index;
+      });
+    });
+
+    setOpportunities(updatedOpportunities);
+  };
+
+  const handleDragCancel = () => {
+    setActiveId(null);
+    setOverId(null);
+    setOpportunities(originalOpportunities);
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -202,102 +267,45 @@ export const PipelineClient: React.FC = () => {
     setActiveId(null);
     setOverId(null);
 
-    if (!over) return;
-
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    const activeOpp = opportunities.find(o => o.id === activeId);
-    if (!activeOpp) return;
-
-    // Determine target column and position
-    let targetCycleId = activeOpp.sales_cycle_id;
-    let targetPosition = activeOpp.order_position;
-
-    // Check if we're dropping over a column (sales cycle)
-    if (salesCycles.some(cycle => cycle.id === overId)) {
-      targetCycleId = overId;
-      const targetColumnOpps = opportunities.filter(o => o.sales_cycle_id === targetCycleId);
-      targetPosition = targetColumnOpps.length;
-    } else {
-      // Dropping over another opportunity
-      const overOpp = opportunities.find(o => o.id === overId);
-      if (overOpp) {
-        targetCycleId = overOpp.sales_cycle_id;
-        targetPosition = overOpp.order_position;
-      }
+    if (!over) {
+      setOpportunities(originalOpportunities);
+      return;
     }
 
-    // Check if position actually changed
-    const isSameCycle = targetCycleId === activeOpp.sales_cycle_id;
-    const isSamePosition = isSameCycle && activeOpp.order_position === targetPosition;
+    const activeId = active.id as string;
+    const originalOpp = originalOpportunities.find(o => o.id === activeId);
+    const currentOpp = opportunities.find(o => o.id === activeId);
 
-    // Only update if something changed
-    if (!isSamePosition) {
-      // Optimistic update
-      const updatedOpportunities = [...opportunities];
-      const activeIndex = updatedOpportunities.findIndex(o => o.id === activeId);
-      const activeItem = updatedOpportunities[activeIndex];
+    if (!originalOpp || !currentOpp) {
+      setOpportunities(originalOpportunities);
+      return;
+    }
 
-      // Remove from old position
-      updatedOpportunities.splice(activeIndex, 1);
+    const hasChanged =
+      originalOpp.sales_cycle_id !== currentOpp.sales_cycle_id ||
+      originalOpp.order_position !== currentOpp.order_position;
 
-      // Update sales_cycle_id
-      activeItem.sales_cycle_id = targetCycleId;
+    if (!hasChanged) return;
 
-      // Find new position
-      const targetColumnOpps = updatedOpportunities.filter(o => o.sales_cycle_id === targetCycleId);
-      const insertIndex = targetColumnOpps.findIndex(o => o.id === overId);
+    const affectedCycles = new Set([originalOpp.sales_cycle_id, currentOpp.sales_cycle_id]);
 
-      if (insertIndex === -1) {
-        // Add to end of column
-        const allBeforeTarget = updatedOpportunities.filter(o => o.sales_cycle_id !== targetCycleId);
-        const targetColumnFiltered = updatedOpportunities.filter(o => o.sales_cycle_id === targetCycleId);
-        updatedOpportunities.length = 0;
-        updatedOpportunities.push(...allBeforeTarget, ...targetColumnFiltered, activeItem);
-      } else {
-        // Insert at specific position
-        const globalInsertIndex = updatedOpportunities.findIndex(o => o.id === overId);
-        updatedOpportunities.splice(globalInsertIndex, 0, activeItem);
-      }
-
-      // Recalculate order_position for all items in affected columns
-      const affectedCycles = new Set([activeOpp.sales_cycle_id, targetCycleId]);
-      affectedCycles.forEach(cycleId => {
-        const cycleOpps = updatedOpportunities.filter(o => o.sales_cycle_id === cycleId);
-        cycleOpps.forEach((opp, index) => {
-          opp.order_position = index;
-        });
-      });
-
-      setOpportunities(updatedOpportunities);
-
-      // Update in database
-      try {
-        // Update the moved item
-        await supabase
-          .from('opportunities')
-          .update({
-            sales_cycle_id: targetCycleId,
-            order_position: activeItem.order_position
-          })
-          .eq('id', activeId);
-
-        // Update order positions for all items in affected columns
-        for (const cycleId of affectedCycles) {
-          const cycleOpps = updatedOpportunities.filter(o => o.sales_cycle_id === cycleId);
-          for (const opp of cycleOpps) {
-            await supabase
-              .from('opportunities')
-              .update({ order_position: opp.order_position })
-              .eq('id', opp.id);
-          }
+    try {
+      for (const cycleId of affectedCycles) {
+        const cycleOpps = opportunities.filter(o => o.sales_cycle_id === cycleId);
+        for (const opp of cycleOpps) {
+          await supabase
+            .from('opportunities')
+            .update({
+              sales_cycle_id: opp.sales_cycle_id,
+              order_position: opp.order_position
+            })
+            .eq('id', opp.id);
         }
-      } catch (error) {
-        console.error('Error updating opportunity:', error);
-        // Reload data on error
-        loadPipelineData();
       }
+    } catch (error) {
+      console.error('Error updating opportunity:', error);
+      setOpportunities(originalOpportunities);
+      loadPipelineData();
     }
   };
 
@@ -511,6 +519,7 @@ export const PipelineClient: React.FC = () => {
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
+      onDragCancel={handleDragCancel}
     >
       <div
         className="d-flex flex-column h-100"
