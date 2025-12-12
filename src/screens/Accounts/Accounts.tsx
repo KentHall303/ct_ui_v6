@@ -373,7 +373,7 @@ export const Accounts = (): JSX.Element => {
                     </TableCell>
 
                     <TableCell role="gridcell">
-                      <span className={`badge ${account.status === 'Active' ? 'bg-success' : 'bg-secondary'}`} style={{ fontSize: '0.875rem' }}>
+                      <span className={`badge ${account.status === 'Active' ? 'bg-success' : 'bg-secondary'} small`}>
                         {account.status}
                       </span>
                     </TableCell>
@@ -383,7 +383,7 @@ export const Accounts = (): JSX.Element => {
                         <Button
                           variant="primary"
                           size="sm"
-                          className="px-2 py-1"
+                          className="px-2 py-1 small"
                           title="Login to this account"
                         >
                           Login
@@ -391,7 +391,7 @@ export const Accounts = (): JSX.Element => {
                         <Button
                           variant="secondary"
                           size="sm"
-                          className="px-2 py-1"
+                          className="px-2 py-1 small"
                           title="Account actions"
                         >
                           Actions
