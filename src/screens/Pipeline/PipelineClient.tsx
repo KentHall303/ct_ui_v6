@@ -313,7 +313,7 @@ export const PipelineClient: React.FC = () => {
     if (!scrollContainerRef.current) return;
 
     const container = scrollContainerRef.current;
-    const columnWidth = 250;
+    const columnWidth = 280;
 
     if (direction === 'left' && currentColumnIndex > 0) {
       const newIndex = currentColumnIndex - 1;
@@ -340,7 +340,7 @@ export const PipelineClient: React.FC = () => {
     const updateVisibleColumns = () => {
       if (scrollContainerRef.current) {
         const containerWidth = scrollContainerRef.current.clientWidth;
-        const columns = Math.floor(containerWidth / 250);
+        const columns = Math.floor(containerWidth / 280);
         setVisibleColumns(columns);
       }
     };
@@ -355,7 +355,7 @@ export const PipelineClient: React.FC = () => {
     if (!container) return;
 
     const handleScroll = () => {
-      const newIndex = Math.round(container.scrollLeft / 250);
+      const newIndex = Math.round(container.scrollLeft / 280);
       setCurrentColumnIndex(newIndex);
     };
 
@@ -485,13 +485,15 @@ export const PipelineClient: React.FC = () => {
     return (
       <div
         ref={setNodeRef}
-        className="flex-grow-1 overflow-auto p-2 pb-4 pipeline-column-scroll"
+        className="flex-grow-1 overflow-auto pb-4 pipeline-column-scroll"
         style={{
           minHeight: '200px',
           backgroundColor: isOverColumn ? '#e8f4f8' : '#f8f9fa',
           scrollbarWidth: 'thin',
           scrollbarColor: '#cbd5e0 #f7fafc',
           paddingTop: '1rem',
+          paddingLeft: '15px',
+          paddingRight: '15px',
           transition: 'background-color 0.2s ease',
           border: isOverColumn ? '2px dashed #0d6efd' : '2px dashed transparent',
         }}
@@ -613,10 +615,10 @@ export const PipelineClient: React.FC = () => {
                     <div
                       key={cycle.id}
                       className="flex-shrink-0 position-relative"
-                      style={{ width: '250px', minWidth: '250px', height: '50px' }}
+                      style={{ width: '280px', minWidth: '280px', height: '50px' }}
                     >
                       <svg
-                        viewBox="0 0 250 50"
+                        viewBox="0 0 280 50"
                         className="w-100 h-100"
                         style={{
                           display: 'block',
@@ -625,11 +627,11 @@ export const PipelineClient: React.FC = () => {
                       >
                         <defs>
                           <clipPath id={`chevron-${cycle.id}`}>
-                            <polygon points="0,0 235,0 250,25 235,50 0,50 15,25" />
+                            <polygon points="0,0 265,0 280,25 265,50 0,50 15,25" />
                           </clipPath>
                         </defs>
                         <polygon
-                          points="0,0 235,0 250,25 235,50 0,50 15,25"
+                          points="0,0 265,0 280,25 265,50 0,50 15,25"
                           fill="#f8f9fa"
                           stroke="#dee2e6"
                           strokeWidth="1"
@@ -638,7 +640,7 @@ export const PipelineClient: React.FC = () => {
                         <foreignObject
                           x="0"
                           y="0"
-                          width="250"
+                          width="280"
                           height="50"
                           clipPath={`url(#chevron-${cycle.id})`}
                         >
@@ -685,8 +687,8 @@ export const PipelineClient: React.FC = () => {
                     key={cycle.id}
                     className="d-flex flex-column"
                     style={{
-                      width: '250px',
-                      minWidth: '250px',
+                      width: '280px',
+                      minWidth: '280px',
                       minHeight: 0,
                       borderRight: '1px solid #e9ecef'
                     }}
