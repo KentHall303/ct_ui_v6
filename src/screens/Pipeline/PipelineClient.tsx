@@ -165,10 +165,18 @@ export const PipelineClient: React.FC = () => {
   };
 
   const customCollisionDetection: CollisionDetection = (args) => {
-    const pointerCollisions = pointerWithin(args);
+    const centerCollisions = closestCenter(args);
 
-    if (pointerCollisions.length > 0) {
-      const columnCollisions = pointerCollisions.filter(collision =>
+    if (centerCollisions.length > 0) {
+      const cardCollisions = centerCollisions.filter(collision =>
+        opportunities.some(opp => opp.id === collision.id)
+      );
+
+      if (cardCollisions.length > 0) {
+        return cardCollisions;
+      }
+
+      const columnCollisions = centerCollisions.filter(collision =>
         salesCycles.some(cycle => cycle.id === collision.id)
       );
 
@@ -177,18 +185,7 @@ export const PipelineClient: React.FC = () => {
       }
     }
 
-    const rectCollisions = rectIntersection(args);
-    if (rectCollisions.length > 0) {
-      const columnCollisions = rectCollisions.filter(collision =>
-        salesCycles.some(cycle => cycle.id === collision.id)
-      );
-
-      if (columnCollisions.length > 0) {
-        return columnCollisions;
-      }
-    }
-
-    return closestCenter(args);
+    return centerCollisions;
   };
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -231,8 +228,12 @@ export const PipelineClient: React.FC = () => {
       }
     }
 
+    // Check if position actually changed
+    const isSameCycle = targetCycleId === activeOpp.sales_cycle_id;
+    const isSamePosition = isSameCycle && activeOpp.order_position === targetPosition;
+
     // Only update if something changed
-    if (targetCycleId !== activeOpp.sales_cycle_id || activeId !== overId) {
+    if (!isSamePosition) {
       // Optimistic update
       const updatedOpportunities = [...opportunities];
       const activeIndex = updatedOpportunities.findIndex(o => o.id === activeId);
@@ -385,7 +386,7 @@ export const PipelineClient: React.FC = () => {
 
     const style = {
       transform: CSS.Transform.toString(transform),
-      transition,
+      transition: transition || 'transform 250ms ease, opacity 250ms ease',
       opacity: isDragging ? 0.5 : 1,
     };
 
