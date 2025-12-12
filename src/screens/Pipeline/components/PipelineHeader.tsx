@@ -34,34 +34,51 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
             </div>
 
             <div className="d-flex align-items-center gap-2">
-              <InputGroup style={{ width: '300px' }}>
-                <InputGroup.Text className="bg-white">
-                  <Search size={16} />
-                </InputGroup.Text>
+              <InputGroup style={{ width: '400px', flexWrap: 'nowrap' }}>
                 <Form.Control
                   type="text"
                   placeholder="Search Contact..."
                   value={searchTerm}
                   onChange={(e) => onSearchChange(e.target.value)}
+                  style={{ borderRight: 'none' }}
+                  size="sm"
                 />
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="d-flex align-items-center justify-content-center"
+                  style={{
+                    borderTopLeftRadius: 0,
+                    borderBottomLeftRadius: 0,
+                    borderTopRightRadius: 0,
+                    borderBottomRightRadius: 0,
+                    padding: '0.375rem 0.5rem'
+                  }}
+                >
+                  <Search size={16} />
+                </Button>
+                <Button
+                  variant="success"
+                  size="sm"
+                  className="d-flex align-items-center gap-2"
+                  style={{
+                    borderTopLeftRadius: 0,
+                    borderBottomLeftRadius: 0,
+                    whiteSpace: 'nowrap',
+                    padding: '0.375rem 0.75rem'
+                  }}
+                  title="Add new client"
+                >
+                  <Plus size={16} />
+                  <span>Add Client</span>
+                </Button>
               </InputGroup>
             </div>
           </div>
 
           <div className="d-flex align-items-center justify-content-between">
             <div className="d-flex align-items-center gap-4">
-              <Button
-                variant="success"
-                size="sm"
-                className="rounded-pill d-flex align-items-center gap-2"
-                style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
-                title="Add new client"
-              >
-                <Plus size={14} />
-                <span>Add Client</span>
-              </Button>
-
-              <div className="d-flex align-items-center gap-2 ms-3">
+              <div className="d-flex align-items-center gap-2">
                 <span className="text-secondary small fw-medium">Pipeline Type:</span>
                 <span className="text-secondary small fw-medium">{pipelineType}</span>
                 <Form.Check
@@ -73,7 +90,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                 />
               </div>
 
-              <div className="d-flex align-items-center gap-2 ms-3">
+              <div className="d-flex align-items-center gap-2">
                 <span className="text-secondary small fw-medium">Main Contact Only:</span>
                 <Form.Check
                   type="switch"
