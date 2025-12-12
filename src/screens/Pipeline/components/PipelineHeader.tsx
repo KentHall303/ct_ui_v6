@@ -118,6 +118,20 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
               <div className="d-flex align-items-center gap-2">
                 <span className="text-secondary small">Priority:</span>
                 <Badge
+                  bg="danger"
+                  className="px-2 py-1"
+                  title="New Lead"
+                  role="button"
+                  onClick={() => onPriorityFilterToggle('new_lead')}
+                  style={{
+                    cursor: 'pointer',
+                    opacity: activePriorityFilters.length === 0 || activePriorityFilters.includes('new_lead') ? 1 : 0.3,
+                    transition: 'opacity 0.2s'
+                  }}
+                >
+                  <Circle size={10} fill="currentColor" />
+                </Badge>
+                <Badge
                   bg="warning"
                   className="px-2 py-1"
                   title="Missed Action"
