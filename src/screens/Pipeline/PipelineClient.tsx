@@ -7,11 +7,16 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
+  DragOverEvent,
   closestCorners,
+  closestCenter,
+  pointerWithin,
+  rectIntersection,
   PointerSensor,
   useSensor,
   useSensors,
   useDroppable,
+  CollisionDetection,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -66,6 +71,7 @@ export const PipelineClient: React.FC = () => {
   const [visibleColumns, setVisibleColumns] = useState(4);
   const [activePriorityFilters, setActivePriorityFilters] = useState<string[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const boardRef = useRef<HTMLDivElement | null>(null);
 
@@ -158,13 +164,46 @@ export const PipelineClient: React.FC = () => {
     return formatCurrency(value);
   };
 
+  const customCollisionDetection: CollisionDetection = (args) => {
+    const pointerCollisions = pointerWithin(args);
+
+    if (pointerCollisions.length > 0) {
+      const columnCollisions = pointerCollisions.filter(collision =>
+        salesCycles.some(cycle => cycle.id === collision.id)
+      );
+
+      if (columnCollisions.length > 0) {
+        return columnCollisions;
+      }
+    }
+
+    const rectCollisions = rectIntersection(args);
+    if (rectCollisions.length > 0) {
+      const columnCollisions = rectCollisions.filter(collision =>
+        salesCycles.some(cycle => cycle.id === collision.id)
+      );
+
+      if (columnCollisions.length > 0) {
+        return columnCollisions;
+      }
+    }
+
+    return closestCenter(args);
+  };
+
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { over } = event;
+    setOverId(over ? over.id as string : null);
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveId(null);
+    setOverId(null);
 
     if (!over) return;
 
@@ -336,7 +375,13 @@ export const PipelineClient: React.FC = () => {
       transform,
       transition,
       isDragging,
-    } = useSortable({ id: opportunity.id });
+    } = useSortable({
+      id: opportunity.id,
+      data: {
+        type: 'card',
+        opportunity: opportunity
+      }
+    });
 
     const style = {
       transform: CSS.Transform.toString(transform),
@@ -420,22 +465,40 @@ export const PipelineClient: React.FC = () => {
   }> = ({ cycleId, children }) => {
     const { setNodeRef, isOver } = useDroppable({
       id: cycleId,
+      data: {
+        type: 'column',
+        cycleId: cycleId
+      }
     });
+
+    const isOverColumn = isOver || overId === cycleId;
 
     return (
       <div
         ref={setNodeRef}
         className="flex-grow-1 overflow-auto p-2 pb-4 pipeline-column-scroll"
         style={{
-          minHeight: 0,
-          backgroundColor: isOver ? '#e8f4f8' : '#f8f9fa',
+          minHeight: '200px',
+          backgroundColor: isOverColumn ? '#e8f4f8' : '#f8f9fa',
           scrollbarWidth: 'thin',
           scrollbarColor: '#cbd5e0 #f7fafc',
           paddingTop: '1rem',
-          transition: 'background-color 0.2s ease'
+          transition: 'background-color 0.2s ease',
+          border: isOverColumn ? '2px dashed #0d6efd' : '2px dashed transparent',
         }}
       >
         {children}
+        {children && React.Children.count(children) === 0 && (
+          <div
+            className="text-muted text-center py-4"
+            style={{
+              fontSize: '0.875rem',
+              opacity: isOverColumn ? 1 : 0.5
+            }}
+          >
+            {isOverColumn ? 'Drop here' : 'Empty'}
+          </div>
+        )}
       </div>
     );
   };
@@ -443,8 +506,9 @@ export const PipelineClient: React.FC = () => {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={customCollisionDetection}
       onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
     >
       <div
@@ -637,6 +701,67 @@ export const PipelineClient: React.FC = () => {
         </div>
       </div>
       </div>
+
+      <DragOverlay>
+        {activeId ? (
+          <div
+            className="card"
+            style={{
+              cursor: 'grabbing',
+              opacity: 0.9,
+              boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
+              transform: 'rotate(3deg)',
+              width: '250px'
+            }}
+          >
+            {(() => {
+              const opp = opportunities.find(o => o.id === activeId);
+              if (!opp) return null;
+
+              return (
+                <div className="card-body p-2" style={{
+                  borderLeft: `3px solid ${priorityColors[opp.priority] || '#0d6efd'}`
+                }}>
+                  <div className="d-flex align-items-start justify-content-between mb-2">
+                    <div className="fw-semibold flex-grow-1 me-2" style={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      fontSize: '0.85rem'
+                    }}>{opp.contact_name}</div>
+                  </div>
+
+                  {opp.company_name && (
+                    <div className="mb-2" style={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      fontSize: '0.75rem',
+                      color: '#8e8e93'
+                    }}>{opp.company_name}</div>
+                  )}
+
+                  <div className="d-flex align-items-center gap-1 mb-2">
+                    <Star size={10} className="text-success" />
+                    <span className="text-success" style={{ fontSize: '0.75rem' }}>{opp.contact_type}</span>
+                  </div>
+
+                  <div className="d-flex align-items-center justify-content-between">
+                    <div className="fw-bold text-success" style={{ fontSize: '0.85rem' }}>
+                      {formatValue(opp.estimated_value)}
+                    </div>
+                    {opp.lead_source && (
+                      <div className="badge bg-light text-dark" style={{ fontSize: '0.65rem', padding: '2px 6px' }}>
+                        {opp.lead_source}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        ) : null}
+      </DragOverlay>
     </DndContext>
   );
 };
