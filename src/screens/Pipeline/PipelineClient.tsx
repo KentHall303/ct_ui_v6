@@ -258,7 +258,17 @@ export const PipelineClient: React.FC = () => {
 
     updatedOpportunities.splice(activeIndex, 1);
 
+    const originalCycleId = activeItem.sales_cycle_id;
     activeItem.sales_cycle_id = targetCycleId;
+
+    const isMovingToNewLeadList = salesCycles.length > 0 && salesCycles[0].id === targetCycleId;
+    const isMovingFromNewLeadList = salesCycles.length > 0 && salesCycles[0].id === originalCycleId;
+
+    if (isMovingToNewLeadList && activeItem.priority !== 'new_lead' && activeItem.priority !== 'missed_action') {
+      activeItem.priority = 'missed_action';
+    } else if (isMovingFromNewLeadList && !isMovingToNewLeadList && activeItem.priority === 'new_lead') {
+      activeItem.priority = 'pending_action';
+    }
 
     const targetColumnOpps = updatedOpportunities.filter(o => o.sales_cycle_id === targetCycleId);
     const insertIndex = targetColumnOpps.findIndex(o => o.id === overId);
@@ -273,7 +283,7 @@ export const PipelineClient: React.FC = () => {
       updatedOpportunities.splice(globalInsertIndex, 0, activeItem);
     }
 
-    const affectedCycles = new Set([activeOpp.sales_cycle_id, targetCycleId]);
+    const affectedCycles = new Set([originalCycleId, targetCycleId]);
     affectedCycles.forEach(cycleId => {
       const cycleOpps = updatedOpportunities.filter(o => o.sales_cycle_id === cycleId);
       cycleOpps.forEach((opp, index) => {
@@ -311,7 +321,8 @@ export const PipelineClient: React.FC = () => {
 
     const hasChanged =
       originalOpp.sales_cycle_id !== currentOpp.sales_cycle_id ||
-      originalOpp.order_position !== currentOpp.order_position;
+      originalOpp.order_position !== currentOpp.order_position ||
+      originalOpp.priority !== currentOpp.priority;
 
     if (!hasChanged) return;
 
@@ -325,7 +336,8 @@ export const PipelineClient: React.FC = () => {
             .from('opportunities')
             .update({
               sales_cycle_id: opp.sales_cycle_id,
-              order_position: opp.order_position
+              order_position: opp.order_position,
+              priority: opp.priority
             })
             .eq('id', opp.id);
         }
