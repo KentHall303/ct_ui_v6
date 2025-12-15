@@ -246,7 +246,16 @@ export const PipelineClient: React.FC = () => {
       const overOpp = opportunities.find(o => o.id === overId);
       if (overOpp) {
         targetCycleId = overOpp.sales_cycle_id;
-        shouldUpdate = true;
+        // Only update if moving to a different column OR if position would change
+        const isSameColumn = targetCycleId === activeOpp.sales_cycle_id;
+        if (isSameColumn) {
+          // Check if the card would actually change position
+          const activeIndex = opportunities.findIndex(o => o.id === activeId);
+          const overIndex = opportunities.findIndex(o => o.id === overId);
+          shouldUpdate = activeIndex !== overIndex && Math.abs(activeIndex - overIndex) > 1;
+        } else {
+          shouldUpdate = true;
+        }
       }
     }
 
@@ -261,13 +270,16 @@ export const PipelineClient: React.FC = () => {
     const originalCycleId = activeItem.sales_cycle_id;
     activeItem.sales_cycle_id = targetCycleId;
 
-    const isMovingToNewLeadList = salesCycles.length > 0 && salesCycles[0].id === targetCycleId;
-    const isMovingFromNewLeadList = salesCycles.length > 0 && salesCycles[0].id === originalCycleId;
+    // Only adjust priority when moving between different columns
+    if (originalCycleId !== targetCycleId) {
+      const isMovingToNewLeadList = salesCycles.length > 0 && salesCycles[0].id === targetCycleId;
+      const isMovingFromNewLeadList = salesCycles.length > 0 && salesCycles[0].id === originalCycleId;
 
-    if (isMovingToNewLeadList && activeItem.priority !== 'new_lead' && activeItem.priority !== 'missed_action') {
-      activeItem.priority = 'missed_action';
-    } else if (isMovingFromNewLeadList && !isMovingToNewLeadList && activeItem.priority === 'new_lead') {
-      activeItem.priority = 'pending_action';
+      if (isMovingToNewLeadList && activeItem.priority !== 'new_lead' && activeItem.priority !== 'missed_action') {
+        activeItem.priority = 'missed_action';
+      } else if (isMovingFromNewLeadList && !isMovingToNewLeadList && activeItem.priority === 'new_lead') {
+        activeItem.priority = 'pending_action';
+      }
     }
 
     const targetColumnOpps = updatedOpportunities.filter(o => o.sales_cycle_id === targetCycleId);
