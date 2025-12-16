@@ -416,7 +416,7 @@ export const Contacts = (): JSX.Element => {
           style={{ maxHeight: maxHeight ?? undefined }}
         >
           <div style={{ minWidth: '1400px' }}>
-            <Table className={`contacts-table position-relative ${isResizing ? 'resizing' : ''}`}>
+            <Table className={`standard-table table-striped mb-0 ${isResizing ? 'resizing' : ''}`}>
               <caption className="visually-hidden">
                 Contacts table showing {contacts.length} client records.
                 Use arrow keys to navigate, Enter or Space to sort columns.
