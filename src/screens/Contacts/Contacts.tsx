@@ -87,8 +87,8 @@ const ContactsHeader = () => (
     </div>
 
     <div className="d-flex align-items-start justify-content-between gap-4 mb-3">
-      <div className="d-flex flex-column gap-3">
-        <div className="d-flex gap-2 flex-wrap">
+      <div className="d-flex flex-column gap-1">
+        <div className="d-flex gap-1 flex-wrap">
           {actionButtons.map((button, index) => (
             <Button
               key={index}
@@ -102,7 +102,7 @@ const ContactsHeader = () => (
           ))}
         </div>
 
-        <div className="d-flex gap-2 flex-wrap">
+        <div className="d-flex gap-1 flex-wrap">
           {secondaryButtons.map((button, index) => (
             <Button
               key={index}
@@ -117,8 +117,8 @@ const ContactsHeader = () => (
         </div>
       </div>
 
-      <div className="d-flex flex-column gap-3 align-items-end">
-        <div className="d-flex gap-2 flex-wrap">
+      <div className="d-flex flex-column gap-1 align-items-end">
+        <div className="d-flex gap-1 flex-wrap">
           {rightButtons
             .filter((b) => b.variant === "info")
             .map((button, index) => (
@@ -134,7 +134,7 @@ const ContactsHeader = () => (
             ))}
         </div>
 
-        <div className="d-flex gap-2 flex-wrap">
+        <div className="d-flex gap-1 flex-wrap">
           {rightButtons
             .filter((b) => b.variant !== "info")
             .map((button, index) => (
