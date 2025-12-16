@@ -229,3 +229,23 @@ export interface ConnectionPlanAction {
 export interface ConnectionPlanWithActions extends ConnectionPlan {
   actions: ConnectionPlanAction[];
 }
+
+export interface Contact {
+  id: string;
+  name: string;
+  email?: string;
+  cell_phone?: string;
+  state?: string;
+  sales_cycle?: string;
+  lead_source?: string;
+  created_date?: string;
+  white_board?: string;
+  status_color?: string;
+  is_starred?: boolean;
+  client_tether?: string;
+  assigned_user?: string;
+  next_date?: string;
+  favorite_color?: string;
+  created_at: string;
+  updated_at: string;
+}
