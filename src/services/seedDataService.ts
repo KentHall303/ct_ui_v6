@@ -14,6 +14,9 @@ export interface TableInfo {
 }
 
 const AVAILABLE_TABLES: TableInfo[] = [
+  { name: 'contacts', displayName: 'Contacts' },
+  { name: 'opportunities', displayName: 'Opportunities' },
+  { name: 'sales_cycles', displayName: 'Sales Cycles' },
   { name: 'meetings', displayName: 'Meetings' },
   { name: 'subcontractors', displayName: 'Subcontractors' },
   { name: 'calendar_events', displayName: 'Calendar Events' },

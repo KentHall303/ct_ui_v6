@@ -26,9 +26,22 @@ export const contactService = {
       sortDirection = 'asc'
     } = params;
 
+    // Build query with LEFT JOIN to opportunities and sales_cycles
     let query = supabase
       .from('contacts')
-      .select('*', { count: 'exact' });
+      .select(`
+        *,
+        opportunities!left(
+          id,
+          sales_cycle_id,
+          sales_cycles!left(
+            name
+          )
+        )
+      `, { count: 'exact' });
+
+    // Filter to only show contacts that are in the pipeline (have an opportunity)
+    query = query.not('opportunity_id', 'is', null);
 
     if (search) {
       query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,cell_phone.ilike.%${search}%`);
@@ -46,11 +59,21 @@ export const contactService = {
       throw new Error(`Failed to fetch contacts: ${error.message}`);
     }
 
+    // Map the sales_cycle name from the joined sales_cycles table
+    const contacts = (data || []).map((contact: any) => {
+      const salesCycleName = contact.opportunities?.sales_cycles?.name || contact.sales_cycle;
+      return {
+        ...contact,
+        sales_cycle: salesCycleName,
+        opportunities: undefined // Remove the nested object from the result
+      };
+    });
+
     const total = count || 0;
     const totalPages = Math.ceil(total / pageSize);
 
     return {
-      contacts: data || [],
+      contacts,
       total,
       page,
       pageSize,

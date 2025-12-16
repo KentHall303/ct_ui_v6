@@ -398,6 +398,28 @@ export const Contacts = (): JSX.Element => {
 
   return (
     <div className="d-flex flex-column w-100 h-100">
+      <style>
+        {`
+          .contacts-table-scroll::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+          }
+          .contacts-table-scroll::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 5px;
+          }
+          .contacts-table-scroll::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 5px;
+          }
+          .contacts-table-scroll::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+          }
+          .contacts-table-scroll::-webkit-scrollbar-corner {
+            background: #f1f1f1;
+          }
+        `}
+      </style>
       <div className="flex-shrink-0">
         <ContactsHeader
           totalRecords={totalRecords}
@@ -412,8 +434,8 @@ export const Contacts = (): JSX.Element => {
       <div className="px-3 pt-3">
         <div
           ref={scrollRef}
-          className="bg-white rounded-3 overflow-auto border shadow-sm"
-          style={{ maxHeight: maxHeight ?? undefined }}
+          className="bg-white rounded-3 overflow-auto border shadow-sm contacts-table-scroll"
+          style={{ maxHeight: maxHeight ?? undefined, overflowX: 'auto', overflowY: 'auto' }}
         >
           <div style={{ minWidth: '1400px' }}>
             <Table className={`standard-table table-striped mb-0 ${isResizing ? 'resizing' : ''}`}>

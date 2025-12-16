@@ -246,6 +246,24 @@ export interface Contact {
   assigned_user?: string;
   next_date?: string;
   favorite_color?: string;
+  opportunity_id?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Opportunity {
+  id: string;
+  contact_id?: string;
+  contact_name: string;
+  company_name?: string;
+  email?: string;
+  phone?: string;
+  sales_cycle_id: string;
+  estimated_value: number;
+  priority: 'new_lead' | 'missed_action' | 'today_action' | 'pending_action' | 'no_pending';
+  lead_source?: string;
+  contact_type: string;
+  order_position: number;
   created_at: string;
   updated_at: string;
 }

@@ -34,6 +34,7 @@ interface SalesCycle {
 
 interface Opportunity {
   id: string;
+  contact_id?: string;
   contact_name: string;
   company_name: string | null;
   email: string | null;
@@ -352,6 +353,18 @@ export const PipelineClient: React.FC = () => {
               priority: opp.priority
             })
             .eq('id', opp.id);
+        }
+      }
+
+      // Sync the contact's sales_cycle field when opportunity moves between stages
+      if (originalOpp.sales_cycle_id !== currentOpp.sales_cycle_id && currentOpp.contact_id) {
+        // Get the new sales cycle name
+        const newCycle = salesCycles.find(c => c.id === currentOpp.sales_cycle_id);
+        if (newCycle) {
+          await supabase
+            .from('contacts')
+            .update({ sales_cycle: newCycle.name })
+            .eq('id', currentOpp.contact_id);
         }
       }
     } catch (error) {
