@@ -1,22 +1,18 @@
 import React from "react";
 import { Button } from "../../components/bootstrap/Button";
-import { FloatingInput, FloatingSelect, FloatingSelectOption } from "../../components/bootstrap/FormControls";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/bootstrap/Table";
+import { Form, InputGroup, Dropdown, Button as BSButton } from "react-bootstrap";
+import { Table, TableBody, TableRow, TableCell } from "../../components/bootstrap/Table";
 import { ResizableTableHead } from "../../components/bootstrap/ResizableTableHead";
 import { useResizableColumns, ColumnConfig } from "../../hooks/useResizableColumns";
 import { contactService } from "../../services/contactService";
 import { Contact } from "../../lib/supabase";
-import { RefreshCw as RefreshCwIcon, Settings as SettingsIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronsLeft as ChevronsLeftIcon, ChevronsRight as ChevronsRightIcon, Phone as PhoneIcon, Star as StarIcon, UserPlus as UserPlusIcon, Mail as MailIcon, MessageSquare as MessageSquareIcon, Merge as MergeIcon, Bitcoin as EditIcon, Users as UsersIcon, SeparatorHorizontal as SeparatorHorizontalIcon, Send as SendIcon, Link as LinkIcon, Upload as UploadIcon, Download as DownloadIcon, Pin as PushPinIcon, RotateCcw as RotateCcwIcon, Trash as TrashIcon, ChevronUp, ChevronDown } from "lucide-react";
+import { RefreshCw as RefreshCwIcon, Settings as SettingsIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronsLeft as ChevronsLeftIcon, ChevronsRight as ChevronsRightIcon, Phone as PhoneIcon, Star as StarIcon, Mail as MailIcon, MessageSquare as MessageSquareIcon, Merge as MergeIcon, Bitcoin as EditIcon, Users as UsersIcon, SeparatorHorizontal as SeparatorHorizontalIcon, Send as SendIcon, Link as LinkIcon, Upload as UploadIcon, Download as DownloadIcon, Pin as PushPinIcon, RotateCcw as RotateCcwIcon, Trash as TrashIcon, ChevronUp, ChevronDown, Search } from "lucide-react";
 
 const actionButtons = [
-  { label: "New Client", variant: "default", icon: UserPlusIcon },
   { label: "Email", variant: "info", icon: MailIcon },
   { label: "SMS", variant: "info", icon: MessageSquareIcon },
   { label: "Merge", variant: "info", icon: MergeIcon },
   { label: "Change", variant: "info", icon: EditIcon },
-];
-
-const secondaryButtons = [
   { label: "Combined", variant: "info", icon: UsersIcon },
   { label: "Separate", variant: "info", icon: SeparatorHorizontalIcon },
   { label: "Send to Account", variant: "info", icon: SendIcon },
@@ -47,8 +43,11 @@ const getButtonVariantClass = (variant: string) => {
 
 interface ContactsHeaderProps {
   totalRecords: number;
+  selectedCount: number;
   currentPage: number;
   totalPages: number;
+  filterValue: string;
+  onFilterChange: (filter: string) => void;
   onPageChange: (page: number) => void;
   onSearch: (search: string) => void;
   onRefresh: () => void;
@@ -56,8 +55,11 @@ interface ContactsHeaderProps {
 
 const ContactsHeader: React.FC<ContactsHeaderProps> = ({
   totalRecords,
+  selectedCount,
   currentPage,
   totalPages,
+  filterValue,
+  onFilterChange,
   onPageChange,
   onSearch,
   onRefresh
@@ -74,85 +76,98 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
     }
   };
 
+  const handleSearchClick = () => {
+    onSearch(searchValue);
+  };
+
+  const filterOptions = [
+    { value: 'main-contacts', label: 'Main Contacts' },
+    { value: 'active-opportunities', label: 'Active Opportunities' },
+    { value: 'all-opportunities', label: 'All Opportunities' },
+  ];
+
+  const currentFilterLabel = filterOptions.find(opt => opt.value === filterValue)?.label || 'All Opportunities';
+
   return (
     <div className="px-3 pt-3">
-      <div className="bg-white rounded-3 pt-2 pb-4 px-3 border shadow-sm">
-        <div className="d-flex align-items-center justify-content-between mb-1">
-          <div className="d-flex align-items-baseline gap-4">
-            <h1 className="h2 fw-bold text-dark">Contacts - Client</h1>
-            <p className="small text-secondary">{totalRecords} Records in Clients List</p>
-          </div>
-        </div>
-
-        <div className="d-flex align-items-start justify-content-between gap-4 mb-3">
-          <div className="d-flex flex-column gap-1">
-            <div className="d-flex gap-1 flex-wrap">
-              {actionButtons.map((button, index) => (
-                <Button
-                  key={index}
-                  variant={getButtonVariantClass(button.variant)}
-                  className="rounded-pill d-flex align-items-center gap-1 btn-pill-custom"
-                  title={button.label}
-                >
-                  <button.icon size={12} />
-                  <span className="d-none d-lg-inline">{button.label}</span>
-                </Button>
-              ))}
-            </div>
-
-            <div className="d-flex gap-1 flex-wrap">
-              {secondaryButtons.map((button, index) => (
-                <Button
-                  key={index}
-                  variant="primary"
-                  className="rounded-pill d-flex align-items-center gap-1 btn-pill-custom"
-                  title={button.label}
-                >
-                  <button.icon size={12} />
-                  <span className="d-none d-lg-inline">{button.label}</span>
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <div className="d-flex flex-column gap-1 align-items-end">
-            <div className="d-flex gap-1 flex-wrap">
-              {rightButtons
-                .filter((b) => b.variant === "info")
-                .map((button, index) => (
-                  <Button
-                    key={index}
-                    variant={getButtonVariantClass(button.variant)}
-                    className="rounded-pill d-flex align-items-center gap-1 btn-pill-custom"
-                    title={button.label}
-                    onClick={button.label === "Update" ? onRefresh : undefined}
+      <div className="bg-white rounded-3 pt-3 pb-3 px-4 border shadow-sm">
+        <h2 className="h4 fw-bold text-dark mb-2">Contacts - Client</h2>
+        <div className="d-flex align-items-center justify-content-between">
+          <p className="text-secondary mb-0" style={{ fontSize: '0.875rem' }}>
+            {totalRecords} Records in Clients List
+            {selectedCount > 0 && (
+              <span> | {selectedCount} Selected</span>
+            )}
+          </p>
+          <div className="d-flex align-items-center gap-2">
+            <Dropdown>
+              <Dropdown.Toggle
+                variant="outline-primary"
+                size="sm"
+                className="d-flex align-items-center gap-1"
+                style={{ minWidth: '160px', justifyContent: 'space-between' }}
+              >
+                {currentFilterLabel}
+              </Dropdown.Toggle>
+              <Dropdown.Menu>
+                {filterOptions.map((option) => (
+                  <Dropdown.Item
+                    key={option.value}
+                    active={filterValue === option.value}
+                    onClick={() => onFilterChange(option.value)}
                   >
-                    <button.icon size={12} />
-                    <span className="d-none d-lg-inline">{button.label}</span>
-                  </Button>
+                    {option.label}
+                  </Dropdown.Item>
                 ))}
-            </div>
-
-            <div className="d-flex gap-1 flex-wrap">
-              {rightButtons
-                .filter((b) => b.variant !== "info")
-                .map((button, index) => (
-                  <Button
-                    key={index}
-                    variant={getButtonVariantClass(button.variant)}
-                    className="rounded-pill d-flex align-items-center gap-1 btn-pill-custom"
-                    title={button.label}
-                  >
-                    <button.icon size={12} />
-                    <span className="d-none d-lg-inline">{button.label}</span>
-                  </Button>
-                ))}
-            </div>
+              </Dropdown.Menu>
+            </Dropdown>
+            <InputGroup style={{ width: '280px', flexWrap: 'nowrap' }}>
+              <Form.Control
+                type="text"
+                placeholder="Search Contact..."
+                value={searchValue}
+                onChange={handleSearchChange}
+                onKeyPress={handleSearchKeyPress}
+                style={{ borderRight: 'none' }}
+                size="sm"
+              />
+              <BSButton
+                variant="primary"
+                size="sm"
+                className="d-flex align-items-center justify-content-center"
+                onClick={handleSearchClick}
+                style={{
+                  borderTopLeftRadius: 0,
+                  borderBottomLeftRadius: 0,
+                  borderTopRightRadius: 0,
+                  borderBottomRightRadius: 0,
+                  padding: '0.375rem 0.5rem',
+                  borderRight: 'none'
+                }}
+              >
+                <Search size={16} />
+              </BSButton>
+              <BSButton
+                variant="success"
+                size="sm"
+                className="d-flex align-items-center gap-2 fw-bold"
+                style={{
+                  borderTopLeftRadius: 0,
+                  borderBottomLeftRadius: 0,
+                  whiteSpace: 'nowrap',
+                  padding: '0.375rem 0.75rem'
+                }}
+                title="Add new client"
+              >
+                New Client
+              </BSButton>
+            </InputGroup>
           </div>
         </div>
 
         <div className="py-0 mt-3">
-          <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
+          <div className="d-flex align-items-center justify-content-between">
+            <div style={{ width: '48px' }} />
             <div className="d-flex align-items-center gap-2">
               <Button
                 variant="link"
@@ -218,26 +233,6 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
               </Button>
             </div>
 
-            <div className="d-flex align-items-center gap-2 flex-wrap contacts-header-filters">
-              <div className="d-flex flex-column align-items-start position-relative filter-select-wrapper" style={{ width: '220px', minWidth: '0' }}>
-                <FloatingSelect label="Filter">
-                  <FloatingSelectOption value="all-opportunities">
-                    All Opportunities
-                  </FloatingSelectOption>
-                </FloatingSelect>
-              </div>
-
-              <div className="d-flex flex-column align-items-start position-relative search-input-wrapper" style={{ width: '280px', minWidth: '0' }}>
-                <FloatingInput
-                  label="Search"
-                  placeholder="Search Contact..."
-                  value={searchValue}
-                  onChange={handleSearchChange}
-                  onKeyPress={handleSearchKeyPress}
-                />
-              </div>
-            </div>
-
             <div className="d-flex align-items-center gap-2">
               <Button
                 variant="link"
@@ -253,6 +248,42 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
             </div>
           </div>
         </div>
+
+        {selectedCount > 0 && (
+          <div className="pt-3 mt-2 border-top">
+            <div className="d-flex flex-column gap-2">
+              <div className="d-flex gap-1 flex-wrap">
+                {actionButtons.map((button, index) => (
+                  <Button
+                    key={index}
+                    variant={getButtonVariantClass(button.variant)}
+                    className="rounded-pill d-flex align-items-center gap-1"
+                    title={button.label}
+                    style={{ padding: '0.25rem 0.625rem', fontSize: '0.8125rem' }}
+                  >
+                    <button.icon size={12} />
+                    <span>{button.label}</span>
+                  </Button>
+                ))}
+              </div>
+              <div className="d-flex gap-1 flex-wrap">
+                {rightButtons.map((button, index) => (
+                  <Button
+                    key={index}
+                    variant={getButtonVariantClass(button.variant)}
+                    className="rounded-pill d-flex align-items-center gap-1"
+                    title={button.label}
+                    onClick={button.label === "Update" ? onRefresh : undefined}
+                    style={{ padding: '0.25rem 0.625rem', fontSize: '0.8125rem' }}
+                  >
+                    <button.icon size={12} />
+                    <span>{button.label}</span>
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -266,6 +297,8 @@ export const Contacts = (): JSX.Element => {
   const [totalRecords, setTotalRecords] = React.useState(0);
   const [totalPages, setTotalPages] = React.useState(0);
   const [searchTerm, setSearchTerm] = React.useState('');
+  const [filterValue, setFilterValue] = React.useState('all-opportunities');
+  const [selectedContacts, setSelectedContacts] = React.useState<string[]>([]);
   const pageSize = 40;
 
   const [sortConfig, setSortConfig] = React.useState<{
@@ -372,6 +405,28 @@ export const Contacts = (): JSX.Element => {
     loadContacts();
   };
 
+  const handleFilterChange = (filter: string) => {
+    setFilterValue(filter);
+    setCurrentPage(1);
+  };
+
+  const handleSelectContact = (contactId: string) => {
+    setSelectedContacts(prev => {
+      if (prev.includes(contactId)) {
+        return prev.filter(id => id !== contactId);
+      }
+      return [...prev, contactId];
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedContacts.length === contacts.length) {
+      setSelectedContacts([]);
+    } else {
+      setSelectedContacts(contacts.map(c => c.id));
+    }
+  };
+
   if (loading && contacts.length === 0) {
     return (
       <div className="d-flex flex-column w-100 h-100 align-items-center justify-content-center">
@@ -423,8 +478,11 @@ export const Contacts = (): JSX.Element => {
       <div className="flex-shrink-0">
         <ContactsHeader
           totalRecords={totalRecords}
+          selectedCount={selectedContacts.length}
           currentPage={currentPage}
           totalPages={totalPages}
+          filterValue={filterValue}
+          onFilterChange={handleFilterChange}
           onPageChange={handlePageChange}
           onSearch={handleSearch}
           onRefresh={handleRefresh}
@@ -456,7 +514,13 @@ export const Contacts = (): JSX.Element => {
                 renderCustomHeader={(column) => {
                   if (column.id === 'checkbox') {
                     return (
-                      <input type="checkbox" className="form-check-input" aria-label="Select all" />
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        aria-label="Select all"
+                        checked={contacts.length > 0 && selectedContacts.length === contacts.length}
+                        onChange={handleSelectAll}
+                      />
                     );
                   }
                   if (column.id === 'name') {
@@ -492,6 +556,8 @@ export const Contacts = (): JSX.Element => {
                           className="form-check-input"
                           aria-label={`Select ${contact.name}`}
                           aria-describedby={`contact-${contact.id}-name`}
+                          checked={selectedContacts.includes(contact.id)}
+                          onChange={() => handleSelectContact(contact.id)}
                         />
                         <div
                           className={`rounded-circle ${contact.status_color || 'bg-success'}`}
