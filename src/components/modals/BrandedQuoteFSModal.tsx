@@ -121,15 +121,14 @@ export const BrandedQuoteFSModal: React.FC<BrandedQuoteFSModalProps> = ({
     if (lineItemTableRef.current) {
       const tableWidth = lineItemTableRef.current.offsetWidth;
       const categoryWidth = lineItemSettings.showCategoryColumn ? lineItemColumnWidths.category : 0;
-      const customLineItemWidth = lineItemSettings.combineLineItems ? 0 : lineItemColumnWidths.customLineItem;
-      const currentTotal = categoryWidth + lineItemColumnWidths.lineItem + customLineItemWidth + lineItemColumnWidths.description + lineItemColumnWidths.lineTotal;
+      const currentTotal = categoryWidth + lineItemColumnWidths.lineItem + lineItemColumnWidths.customLineItem + lineItemColumnWidths.description + lineItemColumnWidths.lineTotal;
 
       if (Math.abs(currentTotal - tableWidth) > 10) {
         const ratio = tableWidth / currentTotal;
         setLineItemColumnWidths(prev => ({
           category: lineItemSettings.showCategoryColumn ? Math.round(prev.category * ratio) : prev.category,
           lineItem: Math.round(prev.lineItem * ratio),
-          customLineItem: lineItemSettings.combineLineItems ? prev.customLineItem : Math.round(prev.customLineItem * ratio),
+          customLineItem: Math.round(prev.customLineItem * ratio),
           description: Math.round(prev.description * ratio),
           lineTotal: Math.round(prev.lineTotal * ratio)
         }));
@@ -266,8 +265,7 @@ export const BrandedQuoteFSModal: React.FC<BrandedQuoteFSModalProps> = ({
 
   const getLineItemColumnPercentage = (pixels: number) => {
     const categoryWidth = lineItemSettings.showCategoryColumn ? lineItemColumnWidths.category : 0;
-    const customLineItemWidth = lineItemSettings.combineLineItems ? 0 : lineItemColumnWidths.customLineItem;
-    const totalTableWidth = categoryWidth + lineItemColumnWidths.lineItem + customLineItemWidth + lineItemColumnWidths.description + lineItemColumnWidths.lineTotal;
+    const totalTableWidth = categoryWidth + lineItemColumnWidths.lineItem + lineItemColumnWidths.customLineItem + lineItemColumnWidths.description + lineItemColumnWidths.lineTotal;
     return `${(pixels / totalTableWidth) * 100}%`;
   };
 
@@ -286,7 +284,6 @@ export const BrandedQuoteFSModal: React.FC<BrandedQuoteFSModalProps> = ({
       setLineItemColumnWidths(prev => {
         const newWidths = { ...prev };
         const categoryWidth = lineItemSettings.showCategoryColumn ? prev.category : 0;
-        const customLineItemWidth = lineItemSettings.combineLineItems ? 0 : prev.customLineItem;
 
         if (column === 'lineItem') {
           if (lineItemSettings.showCategoryColumn) {
@@ -299,7 +296,7 @@ export const BrandedQuoteFSModal: React.FC<BrandedQuoteFSModalProps> = ({
             const maxRightBoundary = prev.category + prev.lineItem - minLineItem;
             const clampedX = Math.max(minLeftBoundary, Math.min(maxRightBoundary, x));
             newWidths.category = clampedX;
-            newWidths.lineItem = totalWidth - clampedX - customLineItemWidth - prev.description - prev.lineTotal;
+            newWidths.lineItem = totalWidth - clampedX - prev.customLineItem - prev.description - prev.lineTotal;
           } else {
             const minLineItem = 50;
             const minCustomLineItem = lineItemSettings.combineLineItems ? 0 : 50;
@@ -349,7 +346,7 @@ export const BrandedQuoteFSModal: React.FC<BrandedQuoteFSModalProps> = ({
           }
           newWidths.description = totalWidth - clampedX - prev.lineTotal;
         } else if (column === 'lineTotal') {
-          const precedingWidth = categoryWidth + prev.lineItem + customLineItemWidth;
+          const precedingWidth = categoryWidth + prev.lineItem + prev.customLineItem;
           const minDescription = 50;
           const minLineTotal = 50;
           const minLeftBoundary = precedingWidth + minDescription;
@@ -1771,7 +1768,7 @@ export const BrandedQuoteFSModal: React.FC<BrandedQuoteFSModalProps> = ({
                                       <div
                                         style={{
                                           position: 'absolute',
-                                          left: getLineItemColumnPercentage((lineItemSettings.showCategoryColumn ? lineItemColumnWidths.category : 0) + lineItemColumnWidths.lineItem + (lineItemSettings.combineLineItems ? 0 : lineItemColumnWidths.customLineItem)),
+                                          left: getLineItemColumnPercentage((lineItemSettings.showCategoryColumn ? lineItemColumnWidths.category : 0) + lineItemColumnWidths.lineItem + lineItemColumnWidths.customLineItem),
                                           top: '-8px',
                                           bottom: '-100px',
                                           transform: 'translateX(-50%)',
@@ -1809,7 +1806,7 @@ export const BrandedQuoteFSModal: React.FC<BrandedQuoteFSModalProps> = ({
                                       <div
                                         style={{
                                           position: 'absolute',
-                                          left: getLineItemColumnPercentage((lineItemSettings.showCategoryColumn ? lineItemColumnWidths.category : 0) + lineItemColumnWidths.lineItem + (lineItemSettings.combineLineItems ? 0 : lineItemColumnWidths.customLineItem) + lineItemColumnWidths.description),
+                                          left: getLineItemColumnPercentage((lineItemSettings.showCategoryColumn ? lineItemColumnWidths.category : 0) + lineItemColumnWidths.lineItem + lineItemColumnWidths.customLineItem + lineItemColumnWidths.description),
                                           top: '-8px',
                                           bottom: '-100px',
                                           transform: 'translateX(-50%)',
