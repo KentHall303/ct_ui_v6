@@ -31,10 +31,10 @@ export const contactService = {
       .from('contacts')
       .select(`
         *,
-        opportunities!left(
+        opportunities!opportunity_id(
           id,
           sales_cycle_id,
-          sales_cycles!left(
+          sales_cycles!sales_cycle_id(
             name
           )
         )
