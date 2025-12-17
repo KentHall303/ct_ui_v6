@@ -44,27 +44,29 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
     <div className="px-3 pt-3">
       <div className="bg-white rounded-3 pt-3 pb-3 px-3 border shadow-sm">
         <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-3">
-          <div className="d-flex align-items-center gap-2">
-            <button
-              type="button"
-              className="btn p-1 text-secondary"
-              onClick={onToggleSidebar}
-              title={sidebarCollapsed ? 'Show filters' : 'Hide filters'}
-              style={{ border: 'none', background: 'transparent' }}
-            >
-              {sidebarCollapsed ? <PanelLeftOpenIcon size={20} /> : <PanelLeftCloseIcon size={20} />}
-            </button>
-
-            <div className="d-flex align-items-baseline gap-3">
-              <h1 className="h3 fw-bold text-dark mb-0">Calendar</h1>
-              <span className="text-secondary">{formatMonthYear(currentDate)}</span>
-            </div>
+          <div className="d-flex align-items-baseline gap-3">
+            <h1 className="h3 fw-bold text-dark mb-0">Calendar</h1>
+            <span className="text-secondary">{formatMonthYear(currentDate)}</span>
           </div>
 
           <CalendarLegend />
         </div>
 
-        <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div className="d-flex align-items-center flex-wrap gap-3">
+          <div className="btn-group" role="group">
+            {viewButtons.map((btn) => (
+              <Button
+                key={btn.value}
+                variant={view === btn.value ? 'primary' : 'outline-secondary'}
+                size="sm"
+                className="px-3"
+                onClick={() => onViewChange(btn.value)}
+              >
+                {btn.label}
+              </Button>
+            ))}
+          </div>
+
           <div className="d-flex align-items-center gap-1">
             <Button
               variant="outline-secondary"
@@ -118,19 +120,15 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             </Button>
           </div>
 
-          <div className="btn-group" role="group">
-            {viewButtons.map((btn) => (
-              <Button
-                key={btn.value}
-                variant={view === btn.value ? 'primary' : 'outline-secondary'}
-                size="sm"
-                className="px-3"
-                onClick={() => onViewChange(btn.value)}
-              >
-                {btn.label}
-              </Button>
-            ))}
-          </div>
+          <button
+            type="button"
+            className="btn p-1 text-secondary ms-auto"
+            onClick={onToggleSidebar}
+            title={sidebarCollapsed ? 'Show filters' : 'Hide filters'}
+            style={{ border: 'none', background: 'transparent' }}
+          >
+            {sidebarCollapsed ? <PanelLeftOpenIcon size={20} /> : <PanelLeftCloseIcon size={20} />}
+          </button>
         </div>
       </div>
     </div>
