@@ -4,15 +4,10 @@ import {
   ChevronRight as ChevronRightIcon,
   ChevronsLeft as ChevronsLeftIcon,
   ChevronsRight as ChevronsRightIcon,
-  Plus as PlusIcon,
-  Video as VideoIcon,
-  Download as DownloadIcon,
-  Upload as UploadIcon,
   PanelLeftClose as PanelLeftCloseIcon,
   PanelLeftOpen as PanelLeftOpenIcon
 } from 'lucide-react';
 import { Button } from '../bootstrap/Button';
-import { FloatingInput } from '../bootstrap/FormControls';
 import { CalendarLegend } from './CalendarLegend';
 import { CalendarView } from '../../hooks/useCalendar';
 import { formatMonthYear } from '../../utils/dateUtils';
@@ -20,35 +15,23 @@ import { formatMonthYear } from '../../utils/dateUtils';
 interface CalendarHeaderProps {
   currentDate: Date;
   view: CalendarView;
-  searchTerm: string;
   sidebarCollapsed: boolean;
   onViewChange: (view: CalendarView) => void;
-  onSearchChange: (term: string) => void;
   onToday: () => void;
   onPrevious: () => void;
   onNext: () => void;
   onToggleSidebar: () => void;
-  onNewEvent?: () => void;
-  onNewMeeting?: () => void;
-  onExport?: () => void;
-  onSync?: () => void;
 }
 
 export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   currentDate,
   view,
-  searchTerm,
   sidebarCollapsed,
   onViewChange,
-  onSearchChange,
   onToday,
   onPrevious,
   onNext,
-  onToggleSidebar,
-  onNewEvent,
-  onNewMeeting,
-  onExport,
-  onSync
+  onToggleSidebar
 }) => {
   const viewButtons: Array<{ value: CalendarView; label: string }> = [
     { value: 'month', label: 'Month' },
@@ -78,48 +61,6 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             </div>
           </div>
 
-          <div className="d-flex gap-2 flex-wrap">
-            {onNewEvent && (
-              <Button
-                variant="success"
-                className="rounded-pill d-flex align-items-center gap-2 btn-pill-custom"
-                onClick={onNewEvent}
-              >
-                <PlusIcon size={14} />
-                <span className="d-none d-lg-inline">New Event</span>
-              </Button>
-            )}
-            {onNewMeeting && (
-              <Button
-                variant="primary"
-                className="rounded-pill d-flex align-items-center gap-2 btn-pill-custom"
-                onClick={onNewMeeting}
-              >
-                <VideoIcon size={14} />
-                <span className="d-none d-lg-inline">New Meeting</span>
-              </Button>
-            )}
-            {onExport && (
-              <Button
-                variant="outline-primary"
-                className="rounded-pill d-flex align-items-center gap-2"
-                onClick={onExport}
-              >
-                <DownloadIcon size={14} />
-                <span className="d-none d-lg-inline">Export</span>
-              </Button>
-            )}
-            {onSync && (
-              <Button
-                variant="outline-primary"
-                className="rounded-pill d-flex align-items-center gap-2"
-                onClick={onSync}
-              >
-                <UploadIcon size={14} />
-                <span className="d-none d-lg-inline">Sync</span>
-              </Button>
-            )}
-          </div>
         </div>
 
         <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
@@ -176,29 +117,18 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             </Button>
           </div>
 
-          <div className="d-flex align-items-center gap-3 flex-wrap">
-            <div className="btn-group" role="group">
-              {viewButtons.map((btn) => (
-                <Button
-                  key={btn.value}
-                  variant={view === btn.value ? 'primary' : 'outline-secondary'}
-                  size="sm"
-                  className="px-3"
-                  onClick={() => onViewChange(btn.value)}
-                >
-                  {btn.label}
-                </Button>
-              ))}
-            </div>
-
-            <div style={{ width: '280px' }}>
-              <FloatingInput
-                label="Search events..."
-                placeholder="Quote number, contact, etc."
-                value={searchTerm}
-                onChange={(e) => onSearchChange(e.target.value)}
-              />
-            </div>
+          <div className="btn-group" role="group">
+            {viewButtons.map((btn) => (
+              <Button
+                key={btn.value}
+                variant={view === btn.value ? 'primary' : 'outline-secondary'}
+                size="sm"
+                className="px-3"
+                onClick={() => onViewChange(btn.value)}
+              >
+                {btn.label}
+              </Button>
+            ))}
           </div>
         </div>
 

@@ -56,18 +56,12 @@ export const CalendarRedesigned: React.FC = () => {
         <CalendarHeader
           currentDate={calendar.currentDate}
           view={calendar.view}
-          searchTerm={calendar.searchTerm}
           sidebarCollapsed={calendar.sidebarCollapsed}
           onViewChange={calendar.setView}
-          onSearchChange={calendar.setSearchTerm}
           onToday={calendar.goToToday}
           onPrevious={calendar.goToPrevious}
           onNext={calendar.goToNext}
           onToggleSidebar={handleToggleSidebar}
-          onNewEvent={() => console.log('New event')}
-          onNewMeeting={() => console.log('New meeting')}
-          onExport={() => console.log('Export')}
-          onSync={() => console.log('Sync')}
         />
       </div>
 
