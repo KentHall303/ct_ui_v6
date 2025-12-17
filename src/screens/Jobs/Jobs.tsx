@@ -212,7 +212,13 @@ const JobsHeader = ({
   skillFilters,
   availableSkills,
   onRateFilterChange,
-  onSkillToggle
+  onSkillToggle,
+  milestones,
+  toggleMilestone,
+  scheduling,
+  setScheduling,
+  payments,
+  setPayments
 }: {
   currentView: 'table' | 'calendar' | 'dispatching',
   onViewChange: (view: 'table' | 'calendar' | 'dispatching') => void,
@@ -221,7 +227,13 @@ const JobsHeader = ({
   skillFilters?: string[],
   availableSkills?: string[],
   onRateFilterChange?: (filter: { min?: number; max?: number }) => void,
-  onSkillToggle?: (skill: string) => void
+  onSkillToggle?: (skill: string) => void,
+  milestones?: { complete: boolean; quoted: boolean; closed: boolean },
+  toggleMilestone?: (milestone: 'complete' | 'quoted' | 'closed') => void,
+  scheduling?: 'all' | 'scheduled' | 'unscheduled',
+  setScheduling?: (value: 'all' | 'scheduled' | 'unscheduled') => void,
+  payments?: 'all' | 'unpaid' | 'paid',
+  setPayments?: (value: 'all' | 'unpaid' | 'paid') => void
 }) => {
   const [skillsDropdownOpen, setSkillsDropdownOpen] = React.useState(false);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
@@ -457,20 +469,20 @@ const JobsHeader = ({
             <span className="small fw-semibold text-dark">Milestones:</span>
             <ButtonGroup size="sm">
               <BSButton
-                variant={milestones.complete ? "primary" : "outline-secondary"}
-                onClick={() => toggleMilestone('complete')}
+                variant={milestones?.complete ? "primary" : "outline-secondary"}
+                onClick={() => toggleMilestone?.('complete')}
               >
                 Complete
               </BSButton>
               <BSButton
-                variant={milestones.quoted ? "primary" : "outline-secondary"}
-                onClick={() => toggleMilestone('quoted')}
+                variant={milestones?.quoted ? "primary" : "outline-secondary"}
+                onClick={() => toggleMilestone?.('quoted')}
               >
                 Quoted
               </BSButton>
               <BSButton
-                variant={milestones.closed ? "primary" : "outline-secondary"}
-                onClick={() => toggleMilestone('closed')}
+                variant={milestones?.closed ? "primary" : "outline-secondary"}
+                onClick={() => toggleMilestone?.('closed')}
               >
                 Closed
               </BSButton>
@@ -483,19 +495,19 @@ const JobsHeader = ({
             <ButtonGroup size="sm">
               <BSButton
                 variant={scheduling === 'all' ? "primary" : "outline-secondary"}
-                onClick={() => setScheduling('all')}
+                onClick={() => setScheduling?.('all')}
               >
                 All
               </BSButton>
               <BSButton
                 variant={scheduling === 'scheduled' ? "primary" : "outline-secondary"}
-                onClick={() => setScheduling('scheduled')}
+                onClick={() => setScheduling?.('scheduled')}
               >
                 Scheduled
               </BSButton>
               <BSButton
                 variant={scheduling === 'unscheduled' ? "primary" : "outline-secondary"}
-                onClick={() => setScheduling('unscheduled')}
+                onClick={() => setScheduling?.('unscheduled')}
               >
                 Unscheduled
               </BSButton>
@@ -508,19 +520,19 @@ const JobsHeader = ({
             <ButtonGroup size="sm">
               <BSButton
                 variant={payments === 'all' ? "primary" : "outline-secondary"}
-                onClick={() => setPayments('all')}
+                onClick={() => setPayments?.('all')}
               >
                 All
               </BSButton>
               <BSButton
                 variant={payments === 'unpaid' ? "primary" : "outline-secondary"}
-                onClick={() => setPayments('unpaid')}
+                onClick={() => setPayments?.('unpaid')}
               >
                 Unpaid
               </BSButton>
               <BSButton
                 variant={payments === 'paid' ? "primary" : "outline-secondary"}
-                onClick={() => setPayments('paid')}
+                onClick={() => setPayments?.('paid')}
               >
                 Paid
               </BSButton>
@@ -604,21 +616,6 @@ const TableView = () => {
   const [showGMModal, setShowGMModal] = React.useState(false);
   const [selectedQuoteId, setSelectedQuoteId] = React.useState<string>('');
   const [quotesWithCOGS, setQuotesWithCOGS] = React.useState(quotesData);
-
-  const [milestones, setMilestones] = React.useState({
-    complete: true,
-    quoted: false,
-    closed: false
-  });
-  const [scheduling, setScheduling] = React.useState<'all' | 'scheduled' | 'unscheduled'>('all');
-  const [payments, setPayments] = React.useState<'all' | 'unpaid' | 'paid'>('all');
-
-  const toggleMilestone = (milestone: 'complete' | 'quoted' | 'closed') => {
-    setMilestones(prev => ({
-      ...prev,
-      [milestone]: !prev[milestone]
-    }));
-  };
 
   const handleAddCOGS = (quoteId: string) => {
     setSelectedQuoteId(quoteId);
@@ -2231,12 +2228,27 @@ export const Jobs = (): JSX.Element => {
   const [skillFilters, setSkillFilters] = React.useState<string[]>([]);
   const [availableSkills, setAvailableSkills] = React.useState<string[]>([]);
 
+  const [milestones, setMilestones] = React.useState({
+    complete: true,
+    quoted: false,
+    closed: false
+  });
+  const [scheduling, setScheduling] = React.useState<'all' | 'scheduled' | 'unscheduled'>('all');
+  const [payments, setPayments] = React.useState<'all' | 'unpaid' | 'paid'>('all');
+
   const toggleSkillFilter = (skill: string) => {
     setSkillFilters(prev =>
       prev.includes(skill)
         ? prev.filter(s => s !== skill)
         : [...prev, skill]
     );
+  };
+
+  const toggleMilestone = (milestone: 'complete' | 'quoted' | 'closed') => {
+    setMilestones(prev => ({
+      ...prev,
+      [milestone]: !prev[milestone]
+    }));
   };
 
   return (
@@ -2252,6 +2264,12 @@ export const Jobs = (): JSX.Element => {
             availableSkills={availableSkills}
             onRateFilterChange={setRateFilter}
             onSkillToggle={toggleSkillFilter}
+            milestones={milestones}
+            toggleMilestone={toggleMilestone}
+            scheduling={scheduling}
+            setScheduling={setScheduling}
+            payments={payments}
+            setPayments={setPayments}
           />
         </div>
         <div className="px-3 pt-2 pb-3">
