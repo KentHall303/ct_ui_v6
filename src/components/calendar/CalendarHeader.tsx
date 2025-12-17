@@ -68,7 +68,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             <Button
               variant="outline-secondary"
               size="sm"
-              className="px-3 py-2"
+              className="px-4"
               onClick={() => {
                 onPrevious();
                 onPrevious();
@@ -80,7 +80,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             <Button
               variant="outline-secondary"
               size="sm"
-              className="px-3 py-2"
+              className="px-4"
               onClick={onPrevious}
               title={view === 'month' ? 'Previous month' : view === 'week' ? 'Previous week' : 'Previous day'}
             >
@@ -97,7 +97,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             <Button
               variant="outline-secondary"
               size="sm"
-              className="px-3 py-2"
+              className="px-4"
               onClick={onNext}
               title={view === 'month' ? 'Next month' : view === 'week' ? 'Next week' : 'Next day'}
             >
@@ -106,7 +106,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             <Button
               variant="outline-secondary"
               size="sm"
-              className="px-3 py-2"
+              className="px-4"
               onClick={() => {
                 onNext();
                 onNext();
