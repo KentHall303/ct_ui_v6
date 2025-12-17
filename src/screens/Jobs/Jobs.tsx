@@ -452,8 +452,8 @@ const JobsHeader = ({
     {currentView === 'table' && (
       <>
         {/* Filter Segmented Controls */}
-        <div className="d-flex align-items-center gap-2 flex-wrap">
-          {/* Sales Cycles Group */}
+        <div className="d-flex align-items-center justify-content-between flex-wrap">
+          {/* Section 1: Sales Cycles Group */}
           <div className="d-flex align-items-center gap-2">
             <span className="small fw-semibold text-dark">Sales Cycles:</span>
             <div className="form-check form-switch mb-0">
@@ -464,91 +464,94 @@ const JobsHeader = ({
             </div>
           </div>
 
-          {/* Milestones Group - Segmented Control */}
-          <div className="d-flex align-items-center gap-2">
-            <span className="small fw-semibold text-dark">Milestones:</span>
-            <ButtonGroup size="sm">
-              <BSButton
-                variant={milestones?.complete ? "primary" : "outline-secondary"}
-                onClick={() => toggleMilestone?.('complete')}
-                style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
-              >
-                Complete
-              </BSButton>
-              <BSButton
-                variant={milestones?.quoted ? "primary" : "outline-secondary"}
-                onClick={() => toggleMilestone?.('quoted')}
-                style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
-              >
-                Quoted
-              </BSButton>
-              <BSButton
-                variant={milestones?.closed ? "primary" : "outline-secondary"}
-                onClick={() => toggleMilestone?.('closed')}
-                style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
-              >
-                Closed
-              </BSButton>
-            </ButtonGroup>
+          {/* Section 2: Milestones, Scheduling, and Payments (grouped in center) */}
+          <div className="d-flex align-items-center gap-3 flex-wrap">
+            {/* Milestones Group - Segmented Control */}
+            <div className="d-flex align-items-center gap-2">
+              <span className="small fw-semibold text-dark">Milestones:</span>
+              <ButtonGroup size="sm">
+                <BSButton
+                  variant={milestones?.complete ? "primary" : "outline-secondary"}
+                  onClick={() => toggleMilestone?.('complete')}
+                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
+                >
+                  Complete
+                </BSButton>
+                <BSButton
+                  variant={milestones?.quoted ? "primary" : "outline-secondary"}
+                  onClick={() => toggleMilestone?.('quoted')}
+                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
+                >
+                  Quoted
+                </BSButton>
+                <BSButton
+                  variant={milestones?.closed ? "primary" : "outline-secondary"}
+                  onClick={() => toggleMilestone?.('closed')}
+                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
+                >
+                  Closed
+                </BSButton>
+              </ButtonGroup>
+            </div>
+
+            {/* Scheduling Group - Segmented Control */}
+            <div className="d-flex align-items-center gap-2">
+              <span className="small fw-semibold text-dark">Scheduling:</span>
+              <ButtonGroup size="sm">
+                <BSButton
+                  variant={scheduling === 'all' ? "primary" : "outline-secondary"}
+                  onClick={() => setScheduling?.('all')}
+                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
+                >
+                  All
+                </BSButton>
+                <BSButton
+                  variant={scheduling === 'scheduled' ? "primary" : "outline-secondary"}
+                  onClick={() => setScheduling?.('scheduled')}
+                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
+                >
+                  Scheduled
+                </BSButton>
+                <BSButton
+                  variant={scheduling === 'unscheduled' ? "primary" : "outline-secondary"}
+                  onClick={() => setScheduling?.('unscheduled')}
+                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
+                >
+                  Unscheduled
+                </BSButton>
+              </ButtonGroup>
+            </div>
+
+            {/* Payments Group - Segmented Control */}
+            <div className="d-flex align-items-center gap-2">
+              <span className="small fw-semibold text-dark">Payments:</span>
+              <ButtonGroup size="sm">
+                <BSButton
+                  variant={payments === 'all' ? "primary" : "outline-secondary"}
+                  onClick={() => setPayments?.('all')}
+                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
+                >
+                  All
+                </BSButton>
+                <BSButton
+                  variant={payments === 'unpaid' ? "primary" : "outline-secondary"}
+                  onClick={() => setPayments?.('unpaid')}
+                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
+                >
+                  Unpaid
+                </BSButton>
+                <BSButton
+                  variant={payments === 'paid' ? "primary" : "outline-secondary"}
+                  onClick={() => setPayments?.('paid')}
+                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
+                >
+                  Paid
+                </BSButton>
+              </ButtonGroup>
+            </div>
           </div>
 
-          {/* Scheduling Group - Segmented Control */}
-          <div className="d-flex align-items-center gap-2">
-            <span className="small fw-semibold text-dark">Scheduling:</span>
-            <ButtonGroup size="sm">
-              <BSButton
-                variant={scheduling === 'all' ? "primary" : "outline-secondary"}
-                onClick={() => setScheduling?.('all')}
-                style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
-              >
-                All
-              </BSButton>
-              <BSButton
-                variant={scheduling === 'scheduled' ? "primary" : "outline-secondary"}
-                onClick={() => setScheduling?.('scheduled')}
-                style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
-              >
-                Scheduled
-              </BSButton>
-              <BSButton
-                variant={scheduling === 'unscheduled' ? "primary" : "outline-secondary"}
-                onClick={() => setScheduling?.('unscheduled')}
-                style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
-              >
-                Unscheduled
-              </BSButton>
-            </ButtonGroup>
-          </div>
-
-          {/* Payments Group - Segmented Control */}
-          <div className="d-flex align-items-center gap-2">
-            <span className="small fw-semibold text-dark">Payments:</span>
-            <ButtonGroup size="sm">
-              <BSButton
-                variant={payments === 'all' ? "primary" : "outline-secondary"}
-                onClick={() => setPayments?.('all')}
-                style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
-              >
-                All
-              </BSButton>
-              <BSButton
-                variant={payments === 'unpaid' ? "primary" : "outline-secondary"}
-                onClick={() => setPayments?.('unpaid')}
-                style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
-              >
-                Unpaid
-              </BSButton>
-              <BSButton
-                variant={payments === 'paid' ? "primary" : "outline-secondary"}
-                onClick={() => setPayments?.('paid')}
-                style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
-              >
-                Paid
-              </BSButton>
-            </ButtonGroup>
-          </div>
-
-          {/* Search Bar */}
+          {/* Section 3: Search Bar */}
           <div className="position-relative" style={{ width: '240px', minWidth: '0' }}>
             <SearchIcon
               size={16}
