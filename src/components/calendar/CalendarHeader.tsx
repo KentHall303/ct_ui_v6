@@ -62,24 +62,31 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             >
               {sidebarCollapsed ? <PanelLeftOpenIcon size={20} /> : <PanelLeftCloseIcon size={20} />}
             </button>
+
+            <div style={{
+              border: '1px solid #f8f9fa',
+              borderRadius: '6px',
+              padding: '2px'
+            }}>
+              <div className="btn-group" role="group">
+                {viewButtons.map((btn) => (
+                  <Button
+                    key={btn.value}
+                    variant={view === btn.value ? 'primary' : 'link'}
+                    size="sm"
+                    className={view === btn.value ? 'px-3' : 'px-3 text-secondary text-decoration-none'}
+                    onClick={() => onViewChange(btn.value)}
+                  >
+                    {btn.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
             <span className="text-secondary">{formatMonthYear(currentDate)}</span>
           </div>
 
           <div className="d-flex align-items-center gap-2" style={{ flexShrink: 0 }}>
-            <div className="btn-group" role="group">
-              {viewButtons.map((btn) => (
-                <Button
-                  key={btn.value}
-                  variant={view === btn.value ? 'primary' : 'link'}
-                  size="sm"
-                  className={view === btn.value ? 'px-3' : 'px-3 text-secondary text-decoration-none'}
-                  onClick={() => onViewChange(btn.value)}
-                >
-                  {btn.label}
-                </Button>
-              ))}
-            </div>
-
             <Button
               variant="link"
               size="sm"
