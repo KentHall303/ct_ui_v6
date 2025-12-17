@@ -16,9 +16,9 @@ const legendItems: LegendItem[] = [
 export const CalendarLegend: React.FC = () => {
   return (
     <div className="d-flex flex-wrap gap-3 align-items-center justify-content-end">
-      <span className="small fw-semibold text-secondary me-2">Status:</span>
+      <span className="small fw-semibold text-secondary me-1">Status:</span>
       {legendItems.map((item) => (
-        <div key={item.label} className="d-flex align-items-center gap-2" title={item.description}>
+        <div key={item.label} className="d-flex align-items-center gap-1" title={item.description}>
           <div
             className={`border border-${item.color} bg-${item.color} bg-opacity-25`}
             style={{
