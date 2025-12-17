@@ -20,7 +20,7 @@ export const CalendarLegend: React.FC = () => {
       {legendItems.map((item) => (
         <div key={item.label} className="d-flex align-items-center gap-1" title={item.description}>
           <div
-            className={`border border-${item.color} bg-${item.color} bg-opacity-25`}
+            className={`bg-${item.color} bg-opacity-25`}
             style={{
               width: '16px',
               height: '16px',
