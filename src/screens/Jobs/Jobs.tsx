@@ -576,17 +576,17 @@ const JobsHeader = ({
                 <ChevronLeftIcon size={16} />
               </button>
               <div className="d-flex gap-1">
-                <button className="btn btn-primary btn-sm px-2 py-1">
+                <button className="btn btn-primary btn-sm px-2 py-1 small">
                   1
                 </button>
-                <button className="btn btn-link btn-sm px-2 py-1 text-decoration-none">
+                <button className="btn btn-link btn-sm px-2 py-1 text-decoration-none small">
                   2
                 </button>
-                <button className="btn btn-link btn-sm px-2 py-1 text-decoration-none">
+                <button className="btn btn-link btn-sm px-2 py-1 text-decoration-none small">
                   3
                 </button>
                 <span className="d-flex align-items-center px-2 small text-secondary">...</span>
-                <button className="btn btn-link btn-sm px-2 py-1 text-decoration-none">
+                <button className="btn btn-link btn-sm px-2 py-1 text-decoration-none small">
                   10
                 </button>
               </div>
