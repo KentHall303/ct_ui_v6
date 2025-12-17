@@ -52,18 +52,18 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
           <CalendarLegend />
         </div>
 
-        <div className="d-flex align-items-center flex-wrap gap-3">
+        <div className="d-flex align-items-center gap-3" style={{ justifyContent: 'space-between', flex: 1 }}>
           <button
             type="button"
             className="btn p-1 text-secondary"
             onClick={onToggleSidebar}
             title={sidebarCollapsed ? 'Show filters' : 'Hide filters'}
-            style={{ border: 'none', background: 'transparent' }}
+            style={{ border: 'none', background: 'transparent', flexShrink: 0 }}
           >
             {sidebarCollapsed ? <PanelLeftOpenIcon size={20} /> : <PanelLeftCloseIcon size={20} />}
           </button>
 
-          <div className="d-flex align-items-center gap-1">
+          <div className="d-flex align-items-center gap-1" style={{ justifyContent: 'center', flex: 1 }}>
             <Button
               variant="outline-secondary"
               size="sm"
@@ -116,7 +116,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             </Button>
           </div>
 
-          <div className="btn-group ms-auto" role="group">
+          <div className="btn-group" role="group" style={{ flexShrink: 0 }}>
             {viewButtons.map((btn) => (
               <Button
                 key={btn.value}
