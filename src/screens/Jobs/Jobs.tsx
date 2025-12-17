@@ -452,7 +452,7 @@ const JobsHeader = ({
     {currentView === 'table' && (
       <>
         {/* Filter Segmented Controls */}
-        <div className="d-flex align-items-center gap-4 flex-wrap">
+        <div className="d-flex align-items-center gap-3 flex-wrap">
           {/* Sales Cycles Group */}
           <div className="d-flex align-items-center gap-2">
             <span className="small fw-semibold text-dark">Sales Cycles:</span>
@@ -465,24 +465,27 @@ const JobsHeader = ({
           </div>
 
           {/* Milestones Group - Segmented Control */}
-          <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center gap-2">
             <span className="small fw-semibold text-dark">Milestones:</span>
             <ButtonGroup size="sm">
               <BSButton
                 variant={milestones?.complete ? "primary" : "outline-secondary"}
                 onClick={() => toggleMilestone?.('complete')}
+                style={{ fontSize: '0.875rem', padding: '0.25rem 0.5rem' }}
               >
                 Complete
               </BSButton>
               <BSButton
                 variant={milestones?.quoted ? "primary" : "outline-secondary"}
                 onClick={() => toggleMilestone?.('quoted')}
+                style={{ fontSize: '0.875rem', padding: '0.25rem 0.5rem' }}
               >
                 Quoted
               </BSButton>
               <BSButton
                 variant={milestones?.closed ? "primary" : "outline-secondary"}
                 onClick={() => toggleMilestone?.('closed')}
+                style={{ fontSize: '0.875rem', padding: '0.25rem 0.5rem' }}
               >
                 Closed
               </BSButton>
@@ -490,24 +493,27 @@ const JobsHeader = ({
           </div>
 
           {/* Scheduling Group - Segmented Control */}
-          <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center gap-2">
             <span className="small fw-semibold text-dark">Scheduling:</span>
             <ButtonGroup size="sm">
               <BSButton
                 variant={scheduling === 'all' ? "primary" : "outline-secondary"}
                 onClick={() => setScheduling?.('all')}
+                style={{ fontSize: '0.875rem', padding: '0.25rem 0.5rem' }}
               >
                 All
               </BSButton>
               <BSButton
                 variant={scheduling === 'scheduled' ? "primary" : "outline-secondary"}
                 onClick={() => setScheduling?.('scheduled')}
+                style={{ fontSize: '0.875rem', padding: '0.25rem 0.5rem' }}
               >
                 Scheduled
               </BSButton>
               <BSButton
                 variant={scheduling === 'unscheduled' ? "primary" : "outline-secondary"}
                 onClick={() => setScheduling?.('unscheduled')}
+                style={{ fontSize: '0.875rem', padding: '0.25rem 0.5rem' }}
               >
                 Unscheduled
               </BSButton>
@@ -515,35 +521,53 @@ const JobsHeader = ({
           </div>
 
           {/* Payments Group - Segmented Control */}
-          <div className="d-flex align-items-center gap-3">
+          <div className="d-flex align-items-center gap-2">
             <span className="small fw-semibold text-dark">Payments:</span>
             <ButtonGroup size="sm">
               <BSButton
                 variant={payments === 'all' ? "primary" : "outline-secondary"}
                 onClick={() => setPayments?.('all')}
+                style={{ fontSize: '0.875rem', padding: '0.25rem 0.5rem' }}
               >
                 All
               </BSButton>
               <BSButton
                 variant={payments === 'unpaid' ? "primary" : "outline-secondary"}
                 onClick={() => setPayments?.('unpaid')}
+                style={{ fontSize: '0.875rem', padding: '0.25rem 0.5rem' }}
               >
                 Unpaid
               </BSButton>
               <BSButton
                 variant={payments === 'paid' ? "primary" : "outline-secondary"}
                 onClick={() => setPayments?.('paid')}
+                style={{ fontSize: '0.875rem', padding: '0.25rem 0.5rem' }}
               >
                 Paid
               </BSButton>
             </ButtonGroup>
           </div>
+
+          {/* Search Bar */}
+          <div className="position-relative" style={{ width: '260px', minWidth: '0' }}>
+            <SearchIcon
+              size={16}
+              className="position-absolute text-secondary"
+              style={{ left: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', zIndex: 1 }}
+            />
+            <input
+              type="text"
+              className="form-control form-control-sm"
+              placeholder="Search Contact/Quote/Subcontractor..."
+              style={{ paddingLeft: '36px', fontSize: '0.875rem' }}
+            />
+          </div>
         </div>
 
-        {/* Pagination and Search Controls - Following wireframe standards */}
+        {/* Pagination and Action Controls */}
         <div className="py-0">
-          <div className="d-flex align-items-center justify-content-between flex-wrap gap-4">
-            {/* Left side - Pagination */}
+          <div className="d-flex align-items-center justify-content-center flex-wrap gap-4 position-relative">
+            {/* Center - Pagination */}
             <div className="d-flex align-items-center gap-2">
               <button className="btn btn-link p-1 text-decoration-none">
                 <ChevronsLeftIcon size={16} />
@@ -574,25 +598,8 @@ const JobsHeader = ({
               </button>
             </div>
 
-            {/* Center - Search */}
-            <div className="d-flex align-items-center gap-3 flex-wrap">
-              <div className="position-relative" style={{ width: '320px', minWidth: '0' }}>
-                <SearchIcon
-                  size={16}
-                  className="position-absolute text-secondary"
-                  style={{ left: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', zIndex: 1 }}
-                />
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Search Contact/Quote/Subcontractor..."
-                  style={{ paddingLeft: '36px', height: 'calc(1.5em + 0.75rem + 2px)' }}
-                />
-              </div>
-            </div>
-
             {/* Right side - Action icons */}
-            <div className="d-flex align-items-center gap-2">
+            <div className="d-flex align-items-center gap-2 position-absolute end-0">
               <button className="btn btn-link p-1 text-decoration-none">
                 <RefreshCwIcon size={16} />
               </button>
