@@ -76,6 +76,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                     size="sm"
                     className={view === btn.value ? 'px-3' : 'px-3 text-secondary text-decoration-none'}
                     onClick={() => onViewChange(btn.value)}
+                    style={view === btn.value ? undefined : { backgroundColor: '#e9ecef' }}
                   >
                     {btn.label}
                   </Button>
