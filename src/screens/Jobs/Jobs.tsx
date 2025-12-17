@@ -565,7 +565,7 @@ const JobsHeader = ({
         </div>
 
         {/* Pagination and Action Controls */}
-        <div className="py-0">
+        <div className="mt-4">
           <div className="d-flex align-items-center justify-content-center flex-wrap gap-4 position-relative">
             {/* Center - Pagination */}
             <div className="d-flex align-items-center gap-2">
