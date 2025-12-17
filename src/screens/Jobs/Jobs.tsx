@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "../../components/bootstrap/Button";
 import { FloatingInput, FloatingSelect, FloatingSelectOption } from "../../components/bootstrap/FormControls";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/bootstrap/Table";
-import { Badge, Card, Container, Row, Col } from "react-bootstrap";
+import { Badge, Card, Container, Row, Col, ButtonGroup, Button as BSButton } from "react-bootstrap";
 import { Search as SearchIcon, RefreshCw as RefreshCwIcon, Settings as SettingsIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronsLeft as ChevronsLeftIcon, ChevronsRight as ChevronsRightIcon, Plus as PlusIcon, Mail as MailIcon, MessageSquare as MessageSquareIcon, FileText as FileTextIcon, Printer as PrinterIcon, Download as DownloadIcon, Edit as EditIcon, Trash as TrashIcon, User as UserIcon, DollarSign as DollarSignIcon, Calendar as CalendarIcon, TrendingUp as TrendingUpIcon, List as ListIcon, Calendar as CalendarIconView, Receipt as ReceiptIcon } from "lucide-react";
 import { AddCOGSModal } from "../../components/modals/AddCOGSModal";
 import { GrossMarginModal } from "../../components/modals/GrossMarginModal";
@@ -439,7 +439,7 @@ const JobsHeader = ({
     {/* Table View Controls - Only show for table view */}
     {currentView === 'table' && (
       <>
-        {/* Filter Checkboxes - Grouped like in image */}
+        {/* Filter Segmented Controls */}
         <div className="d-flex align-items-center gap-4 flex-wrap">
           {/* Sales Cycles Group */}
           <div className="d-flex align-items-center gap-2">
@@ -452,61 +452,79 @@ const JobsHeader = ({
             </div>
           </div>
 
-          {/* Milestones Group */}
-          <div className="d-flex align-items-center gap-2">
+          {/* Milestones Group - Segmented Control */}
+          <div className="d-flex align-items-center gap-3">
             <span className="small fw-semibold text-dark">Milestones:</span>
-            <div className="d-flex align-items-center gap-2">
-              <label className="d-flex align-items-center gap-1 small mb-0" style={{ cursor: 'pointer' }}>
-                <input type="checkbox" className="form-check-input mt-0" style={{ cursor: 'pointer' }} />
-                <span>Quoted</span>
-              </label>
-              <label className="d-flex align-items-center gap-1 small mb-0" style={{ cursor: 'pointer' }}>
-                <input type="checkbox" className="form-check-input mt-0" style={{ cursor: 'pointer' }} />
-                <span>Closed</span>
-              </label>
-              <label className="d-flex align-items-center gap-1 small mb-0" style={{ cursor: 'pointer' }}>
-                <input type="checkbox" className="form-check-input mt-0" style={{ cursor: 'pointer' }} />
-                <span>Complete</span>
-              </label>
-            </div>
+            <ButtonGroup size="sm">
+              <BSButton
+                variant={milestones.complete ? "primary" : "outline-secondary"}
+                onClick={() => toggleMilestone('complete')}
+              >
+                Complete
+              </BSButton>
+              <BSButton
+                variant={milestones.quoted ? "primary" : "outline-secondary"}
+                onClick={() => toggleMilestone('quoted')}
+              >
+                Quoted
+              </BSButton>
+              <BSButton
+                variant={milestones.closed ? "primary" : "outline-secondary"}
+                onClick={() => toggleMilestone('closed')}
+              >
+                Closed
+              </BSButton>
+            </ButtonGroup>
           </div>
 
-          {/* Scheduling Group */}
-          <div className="d-flex align-items-center gap-2">
+          {/* Scheduling Group - Segmented Control */}
+          <div className="d-flex align-items-center gap-3">
             <span className="small fw-semibold text-dark">Scheduling:</span>
-            <div className="d-flex align-items-center gap-2">
-              <label className="d-flex align-items-center gap-1 small mb-0" style={{ cursor: 'pointer' }}>
-                <input type="radio" name="scheduling" value="all" className="form-check-input mt-0" style={{ cursor: 'pointer' }} />
-                <span>All</span>
-              </label>
-              <label className="d-flex align-items-center gap-1 small mb-0" style={{ cursor: 'pointer' }}>
-                <input type="radio" name="scheduling" value="scheduled" defaultChecked className="form-check-input mt-0" style={{ cursor: 'pointer' }} />
-                <span>Scheduled</span>
-              </label>
-              <label className="d-flex align-items-center gap-1 small mb-0" style={{ cursor: 'pointer' }}>
-                <input type="radio" name="scheduling" value="unscheduled" className="form-check-input mt-0" style={{ cursor: 'pointer' }} />
-                <span>Unscheduled</span>
-              </label>
-            </div>
+            <ButtonGroup size="sm">
+              <BSButton
+                variant={scheduling === 'all' ? "primary" : "outline-secondary"}
+                onClick={() => setScheduling('all')}
+              >
+                All
+              </BSButton>
+              <BSButton
+                variant={scheduling === 'scheduled' ? "primary" : "outline-secondary"}
+                onClick={() => setScheduling('scheduled')}
+              >
+                Scheduled
+              </BSButton>
+              <BSButton
+                variant={scheduling === 'unscheduled' ? "primary" : "outline-secondary"}
+                onClick={() => setScheduling('unscheduled')}
+              >
+                Unscheduled
+              </BSButton>
+            </ButtonGroup>
           </div>
 
-          {/* Payments Group */}
-          <div className="d-flex align-items-center gap-2">
+          {/* Payments Group - Segmented Control */}
+          <div className="d-flex align-items-center gap-3">
             <span className="small fw-semibold text-dark">Payments:</span>
-            <div className="d-flex align-items-center gap-2">
-              <label className="d-flex align-items-center gap-1 small mb-0" style={{ cursor: 'pointer' }}>
-                <input type="radio" name="payments" value="all" className="form-check-input mt-0" style={{ cursor: 'pointer' }} />
-                <span>All</span>
-              </label>
-              <label className="d-flex align-items-center gap-1 small mb-0" style={{ cursor: 'pointer' }}>
-                <input type="radio" name="payments" value="paid" className="form-check-input mt-0" style={{ cursor: 'pointer' }} />
-                <span>Paid</span>
-              </label>
-              <label className="d-flex align-items-center gap-1 small mb-0" style={{ cursor: 'pointer' }}>
-                <input type="radio" name="payments" value="unpaid" defaultChecked className="form-check-input mt-0" style={{ cursor: 'pointer' }} />
-                <span>Unpaid</span>
-              </label>
-            </div>
+            <ButtonGroup size="sm">
+              <BSButton
+                variant={payments === 'all' ? "primary" : "outline-secondary"}
+                onClick={() => setPayments('all')}
+              >
+                All
+              </BSButton>
+              <BSButton
+                variant={payments === 'unpaid' ? "primary" : "outline-secondary"}
+                onClick={() => setPayments('unpaid')}
+              >
+                Unpaid
+              </BSButton>
+              <BSButton
+                variant={payments === 'paid' ? "primary" : "outline-secondary"}
+                onClick={() => setPayments('paid')}
+              >
+                Paid
+              </BSButton>
+            </ButtonGroup>
           </div>
         </div>
 
@@ -586,6 +604,21 @@ const TableView = () => {
   const [showGMModal, setShowGMModal] = React.useState(false);
   const [selectedQuoteId, setSelectedQuoteId] = React.useState<string>('');
   const [quotesWithCOGS, setQuotesWithCOGS] = React.useState(quotesData);
+
+  const [milestones, setMilestones] = React.useState({
+    complete: true,
+    quoted: false,
+    closed: false
+  });
+  const [scheduling, setScheduling] = React.useState<'all' | 'scheduled' | 'unscheduled'>('all');
+  const [payments, setPayments] = React.useState<'all' | 'unpaid' | 'paid'>('all');
+
+  const toggleMilestone = (milestone: 'complete' | 'quoted' | 'closed') => {
+    setMilestones(prev => ({
+      ...prev,
+      [milestone]: !prev[milestone]
+    }));
+  };
 
   const handleAddCOGS = (quoteId: string) => {
     setSelectedQuoteId(quoteId);
