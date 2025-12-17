@@ -53,20 +53,6 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
         </div>
 
         <div className="d-flex align-items-center flex-wrap gap-3">
-          <div className="btn-group" role="group">
-            {viewButtons.map((btn) => (
-              <Button
-                key={btn.value}
-                variant={view === btn.value ? 'primary' : 'outline-secondary'}
-                size="sm"
-                className="px-3"
-                onClick={() => onViewChange(btn.value)}
-              >
-                {btn.label}
-              </Button>
-            ))}
-          </div>
-
           <div className="d-flex align-items-center gap-1">
             <Button
               variant="outline-secondary"
@@ -118,6 +104,20 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             >
               <ChevronsRightIcon size={6} />
             </Button>
+          </div>
+
+          <div className="btn-group" role="group">
+            {viewButtons.map((btn) => (
+              <Button
+                key={btn.value}
+                variant={view === btn.value ? 'primary' : 'outline-secondary'}
+                size="sm"
+                className="px-3"
+                onClick={() => onViewChange(btn.value)}
+              >
+                {btn.label}
+              </Button>
+            ))}
           </div>
 
           <button
