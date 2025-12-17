@@ -64,27 +64,27 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
         </div>
 
         <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
-          <div className="d-flex align-items-center gap-2">
+          <div className="d-flex align-items-center gap-1">
             <Button
               variant="outline-secondary"
               size="sm"
-              className="px-4"
+              className="px-2 py-1"
               onClick={() => {
                 onPrevious();
                 onPrevious();
               }}
               title="Previous year"
             >
-              <ChevronsLeftIcon size={16} />
+              <ChevronsLeftIcon size={6} />
             </Button>
             <Button
               variant="outline-secondary"
               size="sm"
-              className="px-4"
+              className="px-2 py-1"
               onClick={onPrevious}
               title={view === 'month' ? 'Previous month' : view === 'week' ? 'Previous week' : 'Previous day'}
             >
-              <ChevronLeftIcon size={16} />
+              <ChevronLeftIcon size={6} />
             </Button>
             <Button
               variant="primary"
@@ -97,23 +97,23 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             <Button
               variant="outline-secondary"
               size="sm"
-              className="px-4"
+              className="px-2 py-1"
               onClick={onNext}
               title={view === 'month' ? 'Next month' : view === 'week' ? 'Next week' : 'Next day'}
             >
-              <ChevronRightIcon size={16} />
+              <ChevronRightIcon size={6} />
             </Button>
             <Button
               variant="outline-secondary"
               size="sm"
-              className="px-4"
+              className="px-2 py-1"
               onClick={() => {
                 onNext();
                 onNext();
               }}
               title="Next year"
             >
-              <ChevronsRightIcon size={16} />
+              <ChevronsRightIcon size={6} />
             </Button>
           </div>
 
