@@ -65,52 +65,29 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             <span className="text-secondary">{formatMonthYear(currentDate)}</span>
           </div>
 
-          <div className="d-flex align-items-center gap-1" style={{ justifyContent: 'center', flex: 1 }}>
+          <div className="d-flex align-items-center gap-2" style={{ flexShrink: 0 }}>
             <Button
-              variant="outline-secondary"
+              variant="link"
               size="sm"
-              className="px-2 py-1"
+              className="p-1 text-secondary text-decoration-none"
               onClick={() => {
                 onPrevious();
                 onPrevious();
               }}
               title="Previous year"
             >
-              <ChevronsLeftIcon size={6} />
+              <ChevronsLeftIcon size={20} />
             </Button>
             <Button
-              variant="outline-secondary"
+              variant="link"
               size="sm"
-              className="px-2 py-1"
+              className="p-1 text-secondary text-decoration-none"
               onClick={onPrevious}
               title={view === 'month' ? 'Previous month' : view === 'week' ? 'Previous week' : 'Previous day'}
             >
-              <ChevronLeftIcon size={6} />
+              <ChevronLeftIcon size={20} />
             </Button>
-            <Button
-              variant="outline-secondary"
-              size="sm"
-              className="px-2 py-1"
-              onClick={onNext}
-              title={view === 'month' ? 'Next month' : view === 'week' ? 'Next week' : 'Next day'}
-            >
-              <ChevronRightIcon size={6} />
-            </Button>
-            <Button
-              variant="outline-secondary"
-              size="sm"
-              className="px-2 py-1"
-              onClick={() => {
-                onNext();
-                onNext();
-              }}
-              title="Next year"
-            >
-              <ChevronsRightIcon size={6} />
-            </Button>
-          </div>
 
-          <div className="d-flex align-items-center gap-1" style={{ flexShrink: 0 }}>
             <div className="btn-group" role="group">
               {viewButtons.map((btn) => (
                 <Button
@@ -124,6 +101,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
                 </Button>
               ))}
             </div>
+
             <Button
               variant="primary"
               size="sm"
@@ -131,6 +109,28 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
               onClick={onToday}
             >
               Today
+            </Button>
+
+            <Button
+              variant="link"
+              size="sm"
+              className="p-1 text-secondary text-decoration-none"
+              onClick={onNext}
+              title={view === 'month' ? 'Next month' : view === 'week' ? 'Next week' : 'Next day'}
+            >
+              <ChevronRightIcon size={20} />
+            </Button>
+            <Button
+              variant="link"
+              size="sm"
+              className="p-1 text-secondary text-decoration-none"
+              onClick={() => {
+                onNext();
+                onNext();
+              }}
+              title="Next year"
+            >
+              <ChevronsRightIcon size={20} />
             </Button>
           </div>
         </div>
