@@ -44,16 +44,16 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
     <div className="px-3 pt-3">
       <div className="bg-white rounded-3 pt-3 pb-3 px-3 border shadow-sm">
         <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-3">
-          <div className="d-flex align-items-center gap-3">
-            <Button
-              variant="outline-secondary"
-              size="sm"
-              className="p-2"
+          <div className="d-flex align-items-center gap-2">
+            <button
+              type="button"
+              className="btn p-1 text-secondary"
               onClick={onToggleSidebar}
               title={sidebarCollapsed ? 'Show filters' : 'Hide filters'}
+              style={{ border: 'none', background: 'transparent' }}
             >
-              {sidebarCollapsed ? <PanelLeftOpenIcon size={16} /> : <PanelLeftCloseIcon size={16} />}
-            </Button>
+              {sidebarCollapsed ? <PanelLeftOpenIcon size={20} /> : <PanelLeftCloseIcon size={20} />}
+            </button>
 
             <div className="d-flex align-items-baseline gap-3">
               <h1 className="h3 fw-bold text-dark mb-0">Calendar</h1>
@@ -61,6 +61,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             </div>
           </div>
 
+          <CalendarLegend />
         </div>
 
         <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
@@ -130,10 +131,6 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
               </Button>
             ))}
           </div>
-        </div>
-
-        <div className="mt-3 pt-2 border-top">
-          <CalendarLegend />
         </div>
       </div>
     </div>
