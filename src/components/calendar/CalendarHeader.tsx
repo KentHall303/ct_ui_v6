@@ -46,22 +46,24 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
         <div className="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-3">
           <div className="d-flex align-items-baseline gap-3">
             <h1 className="h3 fw-bold text-dark mb-0">Calendar</h1>
-            <span className="text-secondary">{formatMonthYear(currentDate)}</span>
           </div>
 
           <CalendarLegend />
         </div>
 
         <div className="d-flex align-items-center gap-3" style={{ justifyContent: 'space-between', flex: 1 }}>
-          <button
-            type="button"
-            className="btn p-1 text-secondary"
-            onClick={onToggleSidebar}
-            title={sidebarCollapsed ? 'Show filters' : 'Hide filters'}
-            style={{ border: 'none', background: 'transparent', flexShrink: 0 }}
-          >
-            {sidebarCollapsed ? <PanelLeftOpenIcon size={20} /> : <PanelLeftCloseIcon size={20} />}
-          </button>
+          <div className="d-flex align-items-center gap-2" style={{ flexShrink: 0 }}>
+            <button
+              type="button"
+              className="btn p-1 text-secondary"
+              onClick={onToggleSidebar}
+              title={sidebarCollapsed ? 'Show filters' : 'Hide filters'}
+              style={{ border: 'none', background: 'transparent', flexShrink: 0 }}
+            >
+              {sidebarCollapsed ? <PanelLeftOpenIcon size={20} /> : <PanelLeftCloseIcon size={20} />}
+            </button>
+            <span className="text-secondary">{formatMonthYear(currentDate)}</span>
+          </div>
 
           <div className="d-flex align-items-center gap-1" style={{ justifyContent: 'center', flex: 1 }}>
             <Button
@@ -86,14 +88,6 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
               <ChevronLeftIcon size={6} />
             </Button>
             <Button
-              variant="primary"
-              size="sm"
-              className="px-4"
-              onClick={onToday}
-            >
-              Today
-            </Button>
-            <Button
               variant="outline-secondary"
               size="sm"
               className="px-2 py-1"
@@ -116,18 +110,28 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             </Button>
           </div>
 
-          <div className="btn-group" role="group" style={{ flexShrink: 0 }}>
-            {viewButtons.map((btn) => (
-              <Button
-                key={btn.value}
-                variant={view === btn.value ? 'primary' : 'outline-secondary'}
-                size="sm"
-                className="px-3"
-                onClick={() => onViewChange(btn.value)}
-              >
-                {btn.label}
-              </Button>
-            ))}
+          <div className="d-flex align-items-center gap-1" style={{ flexShrink: 0 }}>
+            <div className="btn-group" role="group">
+              {viewButtons.map((btn) => (
+                <Button
+                  key={btn.value}
+                  variant={view === btn.value ? 'primary' : 'outline-secondary'}
+                  size="sm"
+                  className="px-3"
+                  onClick={() => onViewChange(btn.value)}
+                >
+                  {btn.label}
+                </Button>
+              ))}
+            </div>
+            <Button
+              variant="primary"
+              size="sm"
+              className="px-4"
+              onClick={onToday}
+            >
+              Today
+            </Button>
           </div>
         </div>
       </div>
