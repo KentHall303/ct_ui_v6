@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Button } from '../bootstrap/Button';
-import { Calendar } from '../../services/calendarService';
+import { Calendar, CalendarEventWithCalendar } from '../../services/calendarService';
 import { RefreshCw } from 'lucide-react';
+import { getVisibleDateRange, isEventOnDate } from '../../utils/dateUtils';
 
 interface CalendarSidebarProps {
   calendars: Calendar[];
@@ -12,6 +13,9 @@ interface CalendarSidebarProps {
   onRefresh: () => void;
   collapsed: boolean;
   isLoading?: boolean;
+  events?: CalendarEventWithCalendar[];
+  view?: 'month' | 'week' | 'day' | 'agenda';
+  currentDate?: Date;
 }
 
 export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
@@ -22,8 +26,31 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
   onClearAll,
   onRefresh,
   collapsed,
-  isLoading = false
+  isLoading = false,
+  events = [],
+  view = 'month',
+  currentDate = new Date()
 }) => {
+  const eventCountsByCalendar = useMemo(() => {
+    const { start, end } = getVisibleDateRange(view, currentDate);
+    const counts: Record<string, number> = {};
+
+    events.forEach(event => {
+      if (!event.calendar_id) return;
+
+      const eventStart = new Date(event.start_date);
+      const eventEnd = new Date(event.end_date);
+      eventStart.setHours(0, 0, 0, 0);
+      eventEnd.setHours(23, 59, 59, 999);
+
+      if (eventEnd >= start && eventStart <= end) {
+        counts[event.calendar_id] = (counts[event.calendar_id] || 0) + 1;
+      }
+    });
+
+    return counts;
+  }, [events, view, currentDate]);
+
   if (collapsed) {
     return null;
   }
@@ -73,6 +100,7 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
           <div className="d-flex flex-column gap-3">
             {activeCalendars.map((calendar) => {
               const isSelected = selectedCalendars.includes(calendar.id);
+              const eventCount = eventCountsByCalendar[calendar.id] || 0;
               return (
                 <label
                   key={calendar.id}
@@ -111,9 +139,30 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                       </svg>
                     )}
                   </div>
-                  <span className="fw-medium text-dark" style={{ fontSize: '0.95rem' }}>
+                  <span
+                    className={`text-dark ${isSelected ? 'fw-bold' : ''}`}
+                    style={{ fontSize: '0.95rem', flex: 1 }}
+                  >
                     {calendar.name}
                   </span>
+                  {eventCount > 0 && (
+                    <span
+                      className="d-flex align-items-center justify-content-center"
+                      style={{
+                        backgroundColor: calendar.color,
+                        color: 'white',
+                        fontSize: '0.7rem',
+                        fontWeight: 600,
+                        minWidth: '20px',
+                        height: '20px',
+                        borderRadius: '10px',
+                        padding: '0 6px',
+                        flexShrink: 0
+                      }}
+                    >
+                      {eventCount}
+                    </span>
+                  )}
                 </label>
               );
             })}

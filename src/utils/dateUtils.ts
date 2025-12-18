@@ -43,7 +43,9 @@ export function getMonthDays(date: Date): Date[] {
     days.push(new Date(year, month, day));
   }
 
-  const remainingDays = 42 - days.length;
+  const totalNeeded = startDayOfWeek + lastDay.getDate();
+  const totalRows = totalNeeded <= 35 ? 35 : 42;
+  const remainingDays = totalRows - days.length;
   for (let i = 1; i <= remainingDays; i++) {
     days.push(new Date(year, month + 1, i));
   }
@@ -156,4 +158,33 @@ export function formatTimeRange(startDate: string, endDate: string): string {
     return `${h}:${m}`;
   };
   return `${formatHour(start)} - ${formatHour(end)}`;
+}
+
+export function getVisibleDateRange(
+  view: 'month' | 'week' | 'day' | 'agenda',
+  currentDate: Date
+): { start: Date; end: Date } {
+  if (view === 'day') {
+    const start = new Date(currentDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(currentDate);
+    end.setHours(23, 59, 59, 999);
+    return { start, end };
+  }
+
+  if (view === 'week') {
+    const weekDays = getWeekDays(currentDate);
+    const start = new Date(weekDays[0]);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(weekDays[6]);
+    end.setHours(23, 59, 59, 999);
+    return { start, end };
+  }
+
+  const monthDays = getMonthDays(currentDate);
+  const start = new Date(monthDays[0]);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(monthDays[monthDays.length - 1]);
+  end.setHours(23, 59, 59, 999);
+  return { start, end };
 }

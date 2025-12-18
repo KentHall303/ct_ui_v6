@@ -75,6 +75,9 @@ export const CalendarRedesigned: React.FC = () => {
             onRefresh={handleRefresh}
             collapsed={calendar.sidebarCollapsed}
             isLoading={calendar.isLoading}
+            events={calendar.events}
+            view={calendar.view}
+            currentDate={calendar.currentDate}
           />
 
           <div className="flex-fill d-flex flex-column" style={{ minHeight: 0, overflow: 'hidden' }}>
