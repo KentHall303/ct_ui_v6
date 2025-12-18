@@ -15,7 +15,7 @@ interface MonthViewProps {
   onDateClick?: (date: Date) => void;
 }
 
-const weekDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
 export const MonthView: React.FC<MonthViewProps> = ({
   currentDate,

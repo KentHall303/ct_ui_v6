@@ -17,7 +17,7 @@ interface WeekViewProps {
 const HOUR_HEIGHT = 60;
 const TIME_COLUMN_WIDTH = 60;
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
-const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const WEEK_DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
 
 function hexToRgba(hex: string, alpha: number): string {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -174,25 +174,22 @@ export const WeekView: React.FC<WeekViewProps> = ({
               return (
                 <div
                   key={index}
-                  className="flex-fill text-center py-2"
+                  className="flex-fill text-center py-2 bg-light"
                   style={{
-                    backgroundColor: today ? 'rgba(13, 110, 253, 0.05)' : undefined,
                     borderRight: index < 6 ? '1px solid #e9ecef' : undefined
                   }}
                 >
                   <div
-                    className="small fw-semibold"
+                    className="small fw-semibold text-secondary"
                     style={{
-                      color: today ? '#0d6efd' : '#6c757d',
                       fontSize: '0.7rem'
                     }}
                   >
                     {WEEK_DAYS[index]}
                   </div>
                   <div
-                    className="fw-bold"
+                    className="fw-bold text-secondary"
                     style={{
-                      color: today ? '#0d6efd' : '#212529',
                       fontSize: '1.25rem'
                     }}
                   >

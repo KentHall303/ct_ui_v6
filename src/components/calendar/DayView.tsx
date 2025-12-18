@@ -175,20 +175,16 @@ export const DayView: React.FC<DayViewProps> = ({
           <div style={{ width: TIME_COLUMN_WIDTH, flexShrink: 0 }} />
           <div className="flex-fill d-flex position-relative">
             <div
-              className="flex-fill text-center py-2"
-              style={{
-                backgroundColor: today ? 'rgba(13, 110, 253, 0.05)' : undefined
-              }}
+              className="flex-fill text-center py-2 bg-light"
             >
               <div
-                className="fw-bold"
+                className="small fw-semibold text-secondary"
                 style={{
-                  color: today ? '#0d6efd' : '#212529',
-                  fontSize: '0.95rem',
+                  fontSize: '0.7rem',
                   letterSpacing: '0.5px'
                 }}
               >
-                {formatFullDayDate(currentDate)}
+                {formatFullDayDate(currentDate).toUpperCase()}
               </div>
             </div>
           </div>
