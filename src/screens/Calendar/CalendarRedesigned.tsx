@@ -34,7 +34,8 @@ export const CalendarRedesigned: React.FC = () => {
   };
 
   const handleDateClick = (date: Date) => {
-    console.log('Date clicked:', date);
+    calendar.setCurrentDate(date);
+    calendar.setView('day');
   };
 
   const handleRefresh = () => {

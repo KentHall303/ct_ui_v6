@@ -82,7 +82,7 @@ export const DayCell: React.FC<DayCellProps> = ({
   const handleOverflowMouseEnter = (e: React.MouseEvent) => {
     const rect = e.currentTarget.getBoundingClientRect();
     setPopoverPosition({
-      top: rect.bottom + 4,
+      top: rect.bottom - 2,
       left: rect.left
     });
     setShowPopover(true);
