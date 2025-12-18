@@ -2,8 +2,6 @@ import React from 'react';
 import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
-  ChevronsLeft as ChevronsLeftIcon,
-  ChevronsRight as ChevronsRightIcon,
   PanelLeftClose as PanelLeftCloseIcon,
   PanelLeftOpen as PanelLeftOpenIcon
 } from 'lucide-react';
@@ -92,18 +90,6 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
               variant="link"
               size="sm"
               className="p-1 text-secondary text-decoration-none"
-              onClick={() => {
-                onPrevious();
-                onPrevious();
-              }}
-              title="Previous year"
-            >
-              <ChevronsLeftIcon size={20} />
-            </Button>
-            <Button
-              variant="link"
-              size="sm"
-              className="p-1 text-secondary text-decoration-none"
               onClick={onPrevious}
               title={view === 'month' ? 'Previous month' : view === 'week' ? 'Previous week' : 'Previous day'}
             >
@@ -127,18 +113,6 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
               title={view === 'month' ? 'Next month' : view === 'week' ? 'Next week' : 'Next day'}
             >
               <ChevronRightIcon size={20} />
-            </Button>
-            <Button
-              variant="link"
-              size="sm"
-              className="p-1 text-secondary text-decoration-none"
-              onClick={() => {
-                onNext();
-                onNext();
-              }}
-              title="Next year"
-            >
-              <ChevronsRightIcon size={20} />
             </Button>
           </div>
         </div>
