@@ -3,7 +3,7 @@ import { useCalendar } from '../../hooks/useCalendar';
 import { CalendarHeader } from '../../components/calendar/CalendarHeader';
 import { CalendarSidebar } from '../../components/calendar/CalendarSidebar';
 import { MonthView } from '../../components/calendar/MonthView';
-import { CalendarEventWithEstimator } from '../../services/calendarService';
+import { CalendarEventWithCalendar } from '../../services/calendarService';
 
 export const CalendarRedesigned: React.FC = () => {
   const calendar = useCalendar();
@@ -23,31 +23,20 @@ export const CalendarRedesigned: React.FC = () => {
     return () => window.removeEventListener('resize', computeHeight);
   }, []);
 
-  const handleSelectAll = () => {
-    const allEstimatorIds = calendar.estimators.map(e => e.id);
-    allEstimatorIds.forEach(id => {
-      if (!calendar.selectedEstimators.includes(id)) {
-        calendar.toggleEstimator(id);
-      }
-    });
-  };
-
-  const handleClearAll = () => {
-    calendar.selectedEstimators.forEach(id => {
-      calendar.toggleEstimator(id);
-    });
-  };
-
   const handleToggleSidebar = () => {
     calendar.setSidebarCollapsed(!calendar.sidebarCollapsed);
   };
 
-  const handleEventClick = (event: CalendarEventWithEstimator) => {
+  const handleEventClick = (event: CalendarEventWithCalendar) => {
     console.log('Event clicked:', event);
   };
 
   const handleDateClick = (date: Date) => {
     console.log('Date clicked:', date);
+  };
+
+  const handleRefresh = () => {
+    calendar.refreshData();
   };
 
   return (
@@ -76,18 +65,14 @@ export const CalendarRedesigned: React.FC = () => {
           }}
         >
           <CalendarSidebar
-            estimators={calendar.estimators}
-            selectedEstimators={calendar.selectedEstimators}
-            onToggleEstimator={calendar.toggleEstimator}
-            onSelectAll={handleSelectAll}
-            onClearAll={handleClearAll}
+            calendars={calendar.calendars}
+            selectedCalendars={calendar.selectedCalendars}
+            onToggleCalendar={calendar.toggleCalendar}
+            onSelectAll={calendar.selectAllCalendars}
+            onClearAll={calendar.clearAllCalendars}
+            onRefresh={handleRefresh}
             collapsed={calendar.sidebarCollapsed}
-            rateFilter={calendar.rateFilter}
-            skillFilters={calendar.skillFilters}
-            availableSkills={calendar.availableSkills}
-            onRateFilterChange={calendar.setRateFilter}
-            onSkillToggle={calendar.toggleSkillFilter}
-            onClearAllFilters={calendar.clearAllFilters}
+            isLoading={calendar.isLoading}
           />
 
           <div className="flex-fill d-flex flex-column" style={{ minHeight: 0, overflow: 'hidden' }}>

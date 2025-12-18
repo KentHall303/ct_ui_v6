@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Button, Row, Col, Alert } from 'react-bootstrap';
-import { CalendarEventWithEstimator, updateCalendarEvent, fetchEstimators, Estimator } from '../../services/calendarService';
-import { X, Calendar, Clock, User, DollarSign, Trash2 } from 'lucide-react';
+import { CalendarEventWithCalendar, updateCalendarEvent, fetchCalendars, Calendar } from '../../services/calendarService';
+import { X, Calendar as CalendarIcon, Clock, User, DollarSign, Trash2 } from 'lucide-react';
 
 interface EditAppointmentModalProps {
   show: boolean;
   onHide: () => void;
-  event: CalendarEventWithEstimator | null;
+  event: CalendarEventWithCalendar | null;
   onSave: () => void;
   onDelete?: (eventId: string) => void;
 }
@@ -25,7 +25,7 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
     start_time: '',
     end_date: '',
     end_time: '',
-    estimator_id: '',
+    calendar_id: '',
     amount: '',
     status: 'pending' as 'pending' | 'active' | 'completed' | 'overdue',
     event_type: 'quote' as 'quote' | 'installation' | 'inspection' | 'follow_up',
@@ -33,13 +33,13 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
     is_all_day: false,
   });
 
-  const [estimators, setEstimators] = useState<Estimator[]>([]);
+  const [calendars, setCalendars] = useState<Calendar[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
   useEffect(() => {
-    loadEstimators();
+    loadCalendars();
   }, []);
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
         start_time: event.is_all_day ? '' : startDate.toTimeString().slice(0, 5),
         end_date: endDate.toISOString().split('T')[0],
         end_time: event.is_all_day ? '' : endDate.toTimeString().slice(0, 5),
-        estimator_id: event.estimator_id || '',
+        calendar_id: event.calendar_id || '',
         amount: event.amount?.toString() || '',
         status: event.status,
         event_type: event.event_type,
@@ -66,9 +66,9 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
     }
   }, [event, show]);
 
-  const loadEstimators = async () => {
-    const data = await fetchEstimators();
-    setEstimators(data);
+  const loadCalendars = async () => {
+    const data = await fetchCalendars();
+    setCalendars(data);
   };
 
   const handleChange = (field: string, value: any) => {
@@ -98,7 +98,7 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
         contact_name: formData.contact_name,
         start_date: startDateTime.toISOString(),
         end_date: endDateTime.toISOString(),
-        estimator_id: formData.estimator_id || null,
+        calendar_id: formData.calendar_id || null,
         amount: formData.amount ? parseFloat(formData.amount) : null,
         status: formData.status,
         event_type: formData.event_type,
@@ -138,7 +138,7 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
     <Modal show={show} onHide={onHide} size="lg" centered>
       <Modal.Header className="border-0 pb-0">
         <Modal.Title className="h5 fw-bold">
-          <Calendar size={20} className="me-2" />
+          <CalendarIcon size={20} className="me-2" />
           Edit Appointment
         </Modal.Title>
         <button
@@ -191,7 +191,7 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
             <Col md={6}>
               <Form.Group>
                 <Form.Label className="small fw-semibold">
-                  <Calendar size={14} className="me-1" />
+                  <CalendarIcon size={14} className="me-1" />
                   Start Date
                 </Form.Label>
                 <Form.Control
@@ -221,7 +221,7 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
             <Col md={6}>
               <Form.Group>
                 <Form.Label className="small fw-semibold">
-                  <Calendar size={14} className="me-1" />
+                  <CalendarIcon size={14} className="me-1" />
                   End Date
                 </Form.Label>
                 <Form.Control
@@ -261,16 +261,16 @@ export const EditAppointmentModal: React.FC<EditAppointmentModalProps> = ({
               <Form.Group>
                 <Form.Label className="small fw-semibold">
                   <User size={14} className="me-1" />
-                  Estimator
+                  Calendar
                 </Form.Label>
                 <Form.Select
-                  value={formData.estimator_id}
-                  onChange={(e) => handleChange('estimator_id', e.target.value)}
+                  value={formData.calendar_id}
+                  onChange={(e) => handleChange('calendar_id', e.target.value)}
                 >
-                  <option value="">Select Estimator</option>
-                  {estimators.map(est => (
-                    <option key={est.id} value={est.id}>
-                      {est.name}
+                  <option value="">Select Calendar</option>
+                  {calendars.map(cal => (
+                    <option key={cal.id} value={cal.id}>
+                      {cal.name}
                     </option>
                   ))}
                 </Form.Select>

@@ -10,7 +10,7 @@ import { JobsReportsFSModal } from "../../components/modals/JobsReportsFSModal";
 import { EditAppointmentModal } from "../../components/modals/EditAppointmentModal";
 import { supabase } from "../../lib/supabase";
 import { sampleCalendarEvents, CalendarEvent, isEventStart, isEventEnd, isEventMiddle } from "../../data/sampleCalendarData";
-import { fetchCalendarEvents, fetchEstimators, CalendarEventWithEstimator, updateCalendarEvent } from "../../services/calendarService";
+import { fetchCalendarEventsWithCalendar, fetchCalendars, CalendarEventWithCalendar, updateCalendarEvent, Calendar } from "../../services/calendarService";
 import { fetchSubcontractors, Subcontractor } from "../../services/subcontractorService";
 
 const actionButtons = [
@@ -891,15 +891,15 @@ const DispatchingView = ({
   const [selectedDate, setSelectedDate] = React.useState(new Date(2025, 8, 15)); // Sept 15, 2025
   const [selectedSubcontractors, setSelectedSubcontractors] = React.useState<string[]>([]);
   const [subcontractors, setSubcontractors] = React.useState<Subcontractor[]>([]);
-  const [events, setEvents] = React.useState<CalendarEventWithEstimator[]>([]);
-  const [draggedEvent, setDraggedEvent] = React.useState<CalendarEventWithEstimator | null>(null);
+  const [events, setEvents] = React.useState<CalendarEventWithCalendar[]>([]);
+  const [draggedEvent, setDraggedEvent] = React.useState<CalendarEventWithCalendar | null>(null);
   const [viewMode, setViewMode] = React.useState<'timeline' | 'map'>('timeline');
   const [showEditModal, setShowEditModal] = React.useState(false);
-  const [selectedEvent, setSelectedEvent] = React.useState<CalendarEventWithEstimator | null>(null);
+  const [selectedEvent, setSelectedEvent] = React.useState<CalendarEventWithCalendar | null>(null);
   const [dbEstimators, setDbEstimators] = React.useState<any[]>([]);
   const [allDbEstimators, setAllDbEstimators] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [resizingEvent, setResizingEvent] = React.useState<{ event: CalendarEventWithEstimator; startX: number; originalWidth: number } | null>(null);
+  const [resizingEvent, setResizingEvent] = React.useState<{ event: CalendarEventWithCalendar; startX: number; originalWidth: number } | null>(null);
 
   React.useLayoutEffect(() => {
     function computeHeight() {
@@ -950,27 +950,16 @@ const DispatchingView = ({
       const endOfDay = new Date(selectedDate);
       endOfDay.setHours(23, 59, 59, 999);
 
-      const filters: any = {};
-      if (rateFilter.min !== undefined || rateFilter.max !== undefined) {
-        filters.minRate = rateFilter.min;
-        filters.maxRate = rateFilter.max;
-      }
-      if (skillFilters.length > 0) {
-        filters.skills = skillFilters;
-      }
-
-      const [eventsData, estimatorsData, allEstimatorsData, skillsData] = await Promise.all([
-        fetchCalendarEvents(startOfDay, endOfDay, selectedSubcontractors.length > 0 ? selectedSubcontractors : undefined),
-        fetchEstimators(Object.keys(filters).length > 0 ? filters : undefined),
-        fetchEstimators(),
-        import('../../services/calendarService').then(m => m.getAllSkills())
+      const [eventsData, calendarsData] = await Promise.all([
+        fetchCalendarEventsWithCalendar(startOfDay, endOfDay, selectedSubcontractors.length > 0 ? selectedSubcontractors : undefined),
+        fetchCalendars()
       ]);
 
       setEvents(eventsData);
-      setDbEstimators(estimatorsData);
-      setAllDbEstimators(allEstimatorsData);
+      setDbEstimators(calendarsData);
+      setAllDbEstimators(calendarsData);
       if (onAvailableSkillsLoad) {
-        onAvailableSkillsLoad(skillsData);
+        onAvailableSkillsLoad([]);
       }
     } catch (error) {
       console.error('Error loading calendar data:', error);
@@ -1051,7 +1040,7 @@ const DispatchingView = ({
     return endOnly.getTime() > startOnly.getTime();
   };
 
-  const getEventDayType = (event: CalendarEventWithEstimator, viewDate: Date): 'single' | 'start' | 'middle' | 'end' => {
+  const getEventDayType = (event: CalendarEventWithCalendar, viewDate: Date): 'single' | 'start' | 'middle' | 'end' => {
     const startDate = new Date(event.start_date);
     const endDate = new Date(event.end_date);
     const viewDateOnly = new Date(viewDate);
@@ -1163,7 +1152,7 @@ const DispatchingView = ({
     }
   };
 
-  const handleDragStart = (e: React.DragEvent, event: CalendarEventWithEstimator) => {
+  const handleDragStart = (e: React.DragEvent, event: CalendarEventWithCalendar) => {
     setDraggedEvent(event);
     e.dataTransfer.effectAllowed = 'move';
   };
@@ -1177,7 +1166,7 @@ const DispatchingView = ({
     setDraggedEvent(null);
   };
 
-  const handleEventClick = (event: CalendarEventWithEstimator, e: React.MouseEvent) => {
+  const handleEventClick = (event: CalendarEventWithCalendar, e: React.MouseEvent) => {
     // Only open modal if not dragging
     if (!draggedEvent) {
       setSelectedEvent(event);
@@ -1195,7 +1184,7 @@ const DispatchingView = ({
     handleModalClose();
   };
 
-  const handleResizeStart = (e: React.MouseEvent, event: CalendarEventWithEstimator) => {
+  const handleResizeStart = (e: React.MouseEvent, event: CalendarEventWithCalendar) => {
     e.stopPropagation();
     e.preventDefault();
     const target = (e.currentTarget as HTMLElement).parentElement;

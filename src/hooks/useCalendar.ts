@@ -1,11 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import {
-  fetchEstimators,
-  fetchCalendarEvents,
-  getAllSkills,
-  Estimator,
-  EstimatorFilters,
-  CalendarEventWithEstimator
+  fetchCalendars,
+  fetchCalendarEventsWithCalendar,
+  Calendar,
+  CalendarEventWithCalendar
 } from '../services/calendarService';
 
 export type CalendarView = 'month' | 'week' | 'day' | 'agenda';
@@ -13,118 +11,95 @@ export type CalendarView = 'month' | 'week' | 'day' | 'agenda';
 export interface UseCalendarReturn {
   currentDate: Date;
   view: CalendarView;
-  selectedEstimators: string[];
-  estimators: Estimator[];
-  allEstimators: Estimator[];
-  events: CalendarEventWithEstimator[];
+  selectedCalendars: string[];
+  calendars: Calendar[];
+  events: CalendarEventWithCalendar[];
   isLoading: boolean;
   searchTerm: string;
   sidebarCollapsed: boolean;
-  rateFilter: { min?: number; max?: number };
-  skillFilters: string[];
-  availableSkills: string[];
   setCurrentDate: (date: Date) => void;
   setView: (view: CalendarView) => void;
-  toggleEstimator: (estimatorId: string) => void;
+  toggleCalendar: (calendarId: string) => void;
+  selectAllCalendars: () => void;
+  clearAllCalendars: () => void;
   setSearchTerm: (term: string) => void;
   setSidebarCollapsed: (collapsed: boolean) => void;
-  setRateFilter: (filter: { min?: number; max?: number }) => void;
-  toggleSkillFilter: (skill: string) => void;
-  clearAllFilters: () => void;
   goToToday: () => void;
   goToPrevious: () => void;
   goToNext: () => void;
-  refreshEvents: () => Promise<void>;
+  refreshData: () => Promise<void>;
 }
 
 export function useCalendar(): UseCalendarReturn {
   const [currentDate, setCurrentDate] = useState<Date>(new Date());
   const [view, setView] = useState<CalendarView>('month');
-  const [selectedEstimators, setSelectedEstimators] = useState<string[]>([]);
-  const [allEstimators, setAllEstimators] = useState<Estimator[]>([]);
-  const [estimators, setEstimators] = useState<Estimator[]>([]);
-  const [events, setEvents] = useState<CalendarEventWithEstimator[]>([]);
+  const [selectedCalendars, setSelectedCalendars] = useState<string[]>([]);
+  const [calendars, setCalendars] = useState<Calendar[]>([]);
+  const [events, setEvents] = useState<CalendarEventWithCalendar[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
-  const [rateFilter, setRateFilter] = useState<{ min?: number; max?: number }>({});
-  const [skillFilters, setSkillFilters] = useState<string[]>([]);
-  const [availableSkills, setAvailableSkills] = useState<string[]>([]);
 
   useEffect(() => {
     loadInitialData();
   }, []);
 
   useEffect(() => {
-    loadEstimators();
-  }, [rateFilter, skillFilters]);
-
-  useEffect(() => {
     loadEvents();
-  }, [currentDate, view, selectedEstimators]);
+  }, [currentDate, view, selectedCalendars]);
 
   const loadInitialData = async () => {
-    const [allEstimatorsData, skills] = await Promise.all([
-      fetchEstimators(),
-      getAllSkills()
-    ]);
-    setAllEstimators(allEstimatorsData);
-    setEstimators(allEstimatorsData);
-    setAvailableSkills(skills);
-  };
-
-  const loadEstimators = async () => {
-    const filters: EstimatorFilters = {};
-
-    if (rateFilter.min !== undefined || rateFilter.max !== undefined) {
-      filters.minRate = rateFilter.min;
-      filters.maxRate = rateFilter.max;
-    }
-
-    if (skillFilters.length > 0) {
-      filters.skills = skillFilters;
-    }
-
-    const data = await fetchEstimators(Object.keys(filters).length > 0 ? filters : undefined);
-    setEstimators(data);
+    setIsLoading(true);
+    const calendarsData = await fetchCalendars();
+    setCalendars(calendarsData);
+    const allCalendarIds = calendarsData.map(c => c.id);
+    setSelectedCalendars(allCalendarIds);
+    setIsLoading(false);
   };
 
   const loadEvents = async () => {
+    if (calendars.length === 0 && selectedCalendars.length === 0) return;
+
     setIsLoading(true);
     const { startDate, endDate } = getDateRange(currentDate, view);
-    const data = await fetchCalendarEvents(
+    const data = await fetchCalendarEventsWithCalendar(
       startDate,
       endDate,
-      selectedEstimators.length > 0 ? selectedEstimators : undefined
+      selectedCalendars.length > 0 ? selectedCalendars : undefined
     );
     setEvents(data);
     setIsLoading(false);
   };
 
-  const refreshEvents = useCallback(async () => {
-    await loadEvents();
-  }, [currentDate, view, selectedEstimators]);
+  const refreshData = useCallback(async () => {
+    setIsLoading(true);
+    const calendarsData = await fetchCalendars();
+    setCalendars(calendarsData);
 
-  const toggleEstimator = useCallback((estimatorId: string) => {
-    setSelectedEstimators(prev =>
-      prev.includes(estimatorId)
-        ? prev.filter(id => id !== estimatorId)
-        : [...prev, estimatorId]
+    const { startDate, endDate } = getDateRange(currentDate, view);
+    const eventsData = await fetchCalendarEventsWithCalendar(
+      startDate,
+      endDate,
+      selectedCalendars.length > 0 ? selectedCalendars : undefined
+    );
+    setEvents(eventsData);
+    setIsLoading(false);
+  }, [currentDate, view, selectedCalendars]);
+
+  const toggleCalendar = useCallback((calendarId: string) => {
+    setSelectedCalendars(prev =>
+      prev.includes(calendarId)
+        ? prev.filter(id => id !== calendarId)
+        : [...prev, calendarId]
     );
   }, []);
 
-  const toggleSkillFilter = useCallback((skill: string) => {
-    setSkillFilters(prev =>
-      prev.includes(skill)
-        ? prev.filter(s => s !== skill)
-        : [...prev, skill]
-    );
-  }, []);
+  const selectAllCalendars = useCallback(() => {
+    setSelectedCalendars(calendars.map(c => c.id));
+  }, [calendars]);
 
-  const clearAllFilters = useCallback(() => {
-    setRateFilter({});
-    setSkillFilters([]);
-    setSelectedEstimators([]);
+  const clearAllCalendars = useCallback(() => {
+    setSelectedCalendars([]);
   }, []);
 
   const goToToday = useCallback(() => {
@@ -174,28 +149,23 @@ export function useCalendar(): UseCalendarReturn {
   return {
     currentDate,
     view,
-    selectedEstimators,
-    estimators,
-    allEstimators,
+    selectedCalendars,
+    calendars,
     events,
     isLoading,
     searchTerm,
     sidebarCollapsed,
-    rateFilter,
-    skillFilters,
-    availableSkills,
     setCurrentDate,
     setView,
-    toggleEstimator,
+    toggleCalendar,
+    selectAllCalendars,
+    clearAllCalendars,
     setSearchTerm,
     setSidebarCollapsed,
-    setRateFilter,
-    toggleSkillFilter,
-    clearAllFilters,
     goToToday,
     goToPrevious,
     goToNext,
-    refreshEvents
+    refreshData
   };
 }
 

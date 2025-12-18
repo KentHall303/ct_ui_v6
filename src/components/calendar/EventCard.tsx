@@ -1,51 +1,49 @@
 import React from 'react';
-import { CalendarEventWithEstimator } from '../../services/calendarService';
-import { formatTime, formatCurrency, isEventStart, isEventEnd, isEventMiddle } from '../../utils/dateUtils';
+import { CalendarEventWithCalendar } from '../../services/calendarService';
+import { formatTime, isEventStart, isEventEnd, isEventMiddle } from '../../utils/dateUtils';
 import { Edit } from 'lucide-react';
 
 interface EventCardProps {
-  event: CalendarEventWithEstimator;
+  event: CalendarEventWithCalendar;
   date: Date;
-  onClick?: (event: CalendarEventWithEstimator) => void;
-  onEditClick?: (event: CalendarEventWithEstimator) => void;
+  onClick?: (event: CalendarEventWithCalendar) => void;
+  onEditClick?: (event: CalendarEventWithCalendar) => void;
+}
+
+function hexToRgba(hex: string, alpha: number): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (result) {
+    const r = parseInt(result[1], 16);
+    const g = parseInt(result[2], 16);
+    const b = parseInt(result[3], 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  return hex;
 }
 
 export const EventCard: React.FC<EventCardProps> = ({ event, date, onClick, onEditClick }) => {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return { bg: 'bg-success', text: 'text-success', border: 'border-success' };
-      case 'pending':
-        return { bg: 'bg-warning', text: 'text-warning', border: 'border-warning' };
-      case 'overdue':
-        return { bg: 'bg-danger', text: 'text-danger', border: 'border-danger' };
-      case 'completed':
-        return { bg: 'bg-info', text: 'text-info', border: 'border-info' };
-      default:
-        return { bg: 'bg-secondary', text: 'text-secondary', border: 'border-secondary' };
-    }
-  };
+  const calendarColor = event.calendar?.color || '#6b7280';
 
-  const colors = getStatusColor(event.status);
   const isMultiDay = event.start_date !== event.end_date && !event.is_all_day;
   const isStart = isEventStart(event.start_date, date);
   const isEnd = isEventEnd(event.end_date, date);
   const isMiddle = isEventMiddle(event.start_date, event.end_date, date);
 
-  let borderRadius = '0.25rem';
+  let borderRadius = '4px';
   if (isMultiDay) {
     if (isStart && !isEnd) {
-      borderRadius = '0.25rem 0 0 0.25rem';
+      borderRadius = '4px 0 0 4px';
     } else if (isEnd && !isStart) {
-      borderRadius = '0 0.25rem 0.25rem 0';
+      borderRadius = '0 4px 4px 0';
     } else if (isMiddle) {
       borderRadius = '0';
     }
   }
 
-  const displayTime = event.is_all_day ? 'All Day' : formatTime(event.start_date);
-  const displayTitle = event.quote_number || event.title;
-  const displayAmount = event.amount ? formatCurrency(event.amount) : '';
+  const displayTime = event.is_all_day
+    ? 'All Day'
+    : `${formatTime(event.start_date)} - ${formatTime(event.end_date)}`;
+  const displayTitle = event.title;
 
   const handleEditClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -62,30 +60,32 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onClick, onEd
 
   return (
     <div
-      className={`${colors.bg} bg-opacity-10 ${colors.text} border ${colors.border} px-2 py-1`}
+      className="position-relative"
       style={{
         fontSize: '0.7rem',
         cursor: 'pointer',
         transition: 'all 0.15s ease',
         borderRadius,
-        position: 'relative',
+        backgroundColor: hexToRgba(calendarColor, 0.12),
+        borderLeft: `3px solid ${calendarColor}`,
+        padding: '4px 6px',
         ...(isMultiDay && {
-          borderLeft: isStart ? undefined : 'none',
-          borderRight: isEnd ? undefined : 'none',
+          borderLeftWidth: isStart ? '3px' : '0',
         })
       }}
       onClick={handleCardClick}
       onMouseEnter={(e) => {
         e.currentTarget.style.transform = 'scale(1.02)';
         e.currentTarget.style.zIndex = '10';
+        e.currentTarget.style.backgroundColor = hexToRgba(calendarColor, 0.2);
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.transform = 'scale(1)';
         e.currentTarget.style.zIndex = '1';
+        e.currentTarget.style.backgroundColor = hexToRgba(calendarColor, 0.12);
       }}
-      title={`${displayTitle}\n${event.contact_name || ''}\n${displayTime}\n${displayAmount}${isMultiDay ? '\nMulti-day event' : ''}`}
+      title={`${displayTitle}\n${displayTime}${isMultiDay ? '\nMulti-day event' : ''}`}
     >
-      {/* Edit Icon Button */}
       {isStart && onEditClick && (
         <button
           onClick={handleEditClick}
@@ -103,6 +103,7 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onClick, onEd
             justifyContent: 'center',
             transition: 'all 0.15s ease',
             zIndex: 2,
+            color: calendarColor
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.background = 'rgba(255, 255, 255, 1)';
@@ -113,7 +114,6 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onClick, onEd
             e.currentTarget.style.transform = 'scale(1)';
           }}
           title="Edit appointment"
-          className={colors.text}
         >
           <Edit size={10} />
         </button>
@@ -121,20 +121,37 @@ export const EventCard: React.FC<EventCardProps> = ({ event, date, onClick, onEd
 
       {isStart && (
         <>
-          <div className="fw-semibold text-truncate">{displayTime}</div>
-          <div className="text-truncate fw-bold" style={{ paddingRight: onEditClick ? '16px' : '0' }}>
+          <div
+            className="text-truncate fw-semibold"
+            style={{
+              color: '#666',
+              fontSize: '0.65rem',
+              lineHeight: 1.2
+            }}
+          >
+            {displayTime}
+          </div>
+          <div
+            className="text-truncate fw-bold"
+            style={{
+              paddingRight: onEditClick ? '16px' : '0',
+              color: '#333',
+              lineHeight: 1.3
+            }}
+          >
             {displayTitle}
           </div>
-          {event.contact_name && (
-            <div className="text-truncate opacity-75">{event.contact_name}</div>
-          )}
         </>
       )}
       {isMiddle && (
-        <div className="text-truncate fw-bold">{displayTitle} (cont.)</div>
+        <div className="text-truncate fw-bold" style={{ color: '#333' }}>
+          {displayTitle} (cont.)
+        </div>
       )}
       {isEnd && !isStart && (
-        <div className="text-truncate fw-bold">{displayTitle} (ends)</div>
+        <div className="text-truncate fw-bold" style={{ color: '#333' }}>
+          {displayTitle} (ends)
+        </div>
       )}
     </div>
   );

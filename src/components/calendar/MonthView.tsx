@@ -1,18 +1,17 @@
 import React from 'react';
-import { CalendarEventWithEstimator } from '../../services/calendarService';
+import { CalendarEventWithCalendar } from '../../services/calendarService';
 import { EventCard } from './EventCard';
 import {
   getMonthDays,
   isDateInMonth,
   isToday,
-  dateToString,
   isEventOnDate
 } from '../../utils/dateUtils';
 
 interface MonthViewProps {
   currentDate: Date;
-  events: CalendarEventWithEstimator[];
-  onEventClick?: (event: CalendarEventWithEstimator) => void;
+  events: CalendarEventWithCalendar[];
+  onEventClick?: (event: CalendarEventWithCalendar) => void;
   onDateClick?: (date: Date) => void;
 }
 
@@ -26,7 +25,7 @@ export const MonthView: React.FC<MonthViewProps> = ({
 }) => {
   const monthDays = getMonthDays(currentDate);
 
-  const getEventsForDate = (date: Date): CalendarEventWithEstimator[] => {
+  const getEventsForDate = (date: Date): CalendarEventWithCalendar[] => {
     return events.filter(event =>
       isEventOnDate(event.start_date, event.end_date, date)
     ).sort((a, b) => {
@@ -95,7 +94,6 @@ export const MonthView: React.FC<MonthViewProps> = ({
                         event={event}
                         date={date}
                         onClick={(e) => {
-                          e.stopPropagation?.();
                           onEventClick?.(event);
                         }}
                       />
