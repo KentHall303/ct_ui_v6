@@ -245,7 +245,8 @@ export const WeekView: React.FC<WeekViewProps> = ({
                   top: hour * HOUR_HEIGHT,
                   left: 0,
                   right: 0,
-                  height: HOUR_HEIGHT
+                  height: HOUR_HEIGHT,
+                  borderTop: '1px solid #e9ecef'
                 }}
               />
             ))}
@@ -335,32 +336,6 @@ export const WeekView: React.FC<WeekViewProps> = ({
             })}
           </div>
         </div>
-      </div>
-
-      <div
-        style={{
-          position: 'absolute',
-          top: 0,
-          bottom: 0,
-          left: TIME_COLUMN_WIDTH,
-          right: 0,
-          pointerEvents: 'none',
-          zIndex: 2
-        }}
-      >
-        {[0, 1, 2, 3, 4, 5, 6].map(index => (
-          <div
-            key={index}
-            style={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              left: `${(index / 7) * 100}%`,
-              width: '1px',
-              backgroundColor: '#dee2e6'
-            }}
-          />
-        ))}
       </div>
     </div>
   );
