@@ -6,11 +6,14 @@ import { MonthView } from '../../components/calendar/MonthView';
 import { WeekView } from '../../components/calendar/WeekView';
 import { DayView } from '../../components/calendar/DayView';
 import { CalendarEventWithCalendar } from '../../services/calendarService';
+import { EditAppointmentModal } from '../../components/modals/EditAppointmentModal';
 
 export const CalendarRedesigned: React.FC = () => {
   const calendar = useCalendar();
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [maxHeight, setMaxHeight] = useState<number | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEventWithCalendar | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   useLayoutEffect(() => {
     function computeHeight() {
@@ -30,7 +33,18 @@ export const CalendarRedesigned: React.FC = () => {
   };
 
   const handleEventClick = (event: CalendarEventWithCalendar) => {
-    console.log('Event clicked:', event);
+    setSelectedEvent(event);
+    setShowEditModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowEditModal(false);
+    setSelectedEvent(null);
+  };
+
+  const handleSaveEvent = () => {
+    calendar.refreshData();
+    handleCloseModal();
   };
 
   const handleDateClick = (date: Date) => {
@@ -122,6 +136,13 @@ export const CalendarRedesigned: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <EditAppointmentModal
+        show={showEditModal}
+        onHide={handleCloseModal}
+        event={selectedEvent}
+        onSave={handleSaveEvent}
+      />
     </div>
   );
 };

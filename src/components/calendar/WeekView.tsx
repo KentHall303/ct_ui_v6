@@ -288,7 +288,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
                             padding: '4px 6px',
                             cursor: 'pointer',
                             transition: 'all 0.15s ease',
-                            overflow: 'visible',
+                            overflow: 'hidden',
                             display: 'flex',
                             flexDirection: 'column'
                           }}
@@ -312,7 +312,10 @@ export const WeekView: React.FC<WeekViewProps> = ({
                                 color: '#666',
                                 lineHeight: 1.2,
                                 marginBottom: '2px',
-                                flexShrink: 0
+                                flexShrink: 0,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
                               }}
                             >
                               {isAllDay ? 'All Day' : formatCompactTimeRange(pos.event.start_date, pos.event.end_date)}
@@ -324,9 +327,9 @@ export const WeekView: React.FC<WeekViewProps> = ({
                               fontSize: '0.7rem',
                               color: '#333',
                               lineHeight: 1.3,
-                              wordWrap: 'break-word',
-                              overflowWrap: 'break-word',
-                              overflow: 'visible'
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
                             }}
                           >
                             {pos.event.title}
