@@ -3,6 +3,7 @@ import { useCalendar } from '../../hooks/useCalendar';
 import { CalendarHeader } from '../../components/calendar/CalendarHeader';
 import { CalendarSidebar } from '../../components/calendar/CalendarSidebar';
 import { MonthView } from '../../components/calendar/MonthView';
+import { WeekView } from '../../components/calendar/WeekView';
 import { CalendarEventWithCalendar } from '../../services/calendarService';
 
 export const CalendarRedesigned: React.FC = () => {
@@ -93,9 +94,11 @@ export const CalendarRedesigned: React.FC = () => {
                   />
                 )}
                 {calendar.view === 'week' && (
-                  <div className="d-flex align-items-center justify-content-center flex-fill text-secondary">
-                    Week view coming soon
-                  </div>
+                  <WeekView
+                    currentDate={calendar.currentDate}
+                    events={calendar.events}
+                    onEventClick={handleEventClick}
+                  />
                 )}
                 {calendar.view === 'day' && (
                   <div className="d-flex align-items-center justify-content-center flex-fill text-secondary">

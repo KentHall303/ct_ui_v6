@@ -114,3 +114,46 @@ export function formatDateTime(date: Date | string): string {
     hour12: true
   });
 }
+
+export function getWeekDays(date: Date): Date[] {
+  const days: Date[] = [];
+  const current = new Date(date);
+  const dayOfWeek = current.getDay();
+  current.setDate(current.getDate() - dayOfWeek);
+
+  for (let i = 0; i < 7; i++) {
+    days.push(new Date(current));
+    current.setDate(current.getDate() + 1);
+  }
+
+  return days;
+}
+
+export function getHourFromDate(dateString: string): number {
+  const d = new Date(dateString);
+  return d.getHours();
+}
+
+export function getMinuteFromDate(dateString: string): number {
+  const d = new Date(dateString);
+  return d.getMinutes();
+}
+
+export function getEventDurationInMinutes(startDate: string, endDate: string): number {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  return Math.max(30, (end.getTime() - start.getTime()) / (1000 * 60));
+}
+
+export function formatTimeRange(startDate: string, endDate: string): string {
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const formatHour = (d: Date) => {
+    const hours = d.getHours();
+    const minutes = d.getMinutes();
+    const h = hours.toString().padStart(2, '0');
+    const m = minutes.toString().padStart(2, '0');
+    return `${h}:${m}`;
+  };
+  return `${formatHour(start)} - ${formatHour(end)}`;
+}
