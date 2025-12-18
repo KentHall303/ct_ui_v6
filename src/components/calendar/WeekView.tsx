@@ -245,7 +245,6 @@ export const WeekView: React.FC<WeekViewProps> = ({
                   top: hour * HOUR_HEIGHT,
                   left: 0,
                   right: 0,
-                  borderTop: '1px solid #e9ecef',
                   height: HOUR_HEIGHT
                 }}
               />
