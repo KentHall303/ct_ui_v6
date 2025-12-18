@@ -17,7 +17,7 @@ interface WeekViewProps {
 const HOUR_HEIGHT = 60;
 const TIME_COLUMN_WIDTH = 60;
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
-const WEEK_DAYS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const WEEK_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 function hexToRgba(hex: string, alpha: number): string {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
