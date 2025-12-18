@@ -6,14 +6,15 @@ import { MonthView } from '../../components/calendar/MonthView';
 import { WeekView } from '../../components/calendar/WeekView';
 import { DayView } from '../../components/calendar/DayView';
 import { CalendarEventWithCalendar } from '../../services/calendarService';
-import { EditAppointmentModal } from '../../components/modals/EditAppointmentModal';
+import { EventDetailsPopup } from '../../components/calendar/EventDetailsPopup';
 
 export const CalendarRedesigned: React.FC = () => {
   const calendar = useCalendar();
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [maxHeight, setMaxHeight] = useState<number | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEventWithCalendar | null>(null);
-  const [showEditModal, setShowEditModal] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [popupPosition, setPopupPosition] = useState({ x: 0, y: 0 });
 
   useLayoutEffect(() => {
     function computeHeight() {
@@ -32,19 +33,18 @@ export const CalendarRedesigned: React.FC = () => {
     calendar.setSidebarCollapsed(!calendar.sidebarCollapsed);
   };
 
-  const handleEventClick = (event: CalendarEventWithCalendar) => {
+  const handleEventClick = (event: CalendarEventWithCalendar, clientX?: number, clientY?: number) => {
     setSelectedEvent(event);
-    setShowEditModal(true);
+    setPopupPosition({
+      x: clientX ?? window.innerWidth / 2,
+      y: clientY ?? window.innerHeight / 2
+    });
+    setShowPopup(true);
   };
 
-  const handleCloseModal = () => {
-    setShowEditModal(false);
+  const handleClosePopup = () => {
+    setShowPopup(false);
     setSelectedEvent(null);
-  };
-
-  const handleSaveEvent = () => {
-    calendar.refreshData();
-    handleCloseModal();
   };
 
   const handleDateClick = (date: Date) => {
@@ -137,12 +137,13 @@ export const CalendarRedesigned: React.FC = () => {
         </div>
       </div>
 
-      <EditAppointmentModal
-        show={showEditModal}
-        onHide={handleCloseModal}
-        event={selectedEvent}
-        onSave={handleSaveEvent}
-      />
+      {showPopup && selectedEvent && (
+        <EventDetailsPopup
+          event={selectedEvent}
+          position={popupPosition}
+          onClose={handleClosePopup}
+        />
+      )}
     </div>
   );
 };

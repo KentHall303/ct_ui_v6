@@ -12,7 +12,7 @@ import {
 interface WeekViewProps {
   currentDate: Date;
   events: CalendarEventWithCalendar[];
-  onEventClick?: (event: CalendarEventWithCalendar) => void;
+  onEventClick?: (event: CalendarEventWithCalendar, clientX?: number, clientY?: number) => void;
 }
 
 const HOUR_HEIGHT = 60;
@@ -292,7 +292,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
                             display: 'flex',
                             flexDirection: 'column'
                           }}
-                          onClick={() => onEventClick?.(pos.event)}
+                          onClick={(e) => onEventClick?.(pos.event, e.clientX, e.clientY)}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.backgroundColor = hexToRgba(calendarColor, 0.25);
                             e.currentTarget.style.transform = 'scale(1.02)';

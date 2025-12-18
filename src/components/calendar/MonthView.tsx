@@ -11,7 +11,7 @@ import {
 interface MonthViewProps {
   currentDate: Date;
   events: CalendarEventWithCalendar[];
-  onEventClick?: (event: CalendarEventWithCalendar) => void;
+  onEventClick?: (event: CalendarEventWithCalendar, clientX?: number, clientY?: number) => void;
   onDateClick?: (date: Date) => void;
 }
 

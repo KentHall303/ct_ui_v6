@@ -8,7 +8,7 @@ type DisplayMode = 'single' | 'multiple';
 interface ComfortEventCardProps {
   event: CalendarEventWithCalendar;
   mode: DisplayMode;
-  onClick?: (event: CalendarEventWithCalendar) => void;
+  onClick?: (event: CalendarEventWithCalendar, clientX?: number, clientY?: number) => void;
 }
 
 function hexToRgba(hex: string, alpha: number): string {
@@ -43,7 +43,7 @@ export const ComfortEventCard: React.FC<ComfortEventCardProps> = ({
           cursor: onClick ? 'pointer' : 'default',
           transition: 'all 0.15s ease'
         }}
-        onClick={() => onClick?.(event)}
+        onClick={(e) => onClick?.(event, e.clientX, e.clientY)}
         onMouseEnter={(e) => {
           if (onClick) {
             e.currentTarget.style.backgroundColor = hexToRgba(calendarColor, 0.15);
@@ -134,7 +134,7 @@ export const ComfortEventCard: React.FC<ComfortEventCardProps> = ({
         cursor: onClick ? 'pointer' : 'default',
         transition: 'all 0.15s ease'
       }}
-      onClick={() => onClick?.(event)}
+      onClick={(e) => onClick?.(event, e.clientX, e.clientY)}
       onMouseEnter={(e) => {
         if (onClick) {
           e.currentTarget.style.backgroundColor = hexToRgba(calendarColor, 0.15);
