@@ -166,17 +166,17 @@ export const WeekView: React.FC<WeekViewProps> = ({
   }, [currentDate]);
 
   return (
-    <div className="d-flex flex-column h-100">
+    <div className="d-flex flex-column h-100 position-relative">
       <div className="flex-shrink-0 bg-white border-bottom">
         <div className="d-flex">
           <div style={{ width: TIME_COLUMN_WIDTH, flexShrink: 0 }} />
-          <div className="flex-fill d-flex">
+          <div className="flex-fill d-flex position-relative">
             {weekDays.map((day, index) => {
               const today = isToday(day);
               return (
                 <div
                   key={index}
-                  className="flex-fill text-center py-2 border-start"
+                  className="flex-fill text-center py-2"
                   style={{
                     backgroundColor: today ? 'rgba(13, 110, 253, 0.05)' : undefined
                   }}
@@ -258,7 +258,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
               return (
                 <div
                   key={dayIndex}
-                  className="flex-fill position-relative border-start"
+                  className="flex-fill position-relative"
                   style={{
                     backgroundColor: today ? 'rgba(13, 110, 253, 0.02)' : undefined
                   }}
@@ -336,6 +336,32 @@ export const WeekView: React.FC<WeekViewProps> = ({
             })}
           </div>
         </div>
+      </div>
+
+      <div
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: TIME_COLUMN_WIDTH,
+          right: 0,
+          pointerEvents: 'none',
+          zIndex: 2
+        }}
+      >
+        {[0, 1, 2, 3, 4, 5, 6].map(index => (
+          <div
+            key={index}
+            style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              left: `${(index / 7) * 100}%`,
+              width: '1px',
+              backgroundColor: '#dee2e6'
+            }}
+          />
+        ))}
       </div>
     </div>
   );
