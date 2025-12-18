@@ -4,7 +4,8 @@ import {
   isToday,
   isSameDay,
   formatTimeRange,
-  isEventOnDate
+  isEventOnDate,
+  formatFullDayDate
 } from '../../utils/dateUtils';
 
 interface DayViewProps {
@@ -180,22 +181,14 @@ export const DayView: React.FC<DayViewProps> = ({
               }}
             >
               <div
-                className="small fw-semibold"
-                style={{
-                  color: today ? '#0d6efd' : '#6c757d',
-                  fontSize: '0.7rem'
-                }}
-              >
-                {WEEK_DAYS[dayOfWeek]}
-              </div>
-              <div
                 className="fw-bold"
                 style={{
                   color: today ? '#0d6efd' : '#212529',
-                  fontSize: '1.25rem'
+                  fontSize: '0.95rem',
+                  letterSpacing: '0.5px'
                 }}
               >
-                {currentDate.getDate()}
+                {formatFullDayDate(currentDate)}
               </div>
             </div>
           </div>

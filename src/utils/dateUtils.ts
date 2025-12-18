@@ -188,3 +188,41 @@ export function getVisibleDateRange(
   end.setHours(23, 59, 59, 999);
   return { start, end };
 }
+
+export function getWeekNumber(date: Date): number {
+  const target = new Date(date.valueOf());
+  const dayNumber = (date.getDay() + 6) % 7;
+  target.setDate(target.getDate() - dayNumber + 3);
+  const firstThursday = target.valueOf();
+  target.setMonth(0, 1);
+  if (target.getDay() !== 4) {
+    target.setMonth(0, 1 + ((4 - target.getDay()) + 7) % 7);
+  }
+  return 1 + Math.ceil((firstThursday - target.valueOf()) / 604800000);
+}
+
+export function formatWeekHeader(date: Date): string {
+  const weekDays = getWeekDays(date);
+  const startDate = weekDays[0];
+  const endDate = weekDays[6];
+  const weekNumber = getWeekNumber(date);
+
+  const startMonth = startDate.toLocaleDateString('en-US', { month: 'long' });
+  const endMonth = endDate.toLocaleDateString('en-US', { month: 'long' });
+  const year = endDate.getFullYear();
+
+  if (startMonth === endMonth) {
+    return `Week ${weekNumber} - ${startMonth} ${startDate.getDate()} - ${endDate.getDate()}, ${year}`;
+  } else {
+    return `Week ${weekNumber} - ${startMonth} ${startDate.getDate()} - ${endMonth} ${endDate.getDate()}, ${year}`;
+  }
+}
+
+export function formatFullDayDate(date: Date): string {
+  return date.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  }).toUpperCase();
+}

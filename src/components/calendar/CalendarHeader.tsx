@@ -8,7 +8,7 @@ import {
 import { Button } from '../bootstrap/Button';
 import { CalendarLegend } from './CalendarLegend';
 import { CalendarView } from '../../hooks/useCalendar';
-import { formatMonthYear } from '../../utils/dateUtils';
+import { formatMonthYear, formatWeekHeader } from '../../utils/dateUtils';
 
 interface CalendarHeaderProps {
   currentDate: Date;
@@ -37,6 +37,18 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
     { value: 'day', label: 'Day' },
     { value: 'agenda', label: 'Agenda' }
   ];
+
+  const getDateText = () => {
+    if (view === 'day') {
+      return null;
+    }
+    if (view === 'week') {
+      return formatWeekHeader(currentDate);
+    }
+    return formatMonthYear(currentDate);
+  };
+
+  const dateText = getDateText();
 
   return (
     <div className="px-3 pt-3">
@@ -82,7 +94,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
               </div>
             </div>
 
-            <span className="text-secondary">{formatMonthYear(currentDate)}</span>
+            {dateText && <span className="text-secondary">{dateText}</span>}
           </div>
 
           <div className="d-flex align-items-center gap-2" style={{ flexShrink: 0 }}>
