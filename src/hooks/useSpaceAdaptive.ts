@@ -2,11 +2,10 @@ import { useState, useEffect, useCallback, RefObject } from 'react';
 
 const SINGLE_EVENT_CARD_HEIGHT = 52;
 const MULTIPLE_EVENT_CARD_HEIGHT = 28;
-const COMPACT_ROW_HEIGHT = 20;
 const DATE_HEADER_HEIGHT = 24;
 const CONTAINER_PADDING = 8;
 
-export type DisplayMode = 'compact' | 'comfort-single' | 'comfort-multiple';
+export type DisplayMode = 'comfort-single' | 'comfort-multiple';
 
 interface SpaceAdaptiveResult {
   displayMode: DisplayMode;
@@ -33,17 +32,12 @@ export function calculateDisplayMode(
     return { displayMode: 'comfort-multiple', maxVisibleEvents: eventCount };
   }
 
-  const compactViewHeight = uniqueCalendarCount * COMPACT_ROW_HEIGHT;
-  if (compactViewHeight <= contentHeight) {
-    return { displayMode: 'compact', maxVisibleEvents: eventCount };
-  }
-
   const maxMultiple = Math.floor(contentHeight / MULTIPLE_EVENT_CARD_HEIGHT);
-  if (maxMultiple >= 2) {
+  if (maxMultiple >= 1) {
     return { displayMode: 'comfort-multiple', maxVisibleEvents: maxMultiple };
   }
 
-  return { displayMode: 'compact', maxVisibleEvents: eventCount };
+  return { displayMode: 'comfort-multiple', maxVisibleEvents: 1 };
 }
 
 export function useSpaceAdaptive(

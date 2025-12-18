@@ -1,6 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { CalendarEventWithCalendar } from '../../services/calendarService';
-import { CompactDaySummary } from './CompactDaySummary';
 import { ComfortEventCard } from './ComfortEventCard';
 import { calculateDisplayMode, getUniqueCalendarCount, DisplayMode } from '../../hooks/useSpaceAdaptive';
 import { formatTime } from '../../utils/dateUtils';
@@ -18,7 +17,6 @@ const DATE_HEADER_HEIGHT = 24;
 const CONTAINER_PADDING = 8;
 const EVENT_CARD_HEIGHT = 28;
 const EVENT_GAP = 4;
-const OVERFLOW_BAR_HEIGHT = 22;
 
 export const DayCell: React.FC<DayCellProps> = ({
   date,
@@ -49,14 +47,9 @@ export const DayCell: React.FC<DayCellProps> = ({
     setDisplayMode(result.displayMode);
 
     const availableHeight = height - DATE_HEADER_HEIGHT - CONTAINER_PADDING;
-    const heightForEvents = availableHeight - (events.length > 0 ? OVERFLOW_BAR_HEIGHT : 0);
-    const maxEvents = Math.max(1, Math.floor((heightForEvents + EVENT_GAP) / (EVENT_CARD_HEIGHT + EVENT_GAP)));
+    const maxEvents = Math.max(1, Math.floor((availableHeight + EVENT_GAP) / (EVENT_CARD_HEIGHT + EVENT_GAP)));
 
-    if (events.length > maxEvents) {
-      setMaxVisibleEvents(Math.max(1, maxEvents - 1));
-    } else {
-      setMaxVisibleEvents(events.length);
-    }
+    setMaxVisibleEvents(Math.min(events.length, maxEvents));
   }, [events.length, uniqueCalendarCount]);
 
   useEffect(() => {
@@ -100,16 +93,6 @@ export const DayCell: React.FC<DayCellProps> = ({
   const renderEvents = () => {
     if (events.length === 0) return null;
 
-    if (displayMode === 'compact') {
-      return (
-        <CompactDaySummary
-          events={events}
-          showLabels={containerHeight > 100}
-          onCalendarClick={() => onDateClick?.(date)}
-        />
-      );
-    }
-
     if (displayMode === 'comfort-single' && events.length === 1) {
       return (
         <ComfortEventCard
@@ -121,38 +104,15 @@ export const DayCell: React.FC<DayCellProps> = ({
     }
 
     return (
-      <div className="d-flex flex-column gap-1 h-100">
-        <div className="d-flex flex-column gap-1" style={{ flex: 1, overflow: 'hidden' }}>
-          {visibleEvents.map((event) => (
-            <ComfortEventCard
-              key={event.id}
-              event={event}
-              mode="multiple"
-              onClick={onEventClick}
-            />
-          ))}
-        </div>
-        {hasOverflow && (
-          <div
-            className="d-flex align-items-center justify-content-center"
-            style={{
-              height: `${OVERFLOW_BAR_HEIGHT}px`,
-              backgroundColor: '#6c757d',
-              color: 'white',
-              borderRadius: '4px',
-              fontSize: '0.65rem',
-              fontWeight: 500,
-              cursor: 'pointer',
-              flexShrink: 0,
-              transition: 'background-color 0.15s ease'
-            }}
-            onClick={handleOverflowClick}
-            onMouseEnter={handleOverflowMouseEnter}
-            onMouseLeave={handleOverflowMouseLeave}
-          >
-            +{hiddenEvents.length} more
-          </div>
-        )}
+      <div className="d-flex flex-column gap-1" style={{ flex: 1, overflow: 'hidden' }}>
+        {visibleEvents.map((event) => (
+          <ComfortEventCard
+            key={event.id}
+            event={event}
+            mode="multiple"
+            onClick={onEventClick}
+          />
+        ))}
       </div>
     );
   };
@@ -185,10 +145,34 @@ export const DayCell: React.FC<DayCellProps> = ({
         }}
       >
         <div
-          className={`small mb-1 ${isToday ? 'fw-bold text-primary' : 'text-secondary'}`}
-          style={{ fontSize: '0.75rem', height: `${DATE_HEADER_HEIGHT - CONTAINER_PADDING}px`, flexShrink: 0 }}
+          className={`d-flex align-items-center justify-content-between gap-1 mb-1`}
+          style={{ height: `${DATE_HEADER_HEIGHT - CONTAINER_PADDING}px`, flexShrink: 0 }}
         >
-          {date.getDate()}
+          <span className={`small ${isToday ? 'fw-bold text-primary' : 'text-secondary'}`} style={{ fontSize: '0.75rem' }}>
+            {date.getDate()}
+          </span>
+          {hasOverflow && (
+            <div
+              className="d-flex align-items-center justify-content-center"
+              style={{
+                backgroundColor: '#6c757d',
+                color: 'white',
+                borderRadius: '10px',
+                fontSize: '0.6rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                padding: '1px 5px',
+                minWidth: '20px',
+                height: '16px',
+                transition: 'background-color 0.15s ease'
+              }}
+              onClick={handleOverflowClick}
+              onMouseEnter={handleOverflowMouseEnter}
+              onMouseLeave={handleOverflowMouseLeave}
+            >
+              +{hiddenEvents.length}
+            </div>
+          )}
         </div>
         <div ref={eventsContainerRef} style={{ flex: 1, overflow: 'hidden' }}>
           {renderEvents()}
