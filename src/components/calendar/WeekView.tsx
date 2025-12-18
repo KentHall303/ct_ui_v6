@@ -5,6 +5,7 @@ import {
   isToday,
   isSameDay,
   formatTimeRange,
+  formatCompactTimeRange,
   isEventOnDate
 } from '../../utils/dateUtils';
 
@@ -263,6 +264,7 @@ export const WeekView: React.FC<WeekViewProps> = ({
                     const calendarColor = pos.event.calendar?.color || '#6b7280';
                     const isMultiDay = !isSameDay(pos.event.start_date, pos.event.end_date);
                     const startsToday = isSameDay(pos.event.start_date, day);
+                    const isAllDay = pos.event.is_all_day;
 
                     return (
                       <div
@@ -278,14 +280,17 @@ export const WeekView: React.FC<WeekViewProps> = ({
                         }}
                       >
                         <div
-                          className="h-100 overflow-hidden"
+                          className="h-100"
                           style={{
                             backgroundColor: hexToRgba(calendarColor, 0.15),
                             borderLeft: `3px solid ${calendarColor}`,
                             borderRadius: '4px',
                             padding: '4px 6px',
                             cursor: 'pointer',
-                            transition: 'all 0.15s ease'
+                            transition: 'all 0.15s ease',
+                            overflow: 'visible',
+                            display: 'flex',
+                            flexDirection: 'column'
                           }}
                           onClick={() => onEventClick?.(pos.event)}
                           onMouseEnter={(e) => {
@@ -298,31 +303,35 @@ export const WeekView: React.FC<WeekViewProps> = ({
                             e.currentTarget.style.transform = 'scale(1)';
                             e.currentTarget.style.zIndex = '1';
                           }}
-                          title={`${pos.event.title}\n${formatTimeRange(pos.event.start_date, pos.event.end_date)}`}
+                          title={`${pos.event.title}\n${isAllDay ? 'All Day' : formatTimeRange(pos.event.start_date, pos.event.end_date)}`}
                         >
+                          {startsToday && (
+                            <div
+                              style={{
+                                fontSize: '0.65rem',
+                                color: '#666',
+                                lineHeight: 1.2,
+                                marginBottom: '2px',
+                                flexShrink: 0
+                              }}
+                            >
+                              {isAllDay ? 'All Day' : formatCompactTimeRange(pos.event.start_date, pos.event.end_date)}
+                            </div>
+                          )}
                           <div
-                            className="fw-bold text-truncate"
+                            className="fw-bold"
                             style={{
                               fontSize: '0.7rem',
                               color: '#333',
-                              lineHeight: 1.3
+                              lineHeight: 1.3,
+                              wordWrap: 'break-word',
+                              overflowWrap: 'break-word',
+                              overflow: 'visible'
                             }}
                           >
                             {pos.event.title}
                             {isMultiDay && !startsToday && ' (cont.)'}
                           </div>
-                          {pos.height > 40 && (
-                            <div
-                              className="text-truncate"
-                              style={{
-                                fontSize: '0.65rem',
-                                color: '#666',
-                                lineHeight: 1.2
-                              }}
-                            >
-                              {formatTimeRange(pos.event.start_date, pos.event.end_date)}
-                            </div>
-                          )}
                         </div>
                       </div>
                     );

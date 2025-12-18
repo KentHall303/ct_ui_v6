@@ -226,3 +226,18 @@ export function formatFullDayDate(date: Date): string {
     year: 'numeric'
   }).toUpperCase();
 }
+
+export function formatCompactTime(date: Date | string): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  const hours = d.getHours();
+  const minutes = d.getMinutes();
+  const isPM = hours >= 12;
+  const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+  const minuteStr = minutes > 0 ? `:${minutes.toString().padStart(2, '0')}` : '';
+  const period = isPM ? 'p' : 'a';
+  return `${displayHour}${minuteStr}${period}`;
+}
+
+export function formatCompactTimeRange(startDate: string, endDate: string): string {
+  return `${formatCompactTime(startDate)}–${formatCompactTime(endDate)}`;
+}
