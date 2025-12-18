@@ -1,12 +1,11 @@
-import React, { useRef, useEffect, useMemo } from 'react';
+import React, { useRef, useEffect, useMemo, useState, useCallback } from 'react';
 import { CalendarEventWithCalendar } from '../../services/calendarService';
+import { CompactDaySummary } from './CompactDaySummary';
+import { getUniqueCalendarCount } from '../../hooks/useSpaceAdaptive';
 import {
   getWeekDays,
   isToday,
   isSameDay,
-  getHourFromDate,
-  getMinuteFromDate,
-  getEventDurationInMinutes,
   formatTimeRange,
   isEventOnDate
 } from '../../utils/dateUtils';
@@ -150,13 +149,34 @@ function calculateEventPositions(
   return positioned;
 }
 
+const HEADER_EVENT_THRESHOLD = 5;
+
 export const WeekView: React.FC<WeekViewProps> = ({
   currentDate,
   events,
   onEventClick
 }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
   const weekDays = useMemo(() => getWeekDays(currentDate), [currentDate]);
+  const [headerHeight, setHeaderHeight] = useState(60);
+
+  const getEventsForDay = useCallback((day: Date) => {
+    return events.filter(event => isEventOnDate(event.start_date, event.end_date, day));
+  }, [events]);
+
+  const dayEventCounts = useMemo(() => {
+    return weekDays.map(day => {
+      const dayEvents = getEventsForDay(day);
+      return {
+        count: dayEvents.length,
+        events: dayEvents,
+        showCompact: dayEvents.length >= HEADER_EVENT_THRESHOLD
+      };
+    });
+  }, [weekDays, getEventsForDay]);
+
+  const hasCompactDays = dayEventCounts.some(d => d.showCompact);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -165,20 +185,36 @@ export const WeekView: React.FC<WeekViewProps> = ({
     }
   }, [currentDate]);
 
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      if (headerRef.current) {
+        const rect = headerRef.current.getBoundingClientRect();
+        setHeaderHeight(rect.height);
+      }
+    };
+
+    updateHeaderHeight();
+    window.addEventListener('resize', updateHeaderHeight);
+    return () => window.removeEventListener('resize', updateHeaderHeight);
+  }, [hasCompactDays]);
+
   return (
     <div className="d-flex flex-column h-100 position-relative">
-      <div className="flex-shrink-0 bg-white border-bottom">
+      <div ref={headerRef} className="flex-shrink-0 bg-white border-bottom">
         <div className="d-flex">
           <div style={{ width: TIME_COLUMN_WIDTH, flexShrink: 0 }} />
           <div className="flex-fill d-flex position-relative">
             {weekDays.map((day, index) => {
               const today = isToday(day);
+              const dayData = dayEventCounts[index];
+
               return (
                 <div
                   key={index}
                   className="flex-fill text-center py-2"
                   style={{
-                    backgroundColor: today ? 'rgba(13, 110, 253, 0.05)' : undefined
+                    backgroundColor: today ? 'rgba(13, 110, 253, 0.05)' : undefined,
+                    borderRight: index < 6 ? '1px solid #e9ecef' : undefined
                   }}
                 >
                   <div
@@ -199,6 +235,14 @@ export const WeekView: React.FC<WeekViewProps> = ({
                   >
                     {day.getDate()}
                   </div>
+                  {dayData.showCompact && (
+                    <div className="px-2 mt-1" style={{ textAlign: 'left' }}>
+                      <CompactDaySummary
+                        events={dayData.events}
+                        showLabels={false}
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}
