@@ -68,13 +68,24 @@ export function dateToString(date: Date): string {
 export function isEventOnDate(eventStart: string, eventEnd: string, date: Date): boolean {
   const start = new Date(eventStart);
   const end = new Date(eventEnd);
-  const checkDate = new Date(date);
-  checkDate.setHours(0, 0, 0, 0);
 
-  start.setHours(0, 0, 0, 0);
-  end.setHours(23, 59, 59, 999);
+  const checkYear = date.getFullYear();
+  const checkMonth = date.getMonth();
+  const checkDay = date.getDate();
 
-  return checkDate >= start && checkDate <= end;
+  const startYear = start.getFullYear();
+  const startMonth = start.getMonth();
+  const startDay = start.getDate();
+
+  const endYear = end.getFullYear();
+  const endMonth = end.getMonth();
+  const endDay = end.getDate();
+
+  const checkMidnight = new Date(checkYear, checkMonth, checkDay).getTime();
+  const startMidnight = new Date(startYear, startMonth, startDay).getTime();
+  const endMidnight = new Date(endYear, endMonth, endDay).getTime();
+
+  return checkMidnight >= startMidnight && checkMidnight <= endMidnight;
 }
 
 export function isEventStart(eventStart: string, date: Date): boolean {
