@@ -1,6 +1,11 @@
 import React from 'react';
 import { ColumnConfig, ColumnWidths } from '../../hooks/useResizableColumns';
 
+export interface StickyColumnConfig {
+  columnId: string;
+  left: number;
+}
+
 export interface ResizableTableHeadProps {
   columns: ColumnConfig[];
   columnWidths: ColumnWidths;
@@ -12,6 +17,7 @@ export interface ResizableTableHeadProps {
   onSort?: (key: string) => void;
   getSortIcon?: (key: string) => React.ReactNode;
   renderCustomHeader?: (column: ColumnConfig) => React.ReactNode | null;
+  stickyColumns?: StickyColumnConfig[];
 }
 
 export const ResizableTableHead: React.FC<ResizableTableHeadProps> = ({
@@ -25,7 +31,11 @@ export const ResizableTableHead: React.FC<ResizableTableHeadProps> = ({
   onSort,
   getSortIcon,
   renderCustomHeader,
+  stickyColumns = [],
 }) => {
+  const getStickyConfig = (columnId: string): StickyColumnConfig | undefined => {
+    return stickyColumns.find(sc => sc.columnId === columnId);
+  };
   const handleHeaderClick = (columnId: string, e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('.resize-handle')) {
       return;
@@ -51,15 +61,20 @@ export const ResizableTableHead: React.FC<ResizableTableHeadProps> = ({
           const isLastColumn = index === columns.length - 1;
           const isCurrentlyResizing = resizingColumn === column.id;
           const isSortable = onSort && column.label;
+          const stickyConfig = getStickyConfig(column.id);
+          const isSticky = !!stickyConfig;
 
           return (
             <th
               key={column.id}
-              className={`resizable-column ${className}`}
+              className={`resizable-column ${className} ${isSticky ? 'sticky-column' : ''}`}
               style={{
                 width: `${columnWidths[column.id]}px`,
                 minWidth: `${column.minWidth}px`,
-                position: 'relative',
+                position: isSticky ? 'sticky' : 'relative',
+                left: isSticky ? `${stickyConfig.left}px` : undefined,
+                zIndex: isSticky ? 40 : 10,
+                backgroundColor: '#ffffff',
                 userSelect: isResizing ? 'none' : 'auto',
               }}
               aria-sort={

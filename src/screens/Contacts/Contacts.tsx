@@ -13,7 +13,7 @@ const STORAGE_KEY_VISIBLE_COLUMNS = 'contactsVisibleColumns';
 const STORAGE_KEY_PAGE_SIZE = 'contactsPageSize';
 
 const DEFAULT_VISIBLE_COLUMNS = ['email', 'cell_phone', 'state', 'sales_cycle', 'lead_source', 'created_date', 'white_board', 'assigned_user', 'next_date', 'favorite_color'];
-const DEFAULT_PAGE_SIZE = 40;
+const DEFAULT_PAGE_SIZE = 25;
 
 const actionButtons = [
   { label: "Email", variant: "info", icon: MailIcon },
@@ -651,6 +651,10 @@ export const Contacts = (): JSX.Element => {
                 sortConfig={sortConfig}
                 onSort={handleSort}
                 getSortIcon={getSortIcon}
+                stickyColumns={[
+                  { columnId: 'checkbox', left: 0 },
+                  { columnId: 'name', left: columnWidths.checkbox }
+                ]}
                 renderCustomHeader={(column) => {
                   if (column.id === 'checkbox') {
                     return (
