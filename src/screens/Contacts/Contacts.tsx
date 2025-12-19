@@ -1,13 +1,13 @@
 import React from "react";
 import { Button } from "../../components/bootstrap/Button";
-import { Form, InputGroup, Dropdown, Button as BSButton } from "react-bootstrap";
+import { Form, InputGroup, Dropdown, Button as BSButton, Badge } from "react-bootstrap";
 import { Table, TableBody, TableRow, TableCell } from "../../components/bootstrap/Table";
 import { ResizableTableHead } from "../../components/bootstrap/ResizableTableHead";
 import { useResizableColumns, ColumnConfig } from "../../hooks/useResizableColumns";
 import { contactService } from "../../services/contactService";
 import { Contact } from "../../lib/supabase";
 import { PageSettingsModal, ColumnOption } from "./PageSettingsModal";
-import { RefreshCw as RefreshCwIcon, Settings as SettingsIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronsLeft as ChevronsLeftIcon, ChevronsRight as ChevronsRightIcon, Phone as PhoneIcon, Star as StarIcon, Mail as MailIcon, MessageSquare as MessageSquareIcon, Merge as MergeIcon, Bitcoin as EditIcon, Users as UsersIcon, SeparatorHorizontal as SeparatorHorizontalIcon, Send as SendIcon, Link as LinkIcon, Upload as UploadIcon, Download as DownloadIcon, Pin as PushPinIcon, RotateCcw as RotateCcwIcon, Trash as TrashIcon, ChevronUp, ChevronDown, Search } from "lucide-react";
+import { RefreshCw as RefreshCwIcon, Settings as SettingsIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronsLeft as ChevronsLeftIcon, ChevronsRight as ChevronsRightIcon, Phone as PhoneIcon, Star as StarIcon, Mail as MailIcon, MessageSquare as MessageSquareIcon, Merge as MergeIcon, Bitcoin as EditIcon, Users as UsersIcon, SeparatorHorizontal as SeparatorHorizontalIcon, Send as SendIcon, Link as LinkIcon, Upload as UploadIcon, Download as DownloadIcon, Pin as PushPinIcon, RotateCcw as RotateCcwIcon, Trash as TrashIcon, ChevronUp, ChevronDown, Search, Circle } from "lucide-react";
 
 const STORAGE_KEY_VISIBLE_COLUMNS = 'contactsVisibleColumns';
 const STORAGE_KEY_PAGE_SIZE = 'contactsPageSize';
@@ -77,6 +77,8 @@ interface ContactsHeaderProps {
   onSearch: (search: string) => void;
   onRefresh: () => void;
   onOpenSettings: () => void;
+  activePriorityFilter: string | null;
+  onPriorityFilterChange: (priority: string) => void;
 }
 
 const ContactsHeader: React.FC<ContactsHeaderProps> = ({
@@ -89,7 +91,9 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
   onPageChange,
   onSearch,
   onRefresh,
-  onOpenSettings
+  onOpenSettings,
+  activePriorityFilter,
+  onPriorityFilterChange
 }) => {
   const [searchValue, setSearchValue] = React.useState('');
 
@@ -293,20 +297,67 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
                   </Button>
                 ))}
               </div>
-              <div className="d-flex gap-1 flex-wrap">
-                {rightButtons.map((button, index) => (
-                  <Button
-                    key={index}
-                    variant={getButtonVariantClass(button.variant)}
-                    className="rounded-pill d-flex align-items-center gap-1"
-                    title={button.label}
-                    onClick={button.label === "Update" ? onRefresh : undefined}
-                    style={{ padding: '0.25rem 0.625rem', fontSize: '0.8125rem' }}
+              <div className="d-flex gap-2 flex-wrap align-items-center">
+                <div className="d-flex align-items-center gap-2">
+                  <span className="text-secondary small">Priority:</span>
+                  <Badge
+                    bg="danger"
+                    className="px-2 py-1"
+                    title="Red Priority"
+                    role="button"
+                    onClick={() => onPriorityFilterChange('bg-danger')}
+                    style={{
+                      cursor: 'pointer',
+                      opacity: activePriorityFilter === null || activePriorityFilter === 'bg-danger' ? 1 : 0.3,
+                      transition: 'opacity 0.2s'
+                    }}
                   >
-                    <button.icon size={12} />
-                    <span>{button.label}</span>
-                  </Button>
-                ))}
+                    <Circle size={10} fill="currentColor" />
+                  </Badge>
+                  <Badge
+                    bg="warning"
+                    className="px-2 py-1"
+                    title="Yellow Priority"
+                    role="button"
+                    onClick={() => onPriorityFilterChange('bg-warning')}
+                    style={{
+                      cursor: 'pointer',
+                      opacity: activePriorityFilter === null || activePriorityFilter === 'bg-warning' ? 1 : 0.3,
+                      transition: 'opacity 0.2s'
+                    }}
+                  >
+                    <Circle size={10} fill="currentColor" />
+                  </Badge>
+                  <Badge
+                    bg="success"
+                    className="px-2 py-1"
+                    title="Green Priority"
+                    role="button"
+                    onClick={() => onPriorityFilterChange('bg-success')}
+                    style={{
+                      cursor: 'pointer',
+                      opacity: activePriorityFilter === null || activePriorityFilter === 'bg-success' ? 1 : 0.3,
+                      transition: 'opacity 0.2s'
+                    }}
+                  >
+                    <Circle size={10} fill="currentColor" />
+                  </Badge>
+                </div>
+                <div className="d-flex gap-1 flex-wrap">
+                  {rightButtons.map((button, index) => (
+                    <Button
+                      key={index}
+                      variant={getButtonVariantClass(button.variant)}
+                      className="rounded-pill d-flex align-items-center gap-1"
+                      title={button.label}
+                      onClick={button.label === "Update" ? onRefresh : undefined}
+                      style={{ padding: '0.25rem 0.625rem', fontSize: '0.8125rem' }}
+                    >
+                      <button.icon size={12} />
+                      <span>{button.label}</span>
+                    </Button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -346,6 +397,7 @@ export const Contacts = (): JSX.Element => {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [filterValue, setFilterValue] = React.useState('all-opportunities');
   const [selectedContacts, setSelectedContacts] = React.useState<string[]>([]);
+  const [activePriorityFilter, setActivePriorityFilter] = React.useState<string | null>(null);
 
   const [pageSize, setPageSize] = React.useState(() =>
     loadFromLocalStorage(STORAGE_KEY_PAGE_SIZE, DEFAULT_PAGE_SIZE)
@@ -472,6 +524,16 @@ export const Contacts = (): JSX.Element => {
     setCurrentPage(1);
   };
 
+  const handlePriorityFilterChange = (priority: string) => {
+    setActivePriorityFilter(prev => {
+      if (prev === priority) {
+        return null;
+      } else {
+        return priority;
+      }
+    });
+  };
+
   const handleSelectContact = (contactId: string) => {
     setSelectedContacts(prev => {
       if (prev.includes(contactId)) {
@@ -482,10 +544,14 @@ export const Contacts = (): JSX.Element => {
   };
 
   const handleSelectAll = () => {
-    if (selectedContacts.length === contacts.length) {
+    const filteredContactsList = activePriorityFilter
+      ? contacts.filter(contact => contact.status_color === activePriorityFilter)
+      : contacts;
+
+    if (selectedContacts.length === filteredContactsList.length && filteredContactsList.length > 0) {
       setSelectedContacts([]);
     } else {
-      setSelectedContacts(contacts.map(c => c.id));
+      setSelectedContacts(filteredContactsList.map(c => c.id));
     }
   };
 
@@ -590,6 +656,10 @@ export const Contacts = (): JSX.Element => {
     );
   }
 
+  const filteredContacts = activePriorityFilter
+    ? contacts.filter(contact => contact.status_color === activePriorityFilter)
+    : contacts;
+
   return (
     <div className="d-flex flex-column w-100 h-100">
       <style>
@@ -626,6 +696,8 @@ export const Contacts = (): JSX.Element => {
           onSearch={handleSearch}
           onRefresh={handleRefresh}
           onOpenSettings={handleOpenSettings}
+          activePriorityFilter={activePriorityFilter}
+          onPriorityFilterChange={handlePriorityFilterChange}
         />
       </div>
 
@@ -662,7 +734,7 @@ export const Contacts = (): JSX.Element => {
                         type="checkbox"
                         className="form-check-input"
                         aria-label="Select all"
-                        checked={contacts.length > 0 && selectedContacts.length === contacts.length}
+                        checked={filteredContacts.length > 0 && selectedContacts.length === filteredContacts.length}
                         onChange={handleSelectAll}
                       />
                     );
@@ -671,7 +743,7 @@ export const Contacts = (): JSX.Element => {
                 }}
               />
               <TableBody>
-                {contacts.map((contact, index) => (
+                {filteredContacts.map((contact, index) => (
                   <TableRow
                     key={contact.id}
                     role="row"
