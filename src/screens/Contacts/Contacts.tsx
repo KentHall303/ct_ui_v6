@@ -6,7 +6,14 @@ import { ResizableTableHead } from "../../components/bootstrap/ResizableTableHea
 import { useResizableColumns, ColumnConfig } from "../../hooks/useResizableColumns";
 import { contactService } from "../../services/contactService";
 import { Contact } from "../../lib/supabase";
+import { PageSettingsModal, ColumnOption } from "./PageSettingsModal";
 import { RefreshCw as RefreshCwIcon, Settings as SettingsIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronsLeft as ChevronsLeftIcon, ChevronsRight as ChevronsRightIcon, Phone as PhoneIcon, Star as StarIcon, Mail as MailIcon, MessageSquare as MessageSquareIcon, Merge as MergeIcon, Bitcoin as EditIcon, Users as UsersIcon, SeparatorHorizontal as SeparatorHorizontalIcon, Send as SendIcon, Link as LinkIcon, Upload as UploadIcon, Download as DownloadIcon, Pin as PushPinIcon, RotateCcw as RotateCcwIcon, Trash as TrashIcon, ChevronUp, ChevronDown, Search } from "lucide-react";
+
+const STORAGE_KEY_VISIBLE_COLUMNS = 'contactsVisibleColumns';
+const STORAGE_KEY_PAGE_SIZE = 'contactsPageSize';
+
+const DEFAULT_VISIBLE_COLUMNS = ['email', 'cell_phone', 'state', 'sales_cycle', 'lead_source', 'created_date', 'white_board', 'assigned_user', 'next_date', 'favorite_color'];
+const DEFAULT_PAGE_SIZE = 40;
 
 const actionButtons = [
   { label: "Email", variant: "info", icon: MailIcon },
@@ -69,6 +76,7 @@ interface ContactsHeaderProps {
   onPageChange: (page: number) => void;
   onSearch: (search: string) => void;
   onRefresh: () => void;
+  onOpenSettings: () => void;
 }
 
 const ContactsHeader: React.FC<ContactsHeaderProps> = ({
@@ -80,7 +88,8 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
   onFilterChange,
   onPageChange,
   onSearch,
-  onRefresh
+  onRefresh,
+  onOpenSettings
 }) => {
   const [searchValue, setSearchValue] = React.useState('');
 
@@ -255,7 +264,12 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
               >
                 <RefreshCwIcon size={16} />
               </Button>
-              <Button variant="link" size="sm" className="p-1 text-decoration-none">
+              <Button
+                variant="link"
+                size="sm"
+                className="p-1 text-decoration-none"
+                onClick={onOpenSettings}
+              >
                 <SettingsIcon size={16} />
               </Button>
             </div>
@@ -302,6 +316,26 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
   );
 };
 
+const loadFromLocalStorage = <T,>(key: string, defaultValue: T): T => {
+  try {
+    const stored = localStorage.getItem(key);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch (e) {
+    console.error(`Error loading ${key} from localStorage:`, e);
+  }
+  return defaultValue;
+};
+
+const saveToLocalStorage = (key: string, value: unknown): void => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (e) {
+    console.error(`Error saving ${key} to localStorage:`, e);
+  }
+};
+
 export const Contacts = (): JSX.Element => {
   const [contacts, setContacts] = React.useState<Contact[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -312,7 +346,14 @@ export const Contacts = (): JSX.Element => {
   const [searchTerm, setSearchTerm] = React.useState('');
   const [filterValue, setFilterValue] = React.useState('all-opportunities');
   const [selectedContacts, setSelectedContacts] = React.useState<string[]>([]);
-  const pageSize = 40;
+
+  const [pageSize, setPageSize] = React.useState(() =>
+    loadFromLocalStorage(STORAGE_KEY_PAGE_SIZE, DEFAULT_PAGE_SIZE)
+  );
+  const [visibleColumns, setVisibleColumns] = React.useState<string[]>(() =>
+    loadFromLocalStorage(STORAGE_KEY_VISIBLE_COLUMNS, DEFAULT_VISIBLE_COLUMNS)
+  );
+  const [showSettingsModal, setShowSettingsModal] = React.useState(false);
 
   const [sortConfig, setSortConfig] = React.useState<{
     key: string;
@@ -322,7 +363,7 @@ export const Contacts = (): JSX.Element => {
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
 
-  const columns: ColumnConfig[] = [
+  const allColumns: ColumnConfig[] = [
     { id: 'checkbox', label: '', defaultWidth: 48, minWidth: 48 },
     { id: 'name', label: 'Name', defaultWidth: 250, minWidth: 150 },
     { id: 'email', label: 'Email', defaultWidth: 250, minWidth: 150 },
@@ -337,16 +378,24 @@ export const Contacts = (): JSX.Element => {
     { id: 'favorite_color', label: 'Favorite Color', defaultWidth: 150, minWidth: 100 },
   ];
 
+  const toggleableColumnOptions: ColumnOption[] = allColumns
+    .filter(col => col.id !== 'checkbox' && col.id !== 'name')
+    .map(col => ({ id: col.id, label: col.label }));
+
+  const columns = allColumns.filter(col =>
+    col.id === 'checkbox' || col.id === 'name' || visibleColumns.includes(col.id)
+  );
+
   const {
     columnWidths,
     isResizing,
     resizingColumn,
     handleMouseDown,
-  } = useResizableColumns(columns, 'contactsColumns');
+  } = useResizableColumns(allColumns, 'contactsColumns');
 
   React.useEffect(() => {
     loadContacts();
-  }, [currentPage, searchTerm, sortConfig]);
+  }, [currentPage, searchTerm, sortConfig, pageSize]);
 
   React.useLayoutEffect(() => {
     function computeHeight() {
@@ -440,6 +489,83 @@ export const Contacts = (): JSX.Element => {
     }
   };
 
+  const handleOpenSettings = () => {
+    setShowSettingsModal(true);
+  };
+
+  const handleSettingsUpdate = (newVisibleColumns: string[], newPageSize: number) => {
+    setVisibleColumns(newVisibleColumns);
+    setPageSize(newPageSize);
+    saveToLocalStorage(STORAGE_KEY_VISIBLE_COLUMNS, newVisibleColumns);
+    saveToLocalStorage(STORAGE_KEY_PAGE_SIZE, newPageSize);
+    setCurrentPage(1);
+  };
+
+  const renderCell = (contact: Contact, columnId: string) => {
+    switch (columnId) {
+      case 'email':
+        return <div className="text-dark">{contact.email || ''}</div>;
+      case 'cell_phone':
+        return (
+          <div className="d-flex align-items-center gap-1 text-dark">
+            {contact.cell_phone && (
+              <>
+                <PhoneIcon size={12} />
+                {contact.cell_phone}
+              </>
+            )}
+          </div>
+        );
+      case 'state':
+        return <div className="text-dark">{contact.state || ''}</div>;
+      case 'sales_cycle':
+        return <div className="text-dark">{contact.sales_cycle || ''}</div>;
+      case 'lead_source':
+        return <div className="text-dark">{contact.lead_source || ''}</div>;
+      case 'created_date':
+        return (
+          <div className="text-dark">
+            {contact.created_date ? new Date(contact.created_date).toLocaleDateString() : ''}
+          </div>
+        );
+      case 'white_board':
+        return <div className="text-dark">{contact.white_board || ''}</div>;
+      case 'assigned_user':
+        return <div className="text-dark">{contact.assigned_user || ''}</div>;
+      case 'next_date':
+        return (
+          <div className="text-dark">
+            {contact.next_date ? new Date(contact.next_date).toLocaleDateString() : ''}
+          </div>
+        );
+      case 'favorite_color':
+        return (
+          <div className="d-flex align-items-center gap-2 text-dark">
+            {contact.favorite_color && (
+              <>
+                <div
+                  className={`rounded-circle ${
+                    contact.favorite_color === "Red"
+                      ? "bg-danger"
+                      : contact.favorite_color === "Blue"
+                      ? "bg-primary"
+                      : contact.favorite_color === "Yellow"
+                      ? "bg-warning"
+                      : "bg-success"
+                  }`}
+                  style={{ width: '12px', height: '12px' }}
+                  aria-label={`${contact.favorite_color} color indicator`}
+                />
+                {contact.favorite_color}
+              </>
+            )}
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   if (loading && contacts.length === 0) {
     return (
       <div className="d-flex flex-column w-100 h-100 align-items-center justify-content-center">
@@ -499,14 +625,15 @@ export const Contacts = (): JSX.Element => {
           onPageChange={handlePageChange}
           onSearch={handleSearch}
           onRefresh={handleRefresh}
+          onOpenSettings={handleOpenSettings}
         />
       </div>
 
-      <div className="px-3 pt-3">
+      <div className="px-3 pt-3 flex-grow-1 d-flex flex-column min-h-0">
         <div
           ref={scrollRef}
-          className="bg-white rounded-3 overflow-auto border shadow-sm contacts-table-scroll"
-          style={{ maxHeight: maxHeight ?? undefined, overflowX: 'auto', overflowY: 'auto' }}
+          className="bg-white rounded-3 border shadow-sm contacts-table-scroll flex-grow-1"
+          style={{ maxHeight: maxHeight ?? undefined, overflowY: 'auto', overflowX: 'auto' }}
         >
           <div style={{ minWidth: '1400px' }}>
             <Table className={`standard-table table-striped mb-0 ${isResizing ? 'resizing' : ''}`}>
@@ -545,11 +672,14 @@ export const Contacts = (): JSX.Element => {
                     key={contact.id}
                     role="row"
                     aria-rowindex={index + 2}
-                    style={{ borderLeft: `3px solid ${getStatusBorderColor(contact.status_color)}` }}
                   >
                     <TableCell
                       className="position-sticky start-0"
-                      style={{ width: `${columnWidths.checkbox}px`, zIndex: 30 }}
+                      style={{
+                        width: `${columnWidths.checkbox}px`,
+                        zIndex: 30,
+                        borderLeft: `3px solid ${getStatusBorderColor(contact.status_color)}`
+                      }}
                       role="gridcell"
                     >
                       <input
@@ -581,75 +711,17 @@ export const Contacts = (): JSX.Element => {
                       </div>
                     </TableCell>
 
-                    <TableCell role="gridcell" style={{ width: `${columnWidths.email}px` }}>
-                      <div className="text-dark">{contact.email || ''}</div>
-                    </TableCell>
-
-                    <TableCell role="gridcell" style={{ width: `${columnWidths.cell_phone}px` }}>
-                      <div className="d-flex align-items-center gap-1 text-dark">
-                        {contact.cell_phone && (
-                          <>
-                            <PhoneIcon size={12} />
-                            {contact.cell_phone}
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-
-                    <TableCell role="gridcell" style={{ width: `${columnWidths.state}px` }}>
-                      <div className="text-dark">{contact.state || ''}</div>
-                    </TableCell>
-
-                    <TableCell role="gridcell" style={{ width: `${columnWidths.sales_cycle}px` }}>
-                      <div className="text-dark">{contact.sales_cycle || ''}</div>
-                    </TableCell>
-
-                    <TableCell role="gridcell" style={{ width: `${columnWidths.lead_source}px` }}>
-                      <div className="text-dark">{contact.lead_source || ''}</div>
-                    </TableCell>
-
-                    <TableCell role="gridcell" style={{ width: `${columnWidths.created_date}px` }}>
-                      <div className="text-dark">
-                        {contact.created_date ? new Date(contact.created_date).toLocaleDateString() : ''}
-                      </div>
-                    </TableCell>
-
-                    <TableCell role="gridcell" style={{ width: `${columnWidths.white_board}px` }}>
-                      <div className="text-dark">{contact.white_board || ''}</div>
-                    </TableCell>
-
-                    <TableCell role="gridcell" style={{ width: `${columnWidths.assigned_user}px` }}>
-                      <div className="text-dark">{contact.assigned_user || ''}</div>
-                    </TableCell>
-
-                    <TableCell role="gridcell" style={{ width: `${columnWidths.next_date}px` }}>
-                      <div className="text-dark">
-                        {contact.next_date ? new Date(contact.next_date).toLocaleDateString() : ''}
-                      </div>
-                    </TableCell>
-
-                    <TableCell role="gridcell" style={{ width: `${columnWidths.favorite_color}px` }}>
-                      <div className="d-flex align-items-center gap-2 text-dark">
-                        {contact.favorite_color && (
-                          <>
-                            <div
-                              className={`rounded-circle ${
-                                contact.favorite_color === "Red"
-                                  ? "bg-danger"
-                                  : contact.favorite_color === "Blue"
-                                  ? "bg-primary"
-                                  : contact.favorite_color === "Yellow"
-                                  ? "bg-warning"
-                                  : "bg-success"
-                              }`}
-                              style={{ width: '12px', height: '12px' }}
-                              aria-label={`${contact.favorite_color} color indicator`}
-                            />
-                            {contact.favorite_color}
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
+                    {columns
+                      .filter(col => col.id !== 'checkbox' && col.id !== 'name')
+                      .map(col => (
+                        <TableCell
+                          key={col.id}
+                          role="gridcell"
+                          style={{ width: `${columnWidths[col.id]}px` }}
+                        >
+                          {renderCell(contact, col.id)}
+                        </TableCell>
+                      ))}
                   </TableRow>
                 ))}
               </TableBody>
@@ -657,6 +729,15 @@ export const Contacts = (): JSX.Element => {
           </div>
         </div>
       </div>
+
+      <PageSettingsModal
+        show={showSettingsModal}
+        onHide={() => setShowSettingsModal(false)}
+        columns={toggleableColumnOptions}
+        visibleColumns={visibleColumns}
+        pageSize={pageSize}
+        onUpdate={handleSettingsUpdate}
+      />
     </div>
   );
 };

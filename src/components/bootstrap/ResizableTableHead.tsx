@@ -11,6 +11,7 @@ export interface ResizableTableHeadProps {
   sortConfig?: { key: string; direction: 'asc' | 'desc' } | null;
   onSort?: (key: string) => void;
   getSortIcon?: (key: string) => React.ReactNode;
+  renderCustomHeader?: (column: ColumnConfig) => React.ReactNode | null;
 }
 
 export const ResizableTableHead: React.FC<ResizableTableHeadProps> = ({
@@ -23,6 +24,7 @@ export const ResizableTableHead: React.FC<ResizableTableHeadProps> = ({
   sortConfig,
   onSort,
   getSortIcon,
+  renderCustomHeader,
 }) => {
   const handleHeaderClick = (columnId: string, e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('.resize-handle')) {
@@ -75,9 +77,13 @@ export const ResizableTableHead: React.FC<ResizableTableHeadProps> = ({
                 onClick={isSortable ? (e) => handleHeaderClick(column.id, e) : undefined}
                 onKeyDown={isSortable ? (e) => handleHeaderKeyDown(column.id, e) : undefined}
               >
-                <span>{column.label}</span>
-                {isSortable && getSortIcon && (
-                  <span className="sort-icon">{getSortIcon(column.id)}</span>
+                {renderCustomHeader?.(column) ?? (
+                  <>
+                    <span>{column.label}</span>
+                    {isSortable && getSortIcon && (
+                      <span className="sort-icon">{getSortIcon(column.id)}</span>
+                    )}
+                  </>
                 )}
               </div>
 

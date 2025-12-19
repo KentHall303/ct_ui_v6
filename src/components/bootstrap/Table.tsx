@@ -73,12 +73,18 @@ export const TableHead: React.FC<TableHeadProps> = ({
   </th>
 );
 
-export const TableCell: React.FC<{ children: React.ReactNode; className?: string; style?: React.CSSProperties }> = ({
+export const TableCell: React.FC<{
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+  role?: string;
+}> = ({
   children,
   className = '',
-  style
+  style,
+  role
 }) => (
-  <td className={className} style={style}>
+  <td className={className} style={style} role={role}>
     {children}
   </td>
 );
