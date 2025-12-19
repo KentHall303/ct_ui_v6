@@ -41,6 +41,24 @@ const getButtonVariantClass = (variant: string) => {
   }
 };
 
+const getStatusBorderColor = (statusColor: string | null | undefined): string => {
+  if (!statusColor) return '#9ca3af';
+  switch (statusColor) {
+    case 'bg-success':
+      return '#198754';
+    case 'bg-warning':
+      return '#ffc107';
+    case 'bg-danger':
+      return '#dc3545';
+    case 'bg-primary':
+      return '#0d6efd';
+    case 'bg-info':
+      return '#0dcaf0';
+    default:
+      return '#9ca3af';
+  }
+};
+
 interface ContactsHeaderProps {
   totalRecords: number;
   selectedCount: number;
@@ -518,18 +536,6 @@ export const Contacts = (): JSX.Element => {
                       />
                     );
                   }
-                  if (column.id === 'name') {
-                    return (
-                      <>
-                        <span>Name</span>
-                        <div className="d-flex gap-1 ms-2">
-                          <div className="rounded-circle bg-danger" style={{ width: '8px', height: '8px' }} title="Red" />
-                          <div className="rounded-circle bg-warning" style={{ width: '8px', height: '8px' }} title="Yellow" />
-                          <div className="rounded-circle bg-success" style={{ width: '8px', height: '8px' }} title="Green" />
-                        </div>
-                      </>
-                    );
-                  }
                   return null;
                 }}
               />
@@ -539,26 +545,21 @@ export const Contacts = (): JSX.Element => {
                     key={contact.id}
                     role="row"
                     aria-rowindex={index + 2}
+                    style={{ borderLeft: `3px solid ${getStatusBorderColor(contact.status_color)}` }}
                   >
                     <TableCell
                       className="position-sticky start-0"
                       style={{ width: `${columnWidths.checkbox}px`, zIndex: 30 }}
                       role="gridcell"
                     >
-                      <div className="d-flex align-items-center gap-2">
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          aria-label={`Select ${contact.name}`}
-                          aria-describedby={`contact-${contact.id}-name`}
-                          checked={selectedContacts.includes(contact.id)}
-                          onChange={() => handleSelectContact(contact.id)}
-                        />
-                        <div
-                          className={`rounded-circle ${contact.status_color || 'bg-success'}`}
-                          style={{ width: '8px', height: '8px' }}
-                        />
-                      </div>
+                      <input
+                        type="checkbox"
+                        className="form-check-input"
+                        aria-label={`Select ${contact.name}`}
+                        aria-describedby={`contact-${contact.id}-name`}
+                        checked={selectedContacts.includes(contact.id)}
+                        onChange={() => handleSelectContact(contact.id)}
+                      />
                     </TableCell>
 
                     <TableCell
