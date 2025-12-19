@@ -270,7 +270,7 @@ export const Navigation = ({
           <Button
             variant="link"
             className={`nav-item-button px-0 py-2 d-flex align-items-center ${
-              isCollapsed ? "justify-content-center" : "justify-content-start"
+              isCollapsed ? "justify-content-center" : "justify-content-end"
             } align-self-stretch w-100 border-0`}
             onClick={onToggleCollapse}
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
