@@ -15,24 +15,27 @@ const STORAGE_KEY_PAGE_SIZE = 'contactsPageSize';
 const DEFAULT_VISIBLE_COLUMNS = ['email', 'cell_phone', 'state', 'sales_cycle', 'lead_source', 'created_date', 'white_board', 'assigned_user', 'next_date', 'favorite_color'];
 const DEFAULT_PAGE_SIZE = 25;
 
-const actionButtons = [
+const twoOrMoreSelectedButtons = [
   { label: "Email", variant: "info", icon: MailIcon },
   { label: "SMS", variant: "info", icon: MessageSquareIcon },
   { label: "Merge", variant: "info", icon: MergeIcon },
   { label: "Change", variant: "info", icon: EditIcon },
-  { label: "Combined", variant: "info", icon: UsersIcon },
+  { label: "Combine", variant: "info", icon: UsersIcon },
   { label: "Separate", variant: "info", icon: SeparatorHorizontalIcon },
-  { label: "Send to Account", variant: "info", icon: SendIcon },
   { label: "Link Contacts", variant: "info", icon: LinkIcon },
+  { label: "Push", variant: "info", icon: PushPinIcon },
 ];
 
-const rightButtons = [
+const oneOrMoreSelectedButtons = [
+  { label: "Send to Account", variant: "info", icon: SendIcon },
+  { label: "Release", variant: "warning", icon: RotateCcwIcon },
+  { label: "Delete", variant: "destructive", icon: TrashIcon },
+];
+
+const alwaysVisibleButtons = [
   { label: "Update", variant: "info", icon: RefreshCwIcon },
   { label: "Import", variant: "info", icon: UploadIcon },
   { label: "Export", variant: "info", icon: DownloadIcon },
-  { label: "Push", variant: "info", icon: PushPinIcon },
-  { label: "Release", variant: "warning", icon: RotateCcwIcon },
-  { label: "Delete", variant: "destructive", icon: TrashIcon },
 ];
 
 const getButtonVariantClass = (variant: string) => {
@@ -193,7 +196,50 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
 
         <div className="py-0 mt-3">
           <div className="d-flex align-items-center justify-content-between">
-            <div style={{ width: '48px' }} />
+            <div className="d-flex align-items-center gap-1">
+              <Badge
+                bg="danger"
+                className="px-2 py-1"
+                title="Red Priority"
+                role="button"
+                onClick={() => onPriorityFilterChange('bg-danger')}
+                style={{
+                  cursor: 'pointer',
+                  opacity: activePriorityFilter === null || activePriorityFilter === 'bg-danger' ? 1 : 0.3,
+                  transition: 'opacity 0.2s'
+                }}
+              >
+                <Circle size={10} fill="currentColor" />
+              </Badge>
+              <Badge
+                bg="warning"
+                className="px-2 py-1"
+                title="Yellow Priority"
+                role="button"
+                onClick={() => onPriorityFilterChange('bg-warning')}
+                style={{
+                  cursor: 'pointer',
+                  opacity: activePriorityFilter === null || activePriorityFilter === 'bg-warning' ? 1 : 0.3,
+                  transition: 'opacity 0.2s'
+                }}
+              >
+                <Circle size={10} fill="currentColor" />
+              </Badge>
+              <Badge
+                bg="success"
+                className="px-2 py-1"
+                title="Green Priority"
+                role="button"
+                onClick={() => onPriorityFilterChange('bg-success')}
+                style={{
+                  cursor: 'pointer',
+                  opacity: activePriorityFilter === null || activePriorityFilter === 'bg-success' ? 1 : 0.3,
+                  transition: 'opacity 0.2s'
+                }}
+              >
+                <Circle size={10} fill="currentColor" />
+              </Badge>
+            </div>
             <div className="d-flex align-items-center gap-2">
               <Button
                 variant="link"
@@ -260,6 +306,19 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
             </div>
 
             <div className="d-flex align-items-center gap-2">
+              {alwaysVisibleButtons.map((button, index) => (
+                <Button
+                  key={index}
+                  variant={getButtonVariantClass(button.variant)}
+                  className="rounded-pill d-flex align-items-center gap-1"
+                  title={button.label}
+                  onClick={button.label === "Update" ? onRefresh : undefined}
+                  style={{ padding: '0.25rem 0.625rem', fontSize: '0.8125rem' }}
+                >
+                  <button.icon size={12} />
+                  <span>{button.label}</span>
+                </Button>
+              ))}
               <Button
                 variant="link"
                 size="sm"
@@ -282,83 +341,31 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
 
         {selectedCount > 0 && (
           <div className="pt-3 mt-2 border-top">
-            <div className="d-flex flex-column gap-2">
-              <div className="d-flex gap-1 flex-wrap">
-                {actionButtons.map((button, index) => (
-                  <Button
-                    key={index}
-                    variant={getButtonVariantClass(button.variant)}
-                    className="rounded-pill d-flex align-items-center gap-1"
-                    title={button.label}
-                    style={{ padding: '0.25rem 0.625rem', fontSize: '0.8125rem' }}
-                  >
-                    <button.icon size={12} />
-                    <span>{button.label}</span>
-                  </Button>
-                ))}
-              </div>
-              <div className="d-flex gap-2 flex-wrap align-items-center">
-                <div className="d-flex align-items-center gap-2">
-                  <span className="text-secondary small">Priority:</span>
-                  <Badge
-                    bg="danger"
-                    className="px-2 py-1"
-                    title="Red Priority"
-                    role="button"
-                    onClick={() => onPriorityFilterChange('bg-danger')}
-                    style={{
-                      cursor: 'pointer',
-                      opacity: activePriorityFilter === null || activePriorityFilter === 'bg-danger' ? 1 : 0.3,
-                      transition: 'opacity 0.2s'
-                    }}
-                  >
-                    <Circle size={10} fill="currentColor" />
-                  </Badge>
-                  <Badge
-                    bg="warning"
-                    className="px-2 py-1"
-                    title="Yellow Priority"
-                    role="button"
-                    onClick={() => onPriorityFilterChange('bg-warning')}
-                    style={{
-                      cursor: 'pointer',
-                      opacity: activePriorityFilter === null || activePriorityFilter === 'bg-warning' ? 1 : 0.3,
-                      transition: 'opacity 0.2s'
-                    }}
-                  >
-                    <Circle size={10} fill="currentColor" />
-                  </Badge>
-                  <Badge
-                    bg="success"
-                    className="px-2 py-1"
-                    title="Green Priority"
-                    role="button"
-                    onClick={() => onPriorityFilterChange('bg-success')}
-                    style={{
-                      cursor: 'pointer',
-                      opacity: activePriorityFilter === null || activePriorityFilter === 'bg-success' ? 1 : 0.3,
-                      transition: 'opacity 0.2s'
-                    }}
-                  >
-                    <Circle size={10} fill="currentColor" />
-                  </Badge>
-                </div>
-                <div className="d-flex gap-1 flex-wrap">
-                  {rightButtons.map((button, index) => (
-                    <Button
-                      key={index}
-                      variant={getButtonVariantClass(button.variant)}
-                      className="rounded-pill d-flex align-items-center gap-1"
-                      title={button.label}
-                      onClick={button.label === "Update" ? onRefresh : undefined}
-                      style={{ padding: '0.25rem 0.625rem', fontSize: '0.8125rem' }}
-                    >
-                      <button.icon size={12} />
-                      <span>{button.label}</span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
+            <div className="d-flex flex-wrap gap-1 align-items-center">
+              {selectedCount >= 2 && twoOrMoreSelectedButtons.map((button, index) => (
+                <Button
+                  key={`two-${index}`}
+                  variant={getButtonVariantClass(button.variant)}
+                  className="rounded-pill d-flex align-items-center gap-1"
+                  title={button.label}
+                  style={{ padding: '0.25rem 0.625rem', fontSize: '0.8125rem' }}
+                >
+                  <button.icon size={12} />
+                  <span>{button.label}</span>
+                </Button>
+              ))}
+              {oneOrMoreSelectedButtons.map((button, index) => (
+                <Button
+                  key={`one-${index}`}
+                  variant={getButtonVariantClass(button.variant)}
+                  className="rounded-pill d-flex align-items-center gap-1"
+                  title={button.label}
+                  style={{ padding: '0.25rem 0.625rem', fontSize: '0.8125rem' }}
+                >
+                  <button.icon size={12} />
+                  <span>{button.label}</span>
+                </Button>
+              ))}
             </div>
           </div>
         )}
