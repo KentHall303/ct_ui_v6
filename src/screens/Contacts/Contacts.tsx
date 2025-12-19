@@ -139,29 +139,24 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
                 style={{
                   borderTopLeftRadius: 0,
                   borderBottomLeftRadius: 0,
-                  borderTopRightRadius: 0,
-                  borderBottomRightRadius: 0,
-                  padding: '0.375rem 0.5rem',
-                  borderRight: 'none'
+                  padding: '0.375rem 0.5rem'
                 }}
               >
                 <Search size={16} />
               </BSButton>
-              <BSButton
-                variant="success"
-                size="sm"
-                className="d-flex align-items-center gap-2 fw-bold"
-                style={{
-                  borderTopLeftRadius: 0,
-                  borderBottomLeftRadius: 0,
-                  whiteSpace: 'nowrap',
-                  padding: '0.375rem 0.75rem'
-                }}
-                title="Add new client"
-              >
-                New Client
-              </BSButton>
             </InputGroup>
+            <BSButton
+              variant="success"
+              size="sm"
+              className="d-flex align-items-center gap-2 fw-bold"
+              style={{
+                whiteSpace: 'nowrap',
+                padding: '0.375rem 0.75rem'
+              }}
+              title="Add new client"
+            >
+              New Client
+            </BSButton>
           </div>
         </div>
 
