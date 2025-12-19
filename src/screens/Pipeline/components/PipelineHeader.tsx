@@ -38,7 +38,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
             </div>
 
             <div className="d-flex align-items-center gap-2">
-              <InputGroup style={{ width: '400px', flexWrap: 'nowrap' }}>
+              <InputGroup style={{ width: '280px', flexWrap: 'nowrap' }}>
                 <Form.Control
                   type="text"
                   placeholder="Search Contact..."
@@ -54,37 +54,24 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                   style={{
                     borderTopLeftRadius: 0,
                     borderBottomLeftRadius: 0,
-                    borderTopRightRadius: 0,
-                    borderBottomRightRadius: 0,
-                    padding: '0.375rem 0.5rem',
-                    borderRight: 'none'
+                    padding: '0.375rem 0.5rem'
                   }}
                 >
                   <Search size={16} />
                 </Button>
-                <div
-                  style={{
-                    width: '1px',
-                    height: '100%',
-                    backgroundColor: '#d0d0d0',
-                    alignSelf: 'stretch'
-                  }}
-                />
-                <Button
-                  variant="success"
-                  size="sm"
-                  className="d-flex align-items-center gap-2 fw-bold"
-                  style={{
-                    borderTopLeftRadius: 0,
-                    borderBottomLeftRadius: 0,
-                    whiteSpace: 'nowrap',
-                    padding: '0.375rem 0.75rem'
-                  }}
-                  title="Add new client"
-                >
-                  Add Client
-                </Button>
               </InputGroup>
+              <Button
+                variant="success"
+                size="sm"
+                className="d-flex align-items-center gap-2 fw-bold"
+                style={{
+                  whiteSpace: 'nowrap',
+                  padding: '0.375rem 0.75rem'
+                }}
+                title="Add new client"
+              >
+                Add Client
+              </Button>
             </div>
           </div>
 
