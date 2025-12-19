@@ -264,11 +264,15 @@ export const Navigation = ({
       ) : null}
 
       {!isMobile && (
-        <div className={`${isCollapsed ? "p-1 w-100" : "p-1 align-self-end"}`}>
+        <div className={`d-flex flex-column align-items-start align-self-stretch w-100 rounded overflow-hidden ${
+          isCollapsed ? "px-1 py-1" : "px-2 py-1"
+        }`}>
           <Button
             variant="link"
+            className={`nav-item-button px-0 py-2 d-flex align-items-center ${
+              isCollapsed ? "justify-content-center" : "justify-content-start"
+            } align-self-stretch w-100 border-0`}
             onClick={onToggleCollapse}
-            className="p-2 border-0 shadow-none text-secondary hover:text-dark"
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {isCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
