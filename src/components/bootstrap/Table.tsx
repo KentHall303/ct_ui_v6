@@ -42,11 +42,19 @@ export const TableBody: React.FC<{ children: React.ReactNode; className?: string
   </tbody>
 );
 
-export const TableRow: React.FC<{ children: React.ReactNode; className?: string }> = ({ 
-  children, 
-  className = '' 
+export const TableRow: React.FC<{
+  children: React.ReactNode;
+  className?: string;
+  style?: React.CSSProperties;
+  role?: string;
+  'aria-rowindex'?: number;
+}> = ({
+  children,
+  className = '',
+  style,
+  ...props
 }) => (
-  <tr className={className}>
+  <tr className={className} style={style} {...props}>
     {children}
   </tr>
 );
