@@ -939,7 +939,7 @@ const DispatchingView = ({
 }) => {
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
-  const [selectedDate, setSelectedDate] = React.useState(new Date(2025, 8, 15)); // Sept 15, 2025
+  const [selectedDate, setSelectedDate] = React.useState(new Date());
   const [selectedSubcontractors, setSelectedSubcontractors] = React.useState<string[]>([]);
   const [subcontractors, setSubcontractors] = React.useState<Subcontractor[]>([]);
   const [events, setEvents] = React.useState<CalendarEventWithCalendar[]>([]);
@@ -1032,7 +1032,7 @@ const DispatchingView = ({
   };
 
   const goToToday = () => {
-    setSelectedDate(new Date(2025, 8, 15));
+    setSelectedDate(new Date());
   };
 
   const goToTomorrow = () => {
@@ -1391,52 +1391,38 @@ const DispatchingView = ({
               ))}
             </div>
           </div>
-
-          <div>
-            <h6 className="fw-bold text-dark mb-3">Quick Filters</h6>
-            <div className="d-flex flex-column gap-2">
-              <Button
-                variant="outline-primary"
-                size="sm"
-                className="w-100 text-start small"
-                onClick={goToToday}
-              >
-                Today
-              </Button>
-              <Button
-                variant="outline-primary"
-                size="sm"
-                className="w-100 text-start small"
-                onClick={goToTomorrow}
-              >
-                Tomorrow
-              </Button>
-            </div>
-          </div>
         </div>
 
         {/* Main Timeline Area */}
         <div className="flex-fill d-flex flex-column" style={{ minHeight: 0, overflow: 'hidden' }}>
           {/* Date Navigation Header */}
           <div className="d-flex align-items-center justify-content-between px-4 py-3 border-bottom bg-white">
-            <div className="d-flex align-items-center gap-3">
+            <div className="d-flex align-items-center gap-2">
               <Button
-                variant="outline-secondary"
+                variant="link"
                 size="sm"
-                className="px-2 py-1"
+                className="p-1 text-secondary text-decoration-none"
                 onClick={() => navigateDay(-1)}
               >
-                <ChevronLeftIcon size={16} />
+                <ChevronLeftIcon size={20} />
               </Button>
-              <h5 className="mb-0 fw-bold">{formatDate(selectedDate)}</h5>
               <Button
-                variant="outline-secondary"
+                variant="primary"
                 size="sm"
-                className="px-2 py-1"
+                className="px-4"
+                onClick={goToToday}
+              >
+                Today
+              </Button>
+              <Button
+                variant="link"
+                size="sm"
+                className="p-1 text-secondary text-decoration-none"
                 onClick={() => navigateDay(1)}
               >
-                <ChevronRightIcon size={16} />
+                <ChevronRightIcon size={20} />
               </Button>
+              <h5 className="mb-0 fw-bold">{formatDate(selectedDate)}</h5>
             </div>
             <div className="btn-group" role="group">
               <button
