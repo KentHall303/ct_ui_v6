@@ -29,7 +29,51 @@ const DropdownsTemplatesPage = React.lazy(() => import('./screens/Templates/Drop
 const EmailTemplateModalTestPage = React.lazy(() => import('./screens/Templates/EmailTemplateModalTestPage').then(m => ({ default: m.EmailTemplateModalTestPage })));
 const ConnectionPlansPage = React.lazy(() => import('./screens/ActionPlans/ConnectionPlansPage').then(m => ({ default: m.ConnectionPlansPage })));
 const SeedDataPage = React.lazy(() => import('./screens/SeedData/SeedDataPage'));
+const AccountPage = React.lazy(() => import('./screens/Settings/AccountPage').then(m => ({ default: m.AccountPage })));
+const AccountInfoPage = React.lazy(() => import('./screens/Settings/AccountInfoPage').then(m => ({ default: m.AccountInfoPage })));
+const ActionPlansSettingsPage = React.lazy(() => import('./screens/Settings/ActionPlansSettingsPage').then(m => ({ default: m.ActionPlansSettingsPage })));
+const ApiMonitorPage = React.lazy(() => import('./screens/Settings/ApiMonitorPage').then(m => ({ default: m.ApiMonitorPage })));
+const AppointmentsPage = React.lazy(() => import('./screens/Settings/AppointmentsPage').then(m => ({ default: m.AppointmentsPage })));
+const BidTypesSettingsPage = React.lazy(() => import('./screens/Settings/BidTypesSettingsPage').then(m => ({ default: m.BidTypesSettingsPage })));
+const CalendarSettingsPage = React.lazy(() => import('./screens/Settings/CalendarSettingsPage').then(m => ({ default: m.CalendarSettingsPage })));
+const ChartBuilderPage = React.lazy(() => import('./screens/Settings/ChartBuilderPage').then(m => ({ default: m.ChartBuilderPage })));
+const CompanyPage = React.lazy(() => import('./screens/Settings/CompanyPage').then(m => ({ default: m.CompanyPage })));
+const ContactsSettingsPage = React.lazy(() => import('./screens/Settings/ContactsSettingsPage').then(m => ({ default: m.ContactsSettingsPage })));
+const CurrencyPage = React.lazy(() => import('./screens/Settings/CurrencyPage').then(m => ({ default: m.CurrencyPage })));
+const CustomFieldsPage = React.lazy(() => import('./screens/Settings/CustomFieldsPage').then(m => ({ default: m.CustomFieldsPage })));
+const DataExportPage = React.lazy(() => import('./screens/Settings/DataExportPage').then(m => ({ default: m.DataExportPage })));
+const DataImportPage = React.lazy(() => import('./screens/Settings/DataImportPage').then(m => ({ default: m.DataImportPage })));
+const EmailSettingsPage = React.lazy(() => import('./screens/Settings/EmailSettingsPage').then(m => ({ default: m.EmailSettingsPage })));
+const FormsPage = React.lazy(() => import('./screens/Settings/FormsPage').then(m => ({ default: m.FormsPage })));
+const IntegrationsPage = React.lazy(() => import('./screens/Settings/IntegrationsPage').then(m => ({ default: m.IntegrationsPage })));
+const JobsSettingsPage = React.lazy(() => import('./screens/Settings/JobsSettingsPage').then(m => ({ default: m.JobsSettingsPage })));
+const LanguagePage = React.lazy(() => import('./screens/Settings/LanguagePage').then(m => ({ default: m.LanguagePage })));
+const LeadSourcesPage = React.lazy(() => import('./screens/Settings/LeadSourcesPage').then(m => ({ default: m.LeadSourcesPage })));
+const NotificationsPage = React.lazy(() => import('./screens/Settings/NotificationsPage').then(m => ({ default: m.NotificationsPage })));
+const PaymentMethodsPage = React.lazy(() => import('./screens/Settings/PaymentMethodsPage').then(m => ({ default: m.PaymentMethodsPage })));
+const PermissionsPage = React.lazy(() => import('./screens/Settings/PermissionsPage').then(m => ({ default: m.PermissionsPage })));
+const PipelineSettingsPage = React.lazy(() => import('./screens/Settings/PipelineSettingsPage').then(m => ({ default: m.PipelineSettingsPage })));
+const PrivacyPage = React.lazy(() => import('./screens/Settings/PrivacyPage').then(m => ({ default: m.PrivacyPage })));
+const ProductsPage = React.lazy(() => import('./screens/Settings/ProductsPage').then(m => ({ default: m.ProductsPage })));
+const ProfilePage = React.lazy(() => import('./screens/Settings/ProfilePage').then(m => ({ default: m.ProfilePage })));
+const ReportsSettingsPage = React.lazy(() => import('./screens/Settings/ReportsSettingsPage').then(m => ({ default: m.ReportsSettingsPage })));
+const SecurityPage = React.lazy(() => import('./screens/Settings/SecurityPage').then(m => ({ default: m.SecurityPage })));
+const ServiceBridgePage = React.lazy(() => import('./screens/Settings/ServiceBridgePage').then(m => ({ default: m.ServiceBridgePage })));
+const ServiceBridge2Page = React.lazy(() => import('./screens/Settings/ServiceBridge2Page').then(m => ({ default: m.ServiceBridge2Page })));
+const TagsPage = React.lazy(() => import('./screens/Settings/TagsPage').then(m => ({ default: m.TagsPage })));
+const TaskSettingPage = React.lazy(() => import('./screens/Settings/TaskSettingPage').then(m => ({ default: m.TaskSettingPage })));
+const TeamPage = React.lazy(() => import('./screens/Settings/TeamPage').then(m => ({ default: m.TeamPage })));
+const TelephonyPage = React.lazy(() => import('./screens/Settings/TelephonyPage').then(m => ({ default: m.TelephonyPage })));
+const TemplatesSettingsPage = React.lazy(() => import('./screens/Settings/TemplatesSettingsPage').then(m => ({ default: m.TemplatesSettingsPage })));
+const TextMessagingPage = React.lazy(() => import('./screens/Settings/TextMessagingPage').then(m => ({ default: m.TextMessagingPage })));
+const ThemesPage = React.lazy(() => import('./screens/Settings/ThemesPage').then(m => ({ default: m.ThemesPage })));
+const ThumbtackPage = React.lazy(() => import('./screens/Settings/ThumbtackPage').then(m => ({ default: m.ThumbtackPage })));
+const TimeZonesPage = React.lazy(() => import('./screens/Settings/TimeZonesPage').then(m => ({ default: m.TimeZonesPage })));
+const TriggersPage = React.lazy(() => import('./screens/Settings/TriggersPage').then(m => ({ default: m.TriggersPage })));
 const UsersPage = React.lazy(() => import('./screens/Settings/UsersPage').then(m => ({ default: m.UsersPage })));
+const WebhookMonitorPage = React.lazy(() => import('./screens/Settings/WebhookMonitorPage').then(m => ({ default: m.WebhookMonitorPage })));
+const WebhooksPage = React.lazy(() => import('./screens/Settings/WebhooksPage').then(m => ({ default: m.WebhooksPage })));
+const WorkflowsPage = React.lazy(() => import('./screens/Settings/WorkflowsPage').then(m => ({ default: m.WorkflowsPage })));
 
 const PlaceholderPage: React.FC<{ title: string; description: string }> = ({ title, description }) => (
   <div className="p-6">
@@ -244,23 +288,187 @@ export const routes: RouteObject[] = [
     element: <PlaceholderPage title="Settings" description="Settings content will be implemented here." />
   },
   {
-    path: '/settings/chart-builder',
-    element: <PlaceholderPage title="Chart Builder" description="Chart Builder content will be implemented here." />
+    path: '/settings/account',
+    element: <AccountPage />
+  },
+  {
+    path: '/settings/account-info',
+    element: <AccountInfoPage />
+  },
+  {
+    path: '/settings/action-plans',
+    element: <ActionPlansSettingsPage />
   },
   {
     path: '/settings/api-monitor',
-    element: <PlaceholderPage title="API Monitor" description="API Monitor content will be implemented here." />
+    element: <ApiMonitorPage />
   },
   {
-    path: '/settings/webhook-monitor',
-    element: <PlaceholderPage title="Webhook Monitor" description="Webhook Monitor content will be implemented here." />
+    path: '/settings/appointments',
+    element: <AppointmentsPage />
+  },
+  {
+    path: '/settings/bid-types',
+    element: <BidTypesSettingsPage />
+  },
+  {
+    path: '/settings/calendar',
+    element: <CalendarSettingsPage />
+  },
+  {
+    path: '/settings/chart-builder',
+    element: <ChartBuilderPage />
+  },
+  {
+    path: '/settings/company',
+    element: <CompanyPage />
+  },
+  {
+    path: '/settings/contacts',
+    element: <ContactsSettingsPage />
+  },
+  {
+    path: '/settings/currency',
+    element: <CurrencyPage />
+  },
+  {
+    path: '/settings/custom-fields',
+    element: <CustomFieldsPage />
+  },
+  {
+    path: '/settings/data-export',
+    element: <DataExportPage />
+  },
+  {
+    path: '/settings/data-import',
+    element: <DataImportPage />
+  },
+  {
+    path: '/settings/email',
+    element: <EmailSettingsPage />
+  },
+  {
+    path: '/settings/forms',
+    element: <FormsPage />
+  },
+  {
+    path: '/settings/integrations',
+    element: <IntegrationsPage />
+  },
+  {
+    path: '/settings/jobs',
+    element: <JobsSettingsPage />
+  },
+  {
+    path: '/settings/language',
+    element: <LanguagePage />
+  },
+  {
+    path: '/settings/lead-sources',
+    element: <LeadSourcesPage />
+  },
+  {
+    path: '/settings/notifications',
+    element: <NotificationsPage />
+  },
+  {
+    path: '/settings/payment-methods',
+    element: <PaymentMethodsPage />
+  },
+  {
+    path: '/settings/permissions',
+    element: <PermissionsPage />
+  },
+  {
+    path: '/settings/pipeline',
+    element: <PipelineSettingsPage />
+  },
+  {
+    path: '/settings/privacy',
+    element: <PrivacyPage />
+  },
+  {
+    path: '/settings/products',
+    element: <ProductsPage />
+  },
+  {
+    path: '/settings/profile',
+    element: <ProfilePage />
+  },
+  {
+    path: '/settings/reports',
+    element: <ReportsSettingsPage />
+  },
+  {
+    path: '/settings/security',
+    element: <SecurityPage />
+  },
+  {
+    path: '/settings/seed-data',
+    element: <SeedDataPage />
+  },
+  {
+    path: '/settings/service-bridge',
+    element: <ServiceBridgePage />
+  },
+  {
+    path: '/settings/service-bridge-2',
+    element: <ServiceBridge2Page />
+  },
+  {
+    path: '/settings/tags',
+    element: <TagsPage />
+  },
+  {
+    path: '/settings/task-settings',
+    element: <TaskSettingPage />
+  },
+  {
+    path: '/settings/team',
+    element: <TeamPage />
+  },
+  {
+    path: '/settings/telephony',
+    element: <TelephonyPage />
+  },
+  {
+    path: '/settings/templates',
+    element: <TemplatesSettingsPage />
+  },
+  {
+    path: '/settings/text-messaging',
+    element: <TextMessagingPage />
+  },
+  {
+    path: '/settings/themes',
+    element: <ThemesPage />
+  },
+  {
+    path: '/settings/thumbtack',
+    element: <ThumbtackPage />
+  },
+  {
+    path: '/settings/time-zones',
+    element: <TimeZonesPage />
+  },
+  {
+    path: '/settings/triggers',
+    element: <TriggersPage />
   },
   {
     path: '/settings/users',
     element: <UsersPage />
   },
   {
-    path: '/settings/seed-data',
-    element: <SeedDataPage />
+    path: '/settings/webhook-monitor',
+    element: <WebhookMonitorPage />
+  },
+  {
+    path: '/settings/webhooks',
+    element: <WebhooksPage />
+  },
+  {
+    path: '/settings/workflows',
+    element: <WorkflowsPage />
   }
 ];
