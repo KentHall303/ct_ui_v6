@@ -168,6 +168,7 @@ const navigationItems: NavItem[] = [
       { id: "st-chart-builder", label: "Chart Builder", path: "/settings/chart-builder" },
       { id: "st-api-monitor", label: "API Monitor", path: "/settings/api-monitor" },
       { id: "st-webhook-monitor", label: "Webhook Monitor", path: "/settings/webhook-monitor" },
+      { id: "st-users", label: "Users", path: "/settings/users" },
     ]
   }
 ];
