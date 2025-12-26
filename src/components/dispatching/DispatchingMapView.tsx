@@ -82,7 +82,7 @@ export const DispatchingMapView: React.FC<DispatchingMapViewProps> = ({
 
   return (
     <div className="flex-fill position-relative" style={{ display: 'flex', flexDirection: 'column' }}>
-      <div style={{ flex: 1, minHeight: '500px' }}>
+      <div style={{ flex: 1, minHeight: '500px', position: 'relative' }}>
         <MapContainer
           center={defaultCenter}
           zoom={11}
@@ -123,22 +123,50 @@ export const DispatchingMapView: React.FC<DispatchingMapViewProps> = ({
                     icon={createNumberedIcon(index + 1, subcontractor?.color || '#3b82f6')}
                   >
                     <Popup>
-                      <div style={{ minWidth: '180px' }}>
+                      <div style={{ minWidth: '200px' }}>
                         <div style={{
                           fontWeight: 'bold',
                           color: subcontractor?.color,
-                          marginBottom: '4px',
+                          marginBottom: '6px',
                           fontSize: '0.9rem'
                         }}>
                           {formatTime(event.start_date)} - {formatTime(event.end_date)}
                         </div>
-                        <div style={{ fontWeight: '600', marginBottom: '4px' }}>
-                          {event.title}
+                        {event.quote_number && (
+                          <div style={{
+                            fontWeight: '700',
+                            marginBottom: '4px',
+                            fontSize: '0.9rem',
+                            color: '#111827'
+                          }}>
+                            {event.quote_number}
+                          </div>
+                        )}
+                        <div style={{
+                          fontSize: '0.8rem',
+                          color: '#6b7280',
+                          marginBottom: '2px',
+                          textTransform: 'capitalize'
+                        }}>
+                          {event.event_type === 'quote' ? '💰 Quote' :
+                           event.event_type === 'installation' ? '🔧 Installation' :
+                           event.event_type === 'inspection' ? '✓ Inspection' :
+                           '📋 Follow-up'}
                         </div>
-                        <div style={{ fontSize: '0.85rem', color: '#374151', marginBottom: '4px' }}>
+                        <div style={{ fontSize: '0.85rem', color: '#374151', marginBottom: '4px', fontWeight: '500' }}>
                           {event.contact_name}
                         </div>
-                        <div style={{ fontSize: '0.8rem', color: '#6b7280' }}>
+                        {event.amount && (
+                          <div style={{
+                            fontSize: '0.85rem',
+                            fontWeight: '700',
+                            color: '#059669',
+                            marginBottom: '6px'
+                          }}>
+                            ${event.amount.toLocaleString()}
+                          </div>
+                        )}
+                        <div style={{ fontSize: '0.8rem', color: '#6b7280', marginBottom: '4px' }}>
                           {event.location}
                         </div>
                         <div style={{
@@ -158,6 +186,51 @@ export const DispatchingMapView: React.FC<DispatchingMapViewProps> = ({
             );
           })}
         </MapContainer>
+
+        {/* Route Legend */}
+        {selectedSubcontractors.length > 0 && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '16px',
+              right: '16px',
+              backgroundColor: 'white',
+              borderRadius: '8px',
+              padding: '12px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+              zIndex: 1000,
+              minWidth: '180px'
+            }}
+          >
+            <div style={{ fontSize: '0.75rem', fontWeight: '700', marginBottom: '8px', color: '#374151' }}>
+              Routes
+            </div>
+            {selectedSubcontractors.map((subcontractorName) => {
+              const subcontractor = subcontractorsWithColors.find(s => s.name === subcontractorName);
+              const estimatorEvents = getEventsForEstimator(subcontractorName);
+
+              return (
+                <div key={subcontractorName} className="d-flex align-items-center gap-2 mb-2" style={{ fontSize: '0.75rem' }}>
+                  <div
+                    style={{
+                      width: '24px',
+                      height: '3px',
+                      backgroundColor: subcontractor?.color || '#9ca3af',
+                      borderRadius: '2px',
+                      flexShrink: 0
+                    }}
+                  />
+                  <div style={{ flex: 1, color: '#374151' }}>
+                    <div style={{ fontWeight: '600' }}>{subcontractorName}</div>
+                    <div style={{ fontSize: '0.7rem', color: '#6b7280' }}>
+                      {estimatorEvents.length} {estimatorEvents.length === 1 ? 'stop' : 'stops'}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       <div className="border-top bg-white p-3" style={{ flexShrink: 0 }}>

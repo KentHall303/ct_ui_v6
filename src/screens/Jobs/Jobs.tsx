@@ -1765,14 +1765,24 @@ const DispatchingView = ({
                               e.currentTarget.style.transform = 'translateY(0)';
                               e.currentTarget.style.boxShadow = 'none';
                             }}
-                            title={`${time}\n${displayTitle}\n${event.contact_name || ''}\n\nDrag to reschedule or click to edit`}
+                            title={`${time}\n${displayTitle}\n${event.contact_name || ''}\n${event.quote_number ? `Quote: ${event.quote_number}` : ''}\n${event.amount ? `$${event.amount.toLocaleString()}` : ''}\n\nDrag to reschedule or click to edit`}
                           >
-                            <div style={{ fontSize: '0.75rem', fontWeight: '700', color: colors.text, marginBottom: '1px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.1' }}>
-                              {displayTitle}
+                            <div className="d-flex align-items-center gap-1" style={{ marginBottom: '2px' }}>
+                              <span style={{ fontSize: '0.6rem', opacity: 0.8 }}>
+                                {event.event_type === 'quote' ? '💰' : event.event_type === 'installation' ? '🔧' : event.event_type === 'inspection' ? '✓' : '📋'}
+                              </span>
+                              <div style={{ fontSize: '0.7rem', fontWeight: '700', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.2', flex: 1 }}>
+                                {event.quote_number || displayTitle}
+                              </div>
                             </div>
-                            <div style={{ fontSize: '0.68rem', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.1' }}>
+                            <div style={{ fontSize: '0.65rem', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.1', opacity: 0.9 }}>
                               {event.contact_name}
                             </div>
+                            {event.amount && (
+                              <div style={{ fontSize: '0.65rem', fontWeight: '600', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.1', marginTop: '1px' }}>
+                                ${event.amount.toLocaleString()}
+                              </div>
+                            )}
                             {/* Resize Handle - only show on single day events or end of multi-day events */}
                             {(!position.isMultiDay || position.dayType === 'end') && (
                               <div
