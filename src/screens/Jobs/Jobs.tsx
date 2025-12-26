@@ -853,48 +853,44 @@ const TableView = () => {
                   {expandedQuotes.has(quote.id) && quote.jobs.length > 0 && (
                     <TableRow>
                       <TableCell colSpan={14} style={{ padding: 0, backgroundColor: '#f8f9fa' }}>
-                        <div className="px-4 py-2">
-                          <table className="table table-sm mb-0" style={{ backgroundColor: 'transparent' }}>
-                            <thead>
-                              <tr>
-                                <th style={{ width: '48px' }}></th>
-                                <th className="small fw-semibold text-secondary">Subcontractor</th>
-                                <th className="small fw-semibold text-secondary">Bid Types</th>
-                                <th className="small fw-semibold text-secondary">Start Date Time</th>
-                                <th className="small fw-semibold text-secondary">End Date Time</th>
-                                <th className="small fw-semibold text-secondary">Status</th>
-                                <th className="small fw-semibold text-secondary">Action</th>
+                        <table className="table table-sm mb-0" style={{ backgroundColor: 'transparent', width: '100%', tableLayout: 'fixed' }}>
+                          <thead>
+                            <tr>
+                              <th style={{ width: '15%' }} className="small fw-semibold text-secondary ps-3">Subcontractor</th>
+                              <th style={{ width: '20%' }} className="small fw-semibold text-secondary">Bid Types</th>
+                              <th style={{ width: '18%' }} className="small fw-semibold text-secondary">Start Date Time</th>
+                              <th style={{ width: '18%' }} className="small fw-semibold text-secondary">End Date Time</th>
+                              <th style={{ width: '14%' }} className="small fw-semibold text-secondary">Status</th>
+                              <th style={{ width: '15%' }} className="small fw-semibold text-secondary">Action</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {quote.jobs.map((job) => (
+                              <tr key={job.id}>
+                                <td className="small text-dark ps-3">{job.subcontractor_name || '-'}</td>
+                                <td className="small text-dark">{job.bid_type || '-'}</td>
+                                <td className="small text-secondary">{formatDateTime(job.start_date_time)}</td>
+                                <td className="small text-secondary">{formatDateTime(job.end_date_time)}</td>
+                                <td>
+                                  <JobStatusDropdown
+                                    status={job.status}
+                                    onStatusChange={(newStatus) => handleJobStatusChange(job.id, newStatus)}
+                                  />
+                                </td>
+                                <td>
+                                  <div className="d-flex align-items-center gap-1">
+                                    <Button variant="outline-secondary" size="sm" className="rounded-circle p-1" title="View">
+                                      <EyeIcon size={12} />
+                                    </Button>
+                                    <Button variant="outline-secondary" size="sm" className="rounded-circle p-1" title="Edit">
+                                      <EditIcon size={12} />
+                                    </Button>
+                                  </div>
+                                </td>
                               </tr>
-                            </thead>
-                            <tbody>
-                              {quote.jobs.map((job) => (
-                                <tr key={job.id}>
-                                  <td></td>
-                                  <td className="small text-dark">{job.subcontractor_name || '-'}</td>
-                                  <td className="small text-dark">{job.bid_type || '-'}</td>
-                                  <td className="small text-secondary">{formatDateTime(job.start_date_time)}</td>
-                                  <td className="small text-secondary">{formatDateTime(job.end_date_time)}</td>
-                                  <td>
-                                    <JobStatusDropdown
-                                      status={job.status}
-                                      onStatusChange={(newStatus) => handleJobStatusChange(job.id, newStatus)}
-                                    />
-                                  </td>
-                                  <td>
-                                    <div className="d-flex align-items-center gap-1">
-                                      <Button variant="outline-secondary" size="sm" className="rounded-circle p-1" title="View">
-                                        <EyeIcon size={12} />
-                                      </Button>
-                                      <Button variant="outline-secondary" size="sm" className="rounded-circle p-1" title="Edit">
-                                        <EditIcon size={12} />
-                                      </Button>
-                                    </div>
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
+                            ))}
+                          </tbody>
+                        </table>
                       </TableCell>
                     </TableRow>
                   )}

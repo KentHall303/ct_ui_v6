@@ -78,13 +78,15 @@ export const TableCell: React.FC<{
   className?: string;
   style?: React.CSSProperties;
   role?: string;
+  colSpan?: number;
 }> = ({
   children,
   className = '',
   style,
-  role
+  role,
+  colSpan
 }) => (
-  <td className={className} style={style} role={role}>
+  <td className={className} style={style} role={role} colSpan={colSpan}>
     {children}
   </td>
 );
