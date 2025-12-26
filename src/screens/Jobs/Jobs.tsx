@@ -2,8 +2,8 @@ import React from "react";
 import { Button } from "../../components/bootstrap/Button";
 import { FloatingInput, FloatingSelect, FloatingSelectOption } from "../../components/bootstrap/FormControls";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/bootstrap/Table";
-import { Badge, Card, Container, Row, Col, ButtonGroup, Button as BSButton } from "react-bootstrap";
-import { Search as SearchIcon, RefreshCw as RefreshCwIcon, Settings as SettingsIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronsLeft as ChevronsLeftIcon, ChevronsRight as ChevronsRightIcon, Plus as PlusIcon, Mail as MailIcon, MessageSquare as MessageSquareIcon, FileText as FileTextIcon, Printer as PrinterIcon, Download as DownloadIcon, Edit as EditIcon, Trash as TrashIcon, User as UserIcon, DollarSign as DollarSignIcon, Calendar as CalendarIcon, TrendingUp as TrendingUpIcon, List as ListIcon, Calendar as CalendarIconView, Receipt as ReceiptIcon } from "lucide-react";
+import { Badge, Card, Container, Row, Col, ButtonGroup, Button as BSButton, Form } from "react-bootstrap";
+import { Search as SearchIcon, RefreshCw as RefreshCwIcon, Settings as SettingsIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronsLeft as ChevronsLeftIcon, ChevronsRight as ChevronsRightIcon, Plus as PlusIcon, Minus as MinusIcon, Mail as MailIcon, MessageSquare as MessageSquareIcon, FileText as FileTextIcon, Printer as PrinterIcon, Download as DownloadIcon, Edit as EditIcon, Trash as TrashIcon, User as UserIcon, DollarSign as DollarSignIcon, Calendar as CalendarIcon, TrendingUp as TrendingUpIcon, List as ListIcon, Calendar as CalendarIconView, Receipt as ReceiptIcon, Eye as EyeIcon } from "lucide-react";
 import { AddCOGSModal } from "../../components/modals/AddCOGSModal";
 import { GrossMarginModal } from "../../components/modals/GrossMarginModal";
 import { JobsReportsFSModal } from "../../components/modals/JobsReportsFSModal";
@@ -12,6 +12,8 @@ import { supabase } from "../../lib/supabase";
 import { sampleCalendarEvents, CalendarEvent, isEventStart, isEventEnd, isEventMiddle } from "../../data/sampleCalendarData";
 import { fetchCalendarEventsWithCalendar, fetchCalendars, CalendarEventWithCalendar, updateCalendarEvent, Calendar } from "../../services/calendarService";
 import { fetchSubcontractors, Subcontractor } from "../../services/subcontractorService";
+import { fetchJobsCalendarsGroupedByCategory, fetchJobsCalendarEvents, updateJobsCalendarVisibility, JobsCalendarWithContact, JobsCalendarEventWithCalendar, ContactsByCategory } from "../../services/jobsCalendarService";
+import { fetchQuotesWithJobs, updateQuoteJob, QuoteWithJobs, QuoteJob } from "../../services/quoteService";
 
 const actionButtons = [
   { label: "New Quote", variant: "default", icon: PlusIcon },
@@ -619,13 +621,72 @@ const JobsHeader = ({
   );
 };
 
+const JOB_STATUSES = ['Pending', 'Started', 'Completed', 'Need More Time', 'Decline', 'Cancelled'] as const;
+
+const JobStatusDropdown = ({ status, onStatusChange }: { status: string; onStatusChange: (newStatus: string) => void }) => {
+  return (
+    <div className="d-flex align-items-center gap-2">
+      <div
+        className="rounded-circle"
+        style={{ width: '8px', height: '8px', backgroundColor: '#ffc107', flexShrink: 0 }}
+      />
+      <Form.Select
+        size="sm"
+        value={status}
+        onChange={(e) => onStatusChange(e.target.value)}
+        style={{ fontSize: '0.75rem', padding: '0.25rem 0.5rem', width: 'auto', minWidth: '120px' }}
+      >
+        {JOB_STATUSES.map((s) => (
+          <option key={s} value={s}>{s}</option>
+        ))}
+      </Form.Select>
+    </div>
+  );
+};
+
 const TableView = () => {
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
   const [showCOGSModal, setShowCOGSModal] = React.useState(false);
   const [showGMModal, setShowGMModal] = React.useState(false);
   const [selectedQuoteId, setSelectedQuoteId] = React.useState<string>('');
-  const [quotesWithCOGS, setQuotesWithCOGS] = React.useState(quotesData);
+  const [quotes, setQuotes] = React.useState<QuoteWithJobs[]>([]);
+  const [expandedQuotes, setExpandedQuotes] = React.useState<Set<string>>(new Set());
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const loadQuotes = async () => {
+      setLoading(true);
+      const data = await fetchQuotesWithJobs();
+      setQuotes(data);
+      setLoading(false);
+    };
+    loadQuotes();
+  }, []);
+
+  const toggleExpand = (quoteId: string) => {
+    setExpandedQuotes(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(quoteId)) {
+        newSet.delete(quoteId);
+      } else {
+        newSet.add(quoteId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleJobStatusChange = async (jobId: string, newStatus: string) => {
+    try {
+      await updateQuoteJob(jobId, { status: newStatus as QuoteJob['status'] });
+      setQuotes(prev => prev.map(quote => ({
+        ...quote,
+        jobs: quote.jobs.map(job => job.id === jobId ? { ...job, status: newStatus as QuoteJob['status'] } : job)
+      })));
+    } catch (err) {
+      console.error('Failed to update job status:', err);
+    }
+  };
 
   const handleAddCOGS = (quoteId: string) => {
     setSelectedQuoteId(quoteId);
@@ -638,35 +699,23 @@ const TableView = () => {
   };
 
   const handleCOGSSuccess = async () => {
-    if (!selectedQuoteId) return;
+    const data = await fetchQuotesWithJobs();
+    setQuotes(data);
+  };
 
-    try {
-      const { data: cogsItems, error } = await supabase
-        .from('cogs_items')
-        .select('cost')
-        .eq('proposal_id', selectedQuoteId);
+  const formatCurrency = (value: number | null | undefined) => {
+    if (value === null || value === undefined) return '$0.00';
+    return `$${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
 
-      if (error) throw error;
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return '';
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
 
-      const totalCOGS = cogsItems?.reduce((sum, item) => sum + parseFloat(item.cost), 0) || 0;
-
-      setQuotesWithCOGS(prevQuotes =>
-        prevQuotes.map(quote => {
-          if (quote.quoteNumber === selectedQuoteId) {
-            const amount = parseFloat(quote.amount.replace(/[^0-9.-]+/g, ''));
-            const grossMargin = amount > 0 ? (((amount - totalCOGS) / amount) * 100).toFixed(2) : '100.00';
-            return {
-              ...quote,
-              totalCogs: `$${totalCOGS.toFixed(2)}`,
-              grossMargin: `${grossMargin}%`
-            };
-          }
-          return quote;
-        })
-      );
-    } catch (err) {
-      console.error('Failed to refresh COGS data:', err);
-    }
+  const formatDateTime = (dateStr: string | null) => {
+    if (!dateStr) return '';
+    return new Date(dateStr).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
   };
 
   React.useLayoutEffect(() => {
@@ -690,167 +739,173 @@ const TableView = () => {
       style={{ maxHeight: maxHeight ?? undefined }}
     >
       <div style={{ minWidth: '1600px' }}>
-          <Table className="jobs-table" striped>
+        <Table className="jobs-table" striped>
           <TableHeader>
             <TableRow>
-              <TableHead style={{ width: '48px' }}>
-                <input type="checkbox" className="form-check-input" />
-              </TableHead>
-              <TableHead style={{ minWidth: '180px' }}>
-                Quote # ▲
-              </TableHead>
-              <TableHead style={{ minWidth: '200px' }}>
-                Contact Name ▲
-              </TableHead>
-              <TableHead>
-                Amount ▲
-              </TableHead>
-              <TableHead>
-                Material ▲
-              </TableHead>
-              <TableHead>
-                Labor ▲
-              </TableHead>
-              <TableHead>
-                Balance Due ▲
-              </TableHead>
-              <TableHead>
-                Payments ▲
-              </TableHead>
-              <TableHead>
-                Total COGS ▲
-              </TableHead>
-              <TableHead>
-                Gross Margin ▲
-              </TableHead>
-              <TableHead>
-                WO Status ▲
-              </TableHead>
-              <TableHead>
-                Actions
-              </TableHead>
+              <TableHead style={{ width: '48px' }}></TableHead>
+              <TableHead style={{ minWidth: '150px' }}>Quote #</TableHead>
+              <TableHead style={{ minWidth: '180px' }}>Contact Name</TableHead>
+              <TableHead>Amount</TableHead>
+              <TableHead>Material</TableHead>
+              <TableHead>Labor</TableHead>
+              <TableHead>Balance Due</TableHead>
+              <TableHead>Start Date</TableHead>
+              <TableHead>End Date</TableHead>
+              <TableHead>WO Status</TableHead>
+              <TableHead>Payments</TableHead>
+              <TableHead>Total COGS</TableHead>
+              <TableHead>Gross Margin</TableHead>
+              <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {quotesWithCOGS.map((quote, index) => (
-              <TableRow
-                key={quote.id}
-              >
-                <TableCell>
-                  <input type="checkbox" className="form-check-input" />
-                </TableCell>
-                <TableCell style={{ minWidth: '180px' }}>
-                  <div className="fw-medium small text-dark">
-                    {quote.quoteNumber}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="small text-secondary">
-                    {quote.contactName}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="small fw-medium text-dark">
-                    {quote.amount}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="small text-secondary">
-                    {quote.material}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="small text-secondary">
-                    {quote.labor}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="small fw-medium text-dark">
-                    {quote.balanceDue}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="small text-secondary">
-                    {quote.payments}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="small text-secondary">
-                    {quote.totalCogs}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <div className="small fw-medium text-success">
-                    {quote.grossMargin}
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge bg={getStatusBadge(quote.woStatus)} className="small">
-                    {quote.woStatus}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="d-flex align-items-center justify-content-center gap-1">
-                    <Button
-                      variant="outline-secondary"
-                      size="sm"
-                      className="rounded-circle p-1"
-                      title="View contact"
-                    >
-                      <UserIcon size={12} />
-                    </Button>
-                    <Button
-                      variant="outline-secondary"
-                      size="sm"
-                      className="rounded-circle p-1"
-                      title="Edit quote"
-                    >
-                      <EditIcon size={12} />
-                    </Button>
-                    <Button
-                      variant="outline-secondary"
-                      size="sm"
-                      className="rounded-circle p-1"
-                      title="Print"
-                    >
-                      <PrinterIcon size={12} />
-                    </Button>
-                    <Button
-                      variant="outline-secondary"
-                      size="sm"
-                      className="rounded-circle p-1"
-                      title="More options"
-                    >
-                      <DollarSignIcon size={12} />
-                    </Button>
-                    <Button
-                      variant="outline-secondary"
-                      size="sm"
-                      className="rounded-circle p-1"
-                      title="Add Cost of Goods Sold"
-                      onClick={() => handleAddCOGS(quote.quoteNumber)}
-                    >
-                      <ReceiptIcon size={12} />
-                    </Button>
-                    <Button
-                      variant="outline-secondary"
-                      size="sm"
-                      className="rounded-circle p-1"
-                      title="View Gross Margin Report"
-                      onClick={() => handleViewGrossMargin(quote.quoteNumber)}
-                    >
-                      <TrendingUpIcon size={12} />
-                    </Button>
-                  </div>
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={14} className="text-center py-4">
+                  <span className="text-secondary">Loading quotes...</span>
                 </TableCell>
               </TableRow>
-            ))}
+            ) : quotes.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={14} className="text-center py-4">
+                  <span className="text-secondary">No quotes found</span>
+                </TableCell>
+              </TableRow>
+            ) : (
+              quotes.map((quote) => (
+                <React.Fragment key={quote.id}>
+                  <TableRow>
+                    <TableCell>
+                      <button
+                        className="btn btn-link p-0 text-decoration-none"
+                        onClick={() => toggleExpand(quote.id)}
+                        style={{ width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        {expandedQuotes.has(quote.id) ? (
+                          <MinusIcon size={14} className="text-secondary" />
+                        ) : (
+                          <PlusIcon size={14} className="text-secondary" />
+                        )}
+                      </button>
+                    </TableCell>
+                    <TableCell style={{ minWidth: '150px' }}>
+                      <div className="fw-medium small text-dark">{quote.quote_number}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="small text-primary">{quote.contact_name}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="small fw-medium text-dark">{formatCurrency(quote.amount)}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="small text-secondary">{formatCurrency(quote.material)}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="small text-secondary">{formatCurrency(quote.labor)}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="small fw-medium text-danger">{formatCurrency(quote.balance_due)}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="small text-secondary">{formatDate(quote.start_date)}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="small text-secondary">{formatDate(quote.end_date)}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="d-flex align-items-center gap-1">
+                        <div
+                          className="rounded-circle"
+                          style={{
+                            width: '8px',
+                            height: '8px',
+                            backgroundColor: quote.wo_status === 'active' ? '#28a745' : quote.wo_status === 'pending' ? '#ffc107' : '#dc3545'
+                          }}
+                        />
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="small text-secondary">{quote.payments !== 0 ? formatCurrency(quote.payments) : '0'}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="small text-secondary">{formatCurrency(quote.total_cogs)}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="small fw-medium text-success">{quote.gross_margin?.toFixed(2)}%</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="d-flex align-items-center justify-content-center gap-1">
+                        <Button variant="outline-secondary" size="sm" className="rounded-circle p-1" title="View contact">
+                          <UserIcon size={12} />
+                        </Button>
+                        <Button variant="outline-secondary" size="sm" className="rounded-circle p-1" title="View">
+                          <EyeIcon size={12} />
+                        </Button>
+                        <Button variant="outline-secondary" size="sm" className="rounded-circle p-1" title="Edit quote">
+                          <EditIcon size={12} />
+                        </Button>
+                        <Button variant="outline-secondary" size="sm" className="rounded-circle p-1" title="Print">
+                          <PrinterIcon size={12} />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                  {expandedQuotes.has(quote.id) && quote.jobs.length > 0 && (
+                    <TableRow>
+                      <TableCell colSpan={14} style={{ padding: 0, backgroundColor: '#f8f9fa' }}>
+                        <div className="px-4 py-2">
+                          <table className="table table-sm mb-0" style={{ backgroundColor: 'transparent' }}>
+                            <thead>
+                              <tr>
+                                <th style={{ width: '48px' }}></th>
+                                <th className="small fw-semibold text-secondary">Subcontractor</th>
+                                <th className="small fw-semibold text-secondary">Bid Types</th>
+                                <th className="small fw-semibold text-secondary">Start Date Time</th>
+                                <th className="small fw-semibold text-secondary">End Date Time</th>
+                                <th className="small fw-semibold text-secondary">Status</th>
+                                <th className="small fw-semibold text-secondary">Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {quote.jobs.map((job) => (
+                                <tr key={job.id}>
+                                  <td></td>
+                                  <td className="small text-dark">{job.subcontractor_name || '-'}</td>
+                                  <td className="small text-dark">{job.bid_type || '-'}</td>
+                                  <td className="small text-secondary">{formatDateTime(job.start_date_time)}</td>
+                                  <td className="small text-secondary">{formatDateTime(job.end_date_time)}</td>
+                                  <td>
+                                    <JobStatusDropdown
+                                      status={job.status}
+                                      onStatusChange={(newStatus) => handleJobStatusChange(job.id, newStatus)}
+                                    />
+                                  </td>
+                                  <td>
+                                    <div className="d-flex align-items-center gap-1">
+                                      <Button variant="outline-secondary" size="sm" className="rounded-circle p-1" title="View">
+                                        <EyeIcon size={12} />
+                                      </Button>
+                                      <Button variant="outline-secondary" size="sm" className="rounded-circle p-1" title="Edit">
+                                        <EditIcon size={12} />
+                                      </Button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
+              ))
+            )}
           </TableBody>
         </Table>
       </div>
     </div>
 
-    {/* Add COGS Modal */}
     <AddCOGSModal
       show={showCOGSModal}
       onHide={() => {
@@ -861,7 +916,6 @@ const TableView = () => {
       onSuccess={handleCOGSSuccess}
     />
 
-    {/* Gross Margin Modal */}
     <GrossMarginModal
       show={showGMModal}
       onHide={() => {
@@ -1945,20 +1999,36 @@ const DispatchingView = ({
 const CalendarView = () => {
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
-  const [selectedSubcontractors, setSelectedSubcontractors] = React.useState<string[]>([]);
-  const [subcontractors, setSubcontractors] = React.useState<Subcontractor[]>([]);
+  const [calendars, setCalendars] = React.useState<ContactsByCategory>({ estimators: [], fieldManagers: [], subcontractors: [] });
+  const [selectedCalendarIds, setSelectedCalendarIds] = React.useState<string[]>([]);
+  const [events, setEvents] = React.useState<JobsCalendarEventWithCalendar[]>([]);
+  const [currentDate, setCurrentDate] = React.useState(new Date(2025, 8, 15));
 
-  // Load subcontractors from database
   React.useEffect(() => {
-    const loadSubcontractors = async () => {
-      const data = await fetchSubcontractors({ isActive: true });
-      setSubcontractors(data);
-      if (data.length > 0 && selectedSubcontractors.length === 0) {
-        setSelectedSubcontractors([data[0].name]);
-      }
+    const loadCalendars = async () => {
+      const data = await fetchJobsCalendarsGroupedByCategory();
+      setCalendars(data);
+      const visibleIds = [...data.estimators, ...data.fieldManagers, ...data.subcontractors]
+        .filter(c => c.is_visible)
+        .map(c => c.id);
+      setSelectedCalendarIds(visibleIds);
     };
-    loadSubcontractors();
+    loadCalendars();
   }, []);
+
+  React.useEffect(() => {
+    const loadEvents = async () => {
+      if (selectedCalendarIds.length === 0) {
+        setEvents([]);
+        return;
+      }
+      const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+      const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59);
+      const data = await fetchJobsCalendarEvents(startOfMonth, endOfMonth, selectedCalendarIds);
+      setEvents(data);
+    };
+    loadEvents();
+  }, [selectedCalendarIds, currentDate]);
 
   React.useLayoutEffect(() => {
     function computeHeight() {
@@ -1973,19 +2043,24 @@ const CalendarView = () => {
     return () => window.removeEventListener("resize", computeHeight);
   }, []);
 
-  const toggleSubcontractor = (subcontractorName: string) => {
-    setSelectedSubcontractors(prev =>
-      prev.includes(subcontractorName)
-        ? prev.filter(e => e !== subcontractorName)
-        : [...prev, subcontractorName]
-    );
+  const toggleCalendar = async (calendar: JobsCalendarWithContact) => {
+    const newVisible = !selectedCalendarIds.includes(calendar.id);
+    if (newVisible) {
+      setSelectedCalendarIds(prev => [...prev, calendar.id]);
+    } else {
+      setSelectedCalendarIds(prev => prev.filter(id => id !== calendar.id));
+    }
+    try {
+      await updateJobsCalendarVisibility(calendar.id, newVisible);
+    } catch (e) {
+      console.error('Failed to update visibility:', e);
+    }
   };
 
-  const getEventsByDate = (date: string): CalendarEvent[] => {
-    return sampleCalendarEvents.filter(event => {
-      const matchesDate = event.date === date;
-      const matchesEstimator = selectedSubcontractors.length === 0 || selectedSubcontractors.includes(event.estimator);
-      return matchesDate && matchesEstimator;
+  const getEventsByDate = (date: string): JobsCalendarEventWithCalendar[] => {
+    return events.filter(event => {
+      const eventDate = new Date(event.start_date).toISOString().split('T')[0];
+      return eventDate === date;
     });
   };
 
@@ -2006,28 +2081,70 @@ const CalendarView = () => {
 
   const generateCalendarDays = () => {
     const days = [];
-    const firstDayOfMonth = 1;
-    const startDayOfWeek = 0;
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDayOfWeek = firstDay.getDay();
+    const daysInMonth = lastDay.getDate();
+    const today = new Date();
 
     for (let i = 0; i < 35; i++) {
       const dayNumber = i - startDayOfWeek + 1;
-      const isCurrentMonth = dayNumber > 0 && dayNumber <= 30;
-      const dateString = isCurrentMonth ? `2025-09-${String(dayNumber).padStart(2, '0')}` : '';
-      const isToday = dayNumber === 15;
-      const events = isCurrentMonth ? getEventsByDate(dateString) : [];
+      const isCurrentMonth = dayNumber > 0 && dayNumber <= daysInMonth;
+      const dateString = isCurrentMonth ? `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}` : '';
+      const isToday = isCurrentMonth && dayNumber === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+      const dayEvents = isCurrentMonth ? getEventsByDate(dateString) : [];
 
       days.push({
         dayNumber: isCurrentMonth ? dayNumber : null,
         dateString,
         isCurrentMonth,
         isToday,
-        events
+        events: dayEvents
       });
     }
     return days;
   };
 
   const calendarDays = generateCalendarDays();
+  const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  const navigateMonth = (direction: number) => {
+    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + direction, 1));
+  };
+
+  const goToToday = () => {
+    setCurrentDate(new Date());
+  };
+
+  const renderCategorySection = (title: string, items: JobsCalendarWithContact[]) => (
+    <div className="mb-3">
+      <h6 className="fw-semibold text-dark mb-2" style={{ fontSize: '0.8rem' }}>{title}</h6>
+      <div className="d-flex flex-column gap-1">
+        {items.map((calendar) => (
+          <label
+            key={calendar.id}
+            className="d-flex align-items-center gap-2 py-1 px-2 rounded"
+            style={{ cursor: 'pointer', transition: 'background-color 0.15s' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            <input
+              type="checkbox"
+              checked={selectedCalendarIds.includes(calendar.id)}
+              onChange={() => toggleCalendar(calendar)}
+              className="form-check-input mt-0"
+              style={{ cursor: 'pointer', accentColor: calendar.color }}
+            />
+            <span className={`small ${selectedCalendarIds.includes(calendar.id) ? 'fw-medium text-dark' : 'text-secondary'}`}>
+              {calendar.name}
+            </span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <div
@@ -2036,57 +2153,41 @@ const CalendarView = () => {
       style={{ maxHeight: maxHeight ?? undefined, display: 'flex', flexDirection: 'column' }}
     >
       <div className="d-flex flex-fill" style={{ minHeight: 0 }}>
-        {/* Left Sidebar - Subcontractors */}
         <div className="border-end bg-light p-3" style={{ width: '240px', flexShrink: 0, overflowY: 'auto' }}>
-          <div className="mb-4">
-            <h6 className="fw-bold text-dark mb-3">Subcontractors</h6>
-            <div className="d-flex flex-column gap-2">
-              {subcontractors.map((subcontractor, index) => (
-                <label
-                  key={subcontractor.id}
-                  className="d-flex align-items-center gap-2 p-2 rounded"
-                  style={{ cursor: 'pointer', transition: 'background-color 0.15s' }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedSubcontractors.includes(subcontractor.name)}
-                    onChange={() => toggleSubcontractor(subcontractor.name)}
-                    className="form-check-input mt-0"
-                    style={{ cursor: 'pointer' }}
-                  />
-                  <span className={`small ${selectedSubcontractors.includes(subcontractor.name) ? 'fw-semibold text-dark' : 'text-secondary'}`}>
-                    {subcontractor.name}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </div>
+          <h6 className="fw-bold text-dark mb-3">Jobs Calendars</h6>
 
+          {renderCategorySection('Estimators', calendars.estimators)}
+          <hr className="my-2" />
+          {renderCategorySection('Field Manager', calendars.fieldManagers)}
+          <hr className="my-2" />
+          {renderCategorySection('Subcontractors', calendars.subcontractors)}
+
+          <hr className="my-3" />
           <div>
-            <h6 className="fw-bold text-dark mb-3">Quick Filters</h6>
+            <h6 className="fw-semibold text-dark mb-2" style={{ fontSize: '0.8rem' }}>Quick Filters</h6>
             <div className="d-flex flex-column gap-2">
-              <Button variant="outline-primary" size="sm" className="w-100 text-start small">
+              <Button variant="outline-primary" size="sm" className="w-100 text-start small" onClick={goToToday}>
                 Today
               </Button>
-              <Button variant="outline-primary" size="sm" className="w-100 text-start small">
+              <Button variant="outline-primary" size="sm" className="w-100 text-start small" onClick={() => {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                setCurrentDate(tomorrow);
+              }}>
                 Tomorrow
               </Button>
             </div>
           </div>
         </div>
 
-        {/* Main Calendar Area */}
         <div className="flex-fill d-flex flex-column" style={{ minHeight: 0 }}>
-          {/* Calendar Header */}
           <div className="d-flex align-items-center justify-content-between px-4 py-3 border-bottom bg-white">
             <div className="d-flex align-items-center gap-3">
-              <Button variant="outline-secondary" size="sm" className="px-2 py-1">
+              <Button variant="outline-secondary" size="sm" className="px-2 py-1" onClick={() => navigateMonth(-1)}>
                 <ChevronLeftIcon size={16} />
               </Button>
-              <h5 className="mb-0 fw-bold">September 2025</h5>
-              <Button variant="outline-secondary" size="sm" className="px-2 py-1">
+              <h5 className="mb-0 fw-bold">{monthName}</h5>
+              <Button variant="outline-secondary" size="sm" className="px-2 py-1" onClick={() => navigateMonth(1)}>
                 <ChevronRightIcon size={16} />
               </Button>
             </div>
@@ -2097,9 +2198,7 @@ const CalendarView = () => {
             </div>
           </div>
 
-          {/* Calendar Grid */}
           <div className="flex-fill p-3" style={{ overflowY: 'auto' }}>
-            {/* Day Headers */}
             <div className="d-grid mb-2" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
               {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                 <div key={day} className="text-center py-2 small fw-semibold text-secondary bg-light rounded">
@@ -2108,7 +2207,6 @@ const CalendarView = () => {
               ))}
             </div>
 
-            {/* Calendar Days */}
             <div className="d-grid" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
               {calendarDays.map((day, i) => (
                 <div
@@ -2144,57 +2242,23 @@ const CalendarView = () => {
                         <div className="d-flex flex-column gap-1">
                           {day.events.slice(0, 2).map((event) => {
                             const colors = getStatusColor(event.status);
-                            const isStart = isEventStart(event, day.dateString);
-                            const isEnd = isEventEnd(event, day.dateString);
-                            const isMiddle = isEventMiddle(event, day.dateString);
-                            const isMultiDay = event.isMultiDay;
-
-                            let borderRadius = '0.25rem';
-                            if (isMultiDay) {
-                              if (isStart && !isEnd) {
-                                borderRadius = '0.25rem 0 0 0.25rem';
-                              } else if (isEnd && !isStart) {
-                                borderRadius = '0 0.25rem 0.25rem 0';
-                              } else if (isMiddle) {
-                                borderRadius = '0';
-                              }
-                            }
-
+                            const calColor = event.calendar?.color || '#3b82f6';
                             return (
                               <div
                                 key={event.id}
-                                className={`${colors.bg} bg-opacity-10 ${colors.text} border ${colors.border} px-2 py-1 ${isMultiDay ? 'fw-bold' : ''}`}
+                                className="px-2 py-1 rounded"
                                 style={{
                                   fontSize: '0.65rem',
                                   cursor: 'pointer',
                                   transition: 'all 0.15s ease',
-                                  borderRadius,
-                                  position: 'relative',
-                                  ...(isMultiDay && {
-                                    borderLeft: isStart ? undefined : 'none',
-                                    borderRight: isEnd ? undefined : 'none',
-                                  })
+                                  backgroundColor: `${calColor}20`,
+                                  borderLeft: `3px solid ${calColor}`,
+                                  color: '#333'
                                 }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.transform = 'scale(1.02)';
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.transform = 'scale(1)';
-                                }}
-                                title={`${event.quoteNumber}\n${event.contactName}\n${event.time}\n${event.amount}${isMultiDay ? '\nMulti-day event' : ''}`}
+                                title={`${event.title}\n${event.contact_name || ''}\n${event.amount ? `$${event.amount}` : ''}`}
                               >
-                                {isStart && (
-                                  <>
-                                    <div className="fw-semibold text-truncate">{event.time}</div>
-                                    <div className="text-truncate">{event.quoteNumber}</div>
-                                  </>
-                                )}
-                                {isMiddle && (
-                                  <div className="text-truncate">{event.quoteNumber} (cont.)</div>
-                                )}
-                                {isEnd && !isStart && (
-                                  <div className="text-truncate">{event.quoteNumber} (ends)</div>
-                                )}
+                                <div className="fw-semibold text-truncate">{event.title}</div>
+                                {event.contact_name && <div className="text-truncate text-muted">{event.contact_name}</div>}
                               </div>
                             );
                           })}
