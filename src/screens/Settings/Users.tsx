@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '../../components/bootstrap/Button';
 import { Table, TableBody, TableRow, TableCell } from '../../components/bootstrap/Table';
 import { ResizableTableHead } from '../../components/bootstrap/ResizableTableHead';
 import { useResizableColumns, ColumnConfig } from '../../hooks/useResizableColumns';
 import { Plus, Copy, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
+import { AddUserModal } from '../../components/modals/AddUserModal';
 
 interface User {
   id: string;
@@ -48,6 +49,9 @@ export const Users = (): JSX.Element => {
     key: string;
     direction: 'asc' | 'desc';
   } | null>(null);
+
+  const [showModal, setShowModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const {
     columnWidths,
@@ -95,7 +99,8 @@ export const Users = (): JSX.Element => {
   }, [sortConfig]);
 
   const handleEdit = (user: User) => {
-    console.log('Edit user:', user);
+    setSelectedUser(user);
+    setShowModal(true);
   };
 
   const handleDuplicate = (user: User) => {
@@ -107,7 +112,13 @@ export const Users = (): JSX.Element => {
   };
 
   const handleCreateNew = () => {
-    console.log('Create new user');
+    setSelectedUser(null);
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedUser(null);
   };
 
   return (
@@ -303,6 +314,13 @@ export const Users = (): JSX.Element => {
           </Table>
         </div>
       </div>
+
+      <AddUserModal
+        show={showModal}
+        onHide={handleCloseModal}
+        user={selectedUser}
+        onSave={handleCloseModal}
+      />
     </div>
   );
 };
