@@ -5,6 +5,7 @@ export interface Calendar {
   name: string;
   color: string;
   is_active: boolean;
+  contact_id: string;
   created_at: string;
   updated_at: string;
 }
@@ -37,8 +38,12 @@ export interface CalendarEventWithCalendar extends CalendarEvent {
 export async function fetchCalendars(): Promise<Calendar[]> {
   const { data, error } = await supabase
     .from('calendars')
-    .select('*')
+    .select(`
+      *,
+      contact:contacts!contact_id(id, name)
+    `)
     .eq('is_active', true)
+    .not('contact_id', 'is', null)
     .order('name');
 
   if (error) {
@@ -46,7 +51,15 @@ export async function fetchCalendars(): Promise<Calendar[]> {
     return [];
   }
 
-  return data || [];
+  return (data || []).map((calendar: any) => ({
+    id: calendar.id,
+    name: calendar.contact?.name || calendar.name,
+    color: calendar.color,
+    is_active: calendar.is_active,
+    contact_id: calendar.contact_id,
+    created_at: calendar.created_at,
+    updated_at: calendar.updated_at
+  }));
 }
 
 export async function fetchCalendarEventsWithCalendar(
@@ -152,4 +165,71 @@ export async function searchCalendarEvents(
     ...event,
     calendar: event.calendar || undefined
   }));
+}
+
+const COLOR_PALETTE = [
+  '#198754', '#0d6efd', '#6610f2', '#fd7e14', '#0dcaf0',
+  '#20c997', '#ffc107', '#d63384', '#dc3545', '#6c757d',
+  '#17a2b8', '#28a745', '#e83e8c', '#6f42c1', '#ff6b6b',
+  '#4ecdc4', '#95e1d3', '#f38181'
+];
+
+function getRandomColor(): string {
+  return COLOR_PALETTE[Math.floor(Math.random() * COLOR_PALETTE.length)];
+}
+
+export async function createCalendarForContact(
+  contactId: string,
+  contactName: string
+): Promise<Calendar | null> {
+  const { data, error } = await supabase
+    .from('calendars')
+    .insert({
+      name: contactName,
+      color: getRandomColor(),
+      is_active: true,
+      contact_id: contactId
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating calendar for contact:', error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function updateCalendarName(
+  contactId: string,
+  newName: string
+): Promise<Calendar | null> {
+  const { data, error } = await supabase
+    .from('calendars')
+    .update({ name: newName, updated_at: new Date().toISOString() })
+    .eq('contact_id', contactId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error updating calendar name:', error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function deleteCalendarForContact(contactId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('calendars')
+    .delete()
+    .eq('contact_id', contactId);
+
+  if (error) {
+    console.error('Error deleting calendar for contact:', error);
+    return false;
+  }
+
+  return true;
 }

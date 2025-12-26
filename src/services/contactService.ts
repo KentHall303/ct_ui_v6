@@ -1,4 +1,5 @@
 import { supabase, Contact } from '../lib/supabase';
+import { createCalendarForContact, updateCalendarName, deleteCalendarForContact } from './calendarService';
 
 export interface ContactsQueryParams {
   page?: number;
@@ -106,6 +107,10 @@ export const contactService = {
       throw new Error(`Failed to create contact: ${error.message}`);
     }
 
+    if (data && data.name) {
+      await createCalendarForContact(data.id, data.name);
+    }
+
     return data;
   },
 
@@ -122,6 +127,10 @@ export const contactService = {
 
     if (error) {
       throw new Error(`Failed to update contact: ${error.message}`);
+    }
+
+    if (data && contact.name) {
+      await updateCalendarName(data.id, contact.name);
     }
 
     return data;
