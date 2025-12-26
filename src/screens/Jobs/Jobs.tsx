@@ -10,7 +10,8 @@ import { JobsReportsFSModal } from "../../components/modals/JobsReportsFSModal";
 import { EditAppointmentModal } from "../../components/modals/EditAppointmentModal";
 import { supabase } from "../../lib/supabase";
 import { sampleCalendarEvents, CalendarEvent, isEventStart, isEventEnd, isEventMiddle } from "../../data/sampleCalendarData";
-import { fetchCalendarEventsWithCalendar, fetchCalendars, CalendarEventWithCalendar, updateCalendarEvent, Calendar } from "../../services/calendarService";
+import { fetchCalendarEventsWithCalendar, fetchCalendars, CalendarEventWithCalendar, updateCalendarEvent, Calendar, fetchEstimators, Estimator } from "../../services/calendarService";
+import { DispatchingMapView } from "../../components/dispatching/DispatchingMapView";
 import { fetchSubcontractors, Subcontractor } from "../../services/subcontractorService";
 import { fetchJobsCalendarsGroupedByCategory, fetchJobsCalendarEvents, updateJobsCalendarVisibility, JobsCalendarWithContact, JobsCalendarEventWithCalendar, ContactsByCategory } from "../../services/jobsCalendarService";
 import { fetchQuotesWithJobs, updateQuoteJob, QuoteWithJobs, QuoteJob } from "../../services/quoteService";
@@ -1806,176 +1807,11 @@ const DispatchingView = ({
             </div>
           </div>
           ) : (
-            /* Map View */
-            <div className="flex-fill position-relative" style={{ overflowY: 'auto' }}>
-              {/* Mock Map Background */}
-              <div className="position-relative" style={{ minHeight: '600px', backgroundColor: '#e5e7eb' }}>
-                {/* Map Placeholder */}
-                <div className="position-absolute w-100 h-100 d-flex align-items-center justify-content-center" style={{ opacity: 0.3 }}>
-                  <div className="text-center">
-                    <div style={{ fontSize: '4rem', color: '#9ca3af' }}>🗺️</div>
-                    <p className="text-muted">Map Integration Placeholder</p>
-                  </div>
-                </div>
-
-                {/* User Pins and Routes */}
-                {selectedSubcontractors.map((subcontractorName, index) => {
-                  const estimator = estimators.find(e => e.name === subcontractorName);
-                  const subcontractorEvents = events.filter(e => e.estimator === subcontractorName);
-
-                  return (
-                    <div key={subcontractorName}>
-                      {/* User Pin */}
-                      <div
-                        className="position-absolute"
-                        style={{
-                          top: `${120 + index * 150}px`,
-                          left: `${100 + index * 80}px`,
-                          zIndex: 10
-                        }}
-                      >
-                        <div className="d-flex flex-column align-items-center">
-                          <div
-                            className="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow"
-                            style={{
-                              width: '40px',
-                              height: '40px',
-                              backgroundColor: subcontractor?.color || '#9ca3af',
-                              fontSize: '0.75rem'
-                            }}
-                          >
-                            {subcontractorName.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                          </div>
-                          <div className="mt-1 px-2 py-1 bg-white rounded shadow-sm" style={{ fontSize: '0.7rem', fontWeight: '600' }}>
-                            {subcontractorName}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Route Line (mock) */}
-                      <svg
-                        className="position-absolute"
-                        style={{
-                          top: 0,
-                          left: 0,
-                          width: '100%',
-                          height: '100%',
-                          pointerEvents: 'none',
-                          zIndex: 1
-                        }}
-                      >
-                        <path
-                          d={`M ${115 + index * 80} ${140 + index * 150} Q ${300 + index * 100} ${200 + index * 80} ${400 + index * 120} ${180 + index * 100}`}
-                          fill="none"
-                          stroke={subcontractor?.color || '#9ca3af'}
-                          strokeWidth="3"
-                          strokeDasharray="5,5"
-                          opacity="0.6"
-                        />
-                      </svg>
-
-                      {/* Appointment Pins */}
-                      {subcontractorEvents.slice(0, 3).map((event, eventIndex) => (
-                        <div
-                          key={event.id}
-                          className="position-absolute"
-                          style={{
-                            top: `${150 + index * 150 + eventIndex * 40}px`,
-                            left: `${380 + index * 120 + eventIndex * 50}px`,
-                            zIndex: 5
-                          }}
-                        >
-                          <div className="position-relative">
-                            {/* Pin Icon */}
-                            <div
-                              className="rounded-circle d-flex align-items-center justify-content-center shadow"
-                              style={{
-                                width: '32px',
-                                height: '32px',
-                                backgroundColor: 'white',
-                                border: `3px solid ${subcontractor?.color || '#9ca3af'}`
-                              }}
-                            >
-                              <div
-                                style={{
-                                  width: '8px',
-                                  height: '8px',
-                                  backgroundColor: subcontractor?.color || '#9ca3af',
-                                  borderRadius: '50%'
-                                }}
-                              />
-                            </div>
-                            {/* Event Info Card */}
-                            <div
-                              className="position-absolute bg-white rounded shadow px-2 py-1"
-                              style={{
-                                top: '-8px',
-                                left: '40px',
-                                minWidth: '140px',
-                                fontSize: '0.65rem',
-                                whiteSpace: 'nowrap'
-                              }}
-                            >
-                              <div className="fw-bold" style={{ color: subcontractor?.color }}>{event.time}</div>
-                              <div className="fw-semibold text-dark">{event.quoteNumber}</div>
-                              <div className="text-muted" style={{ fontSize: '0.6rem' }}>{event.contactName}</div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Timeline Strip at Bottom */}
-              <div className="border-top bg-white p-3" style={{ position: 'sticky', bottom: 0 }}>
-                <div className="d-flex gap-3" style={{ overflowX: 'auto' }}>
-                  {selectedSubcontractors.map((subcontractorName) => {
-                    const estimator = estimators.find(e => e.name === subcontractorName);
-                    const subcontractorEvents = events.filter(e => e.estimator === subcontractorName).sort((a, b) => {
-                      const parseTime = (time: string) => {
-                        const [timePart, period] = time.split(' ');
-                        let [hours, minutes] = timePart.split(':').map(Number);
-                        if (period === 'PM' && hours !== 12) hours += 12;
-                        if (period === 'AM' && hours === 12) hours = 0;
-                        return hours + minutes / 60;
-                      };
-                      return parseTime(a.time) - parseTime(b.time);
-                    });
-
-                    return (
-                      <div key={subcontractorName} className="d-flex align-items-center gap-2 bg-light rounded p-2" style={{ minWidth: '200px' }}>
-                        <div
-                          className="rounded-circle"
-                          style={{
-                            width: '8px',
-                            height: '8px',
-                            backgroundColor: subcontractor?.color || '#9ca3af',
-                            flexShrink: 0
-                          }}
-                        />
-                        <div className="flex-fill">
-                          <div style={{ fontSize: '0.75rem', fontWeight: '600' }} className="text-dark mb-1">
-                            {subcontractorName}
-                          </div>
-                          <div className="d-flex gap-1" style={{ fontSize: '0.65rem' }}>
-                            {subcontractorEvents.slice(0, 4).map((event, idx) => (
-                              <span key={event.id} className="text-muted">
-                                {event.time}{idx < Math.min(subcontractorEvents.length, 4) - 1 ? ' →' : ''}
-                              </span>
-                            ))}
-                            {subcontractorEvents.length > 4 && (
-                              <span className="text-muted">+{subcontractorEvents.length - 4}</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+            <DispatchingMapView
+              events={events}
+              selectedSubcontractors={selectedSubcontractors}
+              subcontractorsWithColors={subcontractorsWithColors}
+            />
           )}
         </div>
       </div>

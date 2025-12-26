@@ -10,6 +10,15 @@ export interface Calendar {
   updated_at: string;
 }
 
+export interface Estimator {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+  specialty: string | null;
+  is_active: boolean;
+}
+
 export interface CalendarEvent {
   id: string;
   title: string;
@@ -27,12 +36,17 @@ export interface CalendarEvent {
   amount: number | null;
   quote_number: string | null;
   notes: string | null;
+  estimator_id: string | null;
+  contact_id: string | null;
+  latitude: number | null;
+  longitude: number | null;
   created_at: string;
   updated_at: string;
 }
 
 export interface CalendarEventWithCalendar extends CalendarEvent {
   calendar?: Calendar;
+  estimator?: Estimator;
 }
 
 export async function fetchCalendars(): Promise<Calendar[]> {
@@ -71,7 +85,8 @@ export async function fetchCalendarEventsWithCalendar(
     .from('calendar_events')
     .select(`
       *,
-      calendar:calendars(*)
+      calendar:calendars(*),
+      estimator:subcontractors!estimator_id(id, name, email, phone, specialty, is_active)
     `)
     .lte('start_date', endDate.toISOString())
     .gte('end_date', startDate.toISOString())
@@ -90,7 +105,8 @@ export async function fetchCalendarEventsWithCalendar(
 
   return (data || []).map((event: any) => ({
     ...event,
-    calendar: event.calendar || undefined
+    calendar: event.calendar || undefined,
+    estimator: event.estimator || undefined
   }));
 }
 
@@ -232,4 +248,51 @@ export async function deleteCalendarForContact(contactId: string): Promise<boole
   }
 
   return true;
+}
+
+export async function fetchEstimators(): Promise<Estimator[]> {
+  const { data, error } = await supabase
+    .from('subcontractors')
+    .select('id, name, email, phone, specialty, is_active')
+    .eq('is_active', true)
+    .order('name');
+
+  if (error) {
+    console.error('Error fetching estimators:', error);
+    return [];
+  }
+
+  return data || [];
+}
+
+export async function fetchCalendarEventsForDispatching(
+  date: Date
+): Promise<CalendarEventWithCalendar[]> {
+  const startOfDay = new Date(date);
+  startOfDay.setHours(0, 0, 0, 0);
+
+  const endOfDay = new Date(date);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  const { data, error } = await supabase
+    .from('calendar_events')
+    .select(`
+      *,
+      calendar:calendars(*),
+      estimator:subcontractors!estimator_id(id, name, email, phone, specialty, is_active)
+    `)
+    .gte('start_date', startOfDay.toISOString())
+    .lte('start_date', endOfDay.toISOString())
+    .order('start_date');
+
+  if (error) {
+    console.error('Error fetching calendar events for dispatching:', error);
+    return [];
+  }
+
+  return (data || []).map((event: any) => ({
+    ...event,
+    calendar: event.calendar || undefined,
+    estimator: event.estimator || undefined
+  }));
 }

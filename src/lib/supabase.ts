@@ -236,6 +236,11 @@ export interface Contact {
   email?: string;
   cell_phone?: string;
   state?: string;
+  address?: string;
+  city?: string;
+  postal_code?: string;
+  latitude?: number;
+  longitude?: number;
   sales_cycle?: string;
   lead_source?: string;
   created_date?: string;
