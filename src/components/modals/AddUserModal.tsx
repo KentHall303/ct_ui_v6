@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Row, Col, Collapse } from 'react-bootstrap';
 import { Button } from '../bootstrap/Button';
-import { FloatingInput, FloatingSelect, FloatingSelectOption } from '../bootstrap/FormControls';
+import { FloatingInput, FloatingSelect } from '../bootstrap/FormControls';
 import { Info, ChevronDown, ChevronRight } from 'lucide-react';
 
 const US_STATES = [
@@ -129,7 +129,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
   const [showCalendar, setShowCalendar] = useState(true);
   const [sendDailyReminders, setSendDailyReminders] = useState(false);
 
-  const [operationSettingsOpen, setOperationSettingsOpen] = useState(true);
+  const [operationSettingsOpen, setOperationSettingsOpen] = useState(false);
   const [schedule, setSchedule] = useState(DEFAULT_SCHEDULE);
 
   const [customField, setCustomField] = useState('');
@@ -224,145 +224,178 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
     >
       <Modal.Header closeButton className="border-0 pb-0">
         <Modal.Title style={{ fontSize: '1.25rem', fontWeight: 500 }}>
-          Add/Edit User
+          {isEditMode ? 'Edit User' : 'Add User'}
         </Modal.Title>
       </Modal.Header>
       <Modal.Body className="pt-3" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
-        <Row>
+        <Row className="g-3">
           <Col md={6} className="pe-4">
             <div className="d-flex flex-column gap-3">
-              <div>
-                <Form.Label className="mb-1" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                  User Type
-                </Form.Label>
-                <Form.Select
-                  value={userType}
-                  onChange={(e) => setUserType(e.target.value)}
-                  style={{ maxWidth: '200px' }}
-                >
-                  <option value="Admin">Admin</option>
-                  <option value="Standard">Standard</option>
-                </Form.Select>
-              </div>
+              <FloatingSelect
+                label="User Type"
+                value={userType}
+                onChange={(e) => setUserType(e.target.value)}
+              >
+                <option value="Admin">Admin</option>
+                <option value="Standard">Standard</option>
+              </FloatingSelect>
 
-              <div>
-                <Form.Label className="mb-1" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                  First Name <span className="text-danger">*</span>
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="sara"
-                />
-              </div>
-
-              <div>
-                <Form.Label className="mb-1" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                  Last Name <span className="text-danger">*</span>
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  value={lastName}
-                  onChange={(e) => setLastName(e.target.value)}
-                  placeholder="Admin"
-                />
-              </div>
-
-              <div>
-                <Form.Label className="mb-1" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                  Phone Number <span className="text-danger">*</span>
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="(435) 938-8063"
-                />
-              </div>
-
-              <div>
-                <Form.Label className="mb-1 d-flex align-items-center gap-1" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                  Email <span className="text-danger">*</span>
-                </Form.Label>
-                <div className="position-relative">
-                  <Form.Control
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="sara.hansen181+admin@gmail.com"
-                  />
-                  <Info
-                    size={16}
-                    className="position-absolute text-muted"
-                    style={{ right: '12px', top: '50%', transform: 'translateY(-50%)' }}
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Form.Label className="mb-1" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                  Username
-                </Form.Label>
-                <div className="position-relative">
-                  <Form.Control
+              <Row className="g-3">
+                <Col md={6}>
+                  <FloatingInput
+                    label="First Name *"
                     type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="saraadmin"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Enter first name"
                   />
-                  <Info
-                    size={16}
-                    className="position-absolute text-muted"
-                    style={{ right: '12px', top: '50%', transform: 'translateY(-50%)' }}
+                </Col>
+                <Col md={6}>
+                  <FloatingInput
+                    label="Last Name *"
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Enter last name"
                   />
+                </Col>
+              </Row>
+
+              <FloatingInput
+                label="Phone Number *"
+                type="text"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="(435) 938-8063"
+              />
+
+              <FloatingInput
+                label="Email *"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="email@example.com"
+              />
+
+              <FloatingInput
+                label="Username"
+                type="text"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter username"
+              />
+
+              <Row className="g-3">
+                <Col md={6}>
+                  <FloatingSelect
+                    label="Default Page"
+                    value={defaultPage}
+                    onChange={(e) => setDefaultPage(e.target.value)}
+                  >
+                    <option value="">Select</option>
+                    <option value="dashboard">Dashboard</option>
+                    <option value="contacts">Contacts</option>
+                    <option value="calendar">Calendar</option>
+                    <option value="pipeline">Pipeline</option>
+                  </FloatingSelect>
+                </Col>
+                <Col md={6}>
+                  <FloatingSelect
+                    label="Default Contact Tab"
+                    value={defaultContactTab}
+                    onChange={(e) => setDefaultContactTab(e.target.value)}
+                  >
+                    <option value="Text">Text</option>
+                    <option value="Email">Email</option>
+                    <option value="Notes">Notes</option>
+                    <option value="Activity">Activity</option>
+                  </FloatingSelect>
+                </Col>
+              </Row>
+
+              <FloatingSelect
+                label="Timezone"
+                value={timezone}
+                onChange={(e) => setTimezone(e.target.value)}
+              >
+                <option value="Mountain">Mountain</option>
+                <option value="Pacific">Pacific</option>
+                <option value="Central">Central</option>
+                <option value="Eastern">Eastern</option>
+              </FloatingSelect>
+
+              <hr className="my-2" />
+
+              <div className="d-flex align-items-end gap-2">
+                <div className="flex-grow-1">
+                  <FloatingSelect
+                    label="User Custom Fields"
+                    value={customField}
+                    onChange={(e) => setCustomField(e.target.value)}
+                  >
+                    <option value="">Select Custom Field</option>
+                    <option value="field1">Custom Field 1</option>
+                    <option value="field2">Custom Field 2</option>
+                  </FloatingSelect>
                 </div>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  style={{
+                    backgroundColor: '#0d6efd',
+                    border: 'none',
+                    padding: '6px 16px',
+                    height: '38px'
+                  }}
+                >
+                  Add
+                </Button>
               </div>
 
-              <div>
-                <Form.Label className="mb-1" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                  Default Page
-                </Form.Label>
-                <Form.Select
-                  value={defaultPage}
-                  onChange={(e) => setDefaultPage(e.target.value)}
-                >
-                  <option value="">Select</option>
-                  <option value="dashboard">Dashboard</option>
-                  <option value="contacts">Contacts</option>
-                  <option value="calendar">Calendar</option>
-                  <option value="pipeline">Pipeline</option>
-                </Form.Select>
-              </div>
+              <FloatingInput
+                label="Calendly URL"
+                type="text"
+                value={calendlyUrl}
+                onChange={(e) => setCalendlyUrl(e.target.value)}
+                placeholder="https://calendly.com/..."
+              />
+
+              <hr className="my-2" />
+
+              <Row className="g-3">
+                <Col md={6}>
+                  <FloatingInput
+                    label="New Password"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Enter new password"
+                  />
+                </Col>
+                <Col md={6}>
+                  <FloatingInput
+                    label="Repeat Password"
+                    type="password"
+                    value={repeatPassword}
+                    onChange={(e) => setRepeatPassword(e.target.value)}
+                    placeholder="Repeat password"
+                  />
+                </Col>
+              </Row>
 
               <div>
-                <Form.Label className="mb-1" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                  Default Contact Tab
-                </Form.Label>
-                <Form.Select
-                  value={defaultContactTab}
-                  onChange={(e) => setDefaultContactTab(e.target.value)}
+                <Button
+                  variant="success"
+                  style={{
+                    backgroundColor: '#3cb371',
+                    border: 'none',
+                    padding: '8px 20px',
+                    fontSize: '0.875rem'
+                  }}
+                  onClick={() => console.log('Update password clicked')}
                 >
-                  <option value="Text">Text</option>
-                  <option value="Email">Email</option>
-                  <option value="Notes">Notes</option>
-                  <option value="Activity">Activity</option>
-                </Form.Select>
-              </div>
-
-              <div>
-                <Form.Label className="mb-1" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                  Timezone
-                </Form.Label>
-                <Form.Select
-                  value={timezone}
-                  onChange={(e) => setTimezone(e.target.value)}
-                >
-                  <option value="Mountain">Mountain</option>
-                  <option value="Pacific">Pacific</option>
-                  <option value="Central">Central</option>
-                  <option value="Eastern">Eastern</option>
-                </Form.Select>
+                  Update Password
+                </Button>
               </div>
             </div>
           </Col>
@@ -375,56 +408,45 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                 </legend>
 
                 <div className="d-flex flex-column gap-3">
-                  <div>
-                    <Form.Label className="mb-1" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                      Address <span className="text-danger">*</span>
-                    </Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      placeholder="Enter Address"
-                    />
-                  </div>
+                  <FloatingInput
+                    label="Address *"
+                    type="text"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Enter address"
+                  />
 
-                  <div>
-                    <Form.Label className="mb-1" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                      City <span className="text-danger">*</span>
-                    </Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={city}
-                      onChange={(e) => setCity(e.target.value)}
-                      placeholder="Enter City"
-                    />
-                  </div>
+                  <Row className="g-3">
+                    <Col md={6}>
+                      <FloatingInput
+                        label="City *"
+                        type="text"
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        placeholder="Enter city"
+                      />
+                    </Col>
+                    <Col md={6}>
+                      <FloatingSelect
+                        label="State *"
+                        value={state}
+                        onChange={(e) => setState(e.target.value)}
+                      >
+                        <option value="">Select State</option>
+                        {US_STATES.map(s => (
+                          <option key={s.value} value={s.value}>{s.label}</option>
+                        ))}
+                      </FloatingSelect>
+                    </Col>
+                  </Row>
 
-                  <div>
-                    <Form.Label className="mb-1" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                      State <span className="text-danger">*</span>
-                    </Form.Label>
-                    <Form.Select
-                      value={state}
-                      onChange={(e) => setState(e.target.value)}
-                    >
-                      <option value="">Select State</option>
-                      {US_STATES.map(s => (
-                        <option key={s.value} value={s.value}>{s.label}</option>
-                      ))}
-                    </Form.Select>
-                  </div>
-
-                  <div>
-                    <Form.Label className="mb-1" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                      Zipcode <span className="text-danger">*</span>
-                    </Form.Label>
-                    <Form.Control
-                      type="text"
-                      value={zipcode}
-                      onChange={(e) => setZipcode(e.target.value)}
-                      placeholder="Enter zip"
-                    />
-                  </div>
+                  <FloatingInput
+                    label="Zipcode *"
+                    type="text"
+                    value={zipcode}
+                    onChange={(e) => setZipcode(e.target.value)}
+                    placeholder="Enter zip"
+                  />
                 </div>
               </fieldset>
 
@@ -547,93 +569,18 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                   </div>
                 </Collapse>
               </div>
-
-              <hr className="my-2" />
-
-              <div className="d-flex align-items-end gap-2">
-                <div className="flex-grow-1">
-                  <Form.Label className="mb-1" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                    User Custom Fields
-                  </Form.Label>
-                  <Form.Select
-                    value={customField}
-                    onChange={(e) => setCustomField(e.target.value)}
-                  >
-                    <option value="">Select Custom Field</option>
-                    <option value="field1">Custom Field 1</option>
-                    <option value="field2">Custom Field 2</option>
-                  </Form.Select>
-                </div>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  style={{
-                    backgroundColor: '#0d6efd',
-                    border: 'none',
-                    padding: '6px 16px'
-                  }}
-                >
-                  Add
-                </Button>
-              </div>
-
-              <div>
-                <Form.Label className="mb-1" style={{ fontSize: '0.875rem', fontWeight: 500 }}>
-                  Calendly
-                </Form.Label>
-                <Form.Control
-                  type="text"
-                  value={calendlyUrl}
-                  onChange={(e) => setCalendlyUrl(e.target.value)}
-                  placeholder="Https://apple.com"
-                />
-              </div>
-
-              <hr className="my-2" />
-
-              <Row className="g-3">
-                <Col md={6}>
-                  <Form.Label className="mb-1" style={{ fontSize: '0.875rem', fontWeight: 600 }}>
-                    New Password
-                  </Form.Label>
-                  <Form.Control
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Enter New Password"
-                  />
-                </Col>
-                <Col md={6}>
-                  <Form.Label className="mb-1" style={{ fontSize: '0.875rem', fontWeight: 600 }}>
-                    Repeat Password
-                  </Form.Label>
-                  <Form.Control
-                    type="password"
-                    value={repeatPassword}
-                    onChange={(e) => setRepeatPassword(e.target.value)}
-                    placeholder="Repeat New Password"
-                  />
-                </Col>
-              </Row>
-
-              <div>
-                <Button
-                  variant="success"
-                  style={{
-                    backgroundColor: '#3cb371',
-                    border: 'none',
-                    padding: '8px 20px',
-                    fontSize: '0.875rem'
-                  }}
-                  onClick={() => console.log('Update password clicked')}
-                >
-                  Update Password
-                </Button>
-              </div>
             </div>
           </Col>
         </Row>
       </Modal.Body>
+      <Modal.Footer className="border-0 pt-0">
+        <Button variant="secondary" onClick={onHide}>
+          Cancel
+        </Button>
+        <Button variant="primary" onClick={handleSave}>
+          {isEditMode ? 'Save Changes' : 'Add User'}
+        </Button>
+      </Modal.Footer>
     </Modal>
   );
 };
