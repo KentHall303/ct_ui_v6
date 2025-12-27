@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '../../components/bootstrap/Button';
 import { Table, TableBody, TableRow, TableCell } from '../../components/bootstrap/Table';
 import { ResizableTableHead } from '../../components/bootstrap/ResizableTableHead';
 import { useResizableColumns, ColumnConfig } from '../../hooks/useResizableColumns';
 import { Plus, Copy, Trash2, ChevronUp, ChevronDown } from 'lucide-react';
 import { AddUserModal } from '../../components/modals/AddUserModal';
+import { fetchUsers, deleteUser, User as DBUser, UserType } from '../../services/userService';
 
 interface User {
   id: string;
@@ -14,25 +15,21 @@ interface User {
   phone: string;
   email: string;
   apiId: string;
+  userType?: UserType;
 }
 
-const mockUsers: User[] = [
-  { id: '1', username: 'saraadmin', firstName: 'sara', lastName: 'Admin', phone: '4359388063', email: 'sara.hansen181+admin@gmail.com', apiId: '17469' },
-  { id: '2', username: 'tmrkadmin', firstName: 'tmrk Admin', lastName: 'Team', phone: '3039291579', email: 'g+Admin@tmrk.com', apiId: '19605' },
-  { id: '3', username: 'neeradminuser', firstName: 'neeraj', lastName: 'admin user', phone: '8878789922', email: 'neeraj+admin@clienttether.com', apiId: '20791' },
-  { id: '4', username: 'collin+newadmin', firstName: 'Col', lastName: 'Gav', phone: '4802344319', email: 'collin+newadmin@gmail.com', apiId: '22780' },
-  { id: '5', username: 'angeltestingacc', firstName: 'ANGEL', lastName: 'TESTACCOUNT', phone: '3039291447', email: 'angel+test20@clienttether.com', apiId: '31690' },
-  { id: '6', username: 'ctdefault1', firstName: 'Admin', lastName: 'Kent', phone: '4152511945', email: 'KentHall303+User35051@gmail.com', apiId: '35051' },
-  { id: '7', username: 'referpro1', firstName: 'ReferPro', lastName: 'Platform', phone: '8018555555', email: 'matt+referpro1@referpro.com', apiId: '35952' },
-  { id: '8', username: 'ctdefault2', firstName: 'Standard', lastName: 'Kent', phone: '4152511945', email: 'KentHall303+User102@gmail.com', apiId: '11672' },
-  { id: '9', username: 'kentjoe', firstName: 'Sara', lastName: 'Joe', phone: '4359388063', email: 'kent+joe@clienttether.com', apiId: '17032' },
-  { id: '10', username: 'sarastand', firstName: 'Jeanette', lastName: 'Standards', phone: '3039291579', email: 'sara.hansen181+Standards@gmail.com', apiId: '17468' },
-  { id: '11', username: 'akshitan!', firstName: 'Akshita', lastName: 'Nagar', phone: '8017091800', email: 'nagarakshita20@gmail.com', apiId: '18361' },
-  { id: '12', username: 'tmrk', firstName: 'tmrk', lastName: 'Team', phone: '3039291447', email: 'g@tmrk.com', apiId: '19604' },
-  { id: '13', username: 'neerct1', firstName: 'Neeraj', lastName: 'QA', phone: '8878789922', email: 'neeraj12@clienttether.com', apiId: '20612' },
-  { id: '14', username: 'collintestuser', firstName: 'Collin', lastName: 'Gavel', phone: '4806212649', email: 'collin+testuser@clienttether.com', apiId: '20833' },
-  { id: '15', username: 'jvs_georgeduffield', firstName: 'Jule', lastName: 'Virtual Scheduler', phone: '', email: 'jvs_georgeduffield@clienttether.com', apiId: '21902' },
-];
+function mapDBUserToUser(dbUser: DBUser): User {
+  return {
+    id: dbUser.id,
+    username: dbUser.username,
+    firstName: dbUser.first_name,
+    lastName: dbUser.last_name,
+    phone: dbUser.phone || '',
+    email: dbUser.email,
+    apiId: dbUser.api_id || '',
+    userType: dbUser.user_type,
+  };
+}
 
 const columns: ColumnConfig[] = [
   { id: 'username', label: 'Username', defaultWidth: 150, minWidth: 100 },
@@ -52,6 +49,8 @@ export const Users = (): JSX.Element => {
 
   const [showModal, setShowModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const {
     columnWidths,
@@ -59,6 +58,22 @@ export const Users = (): JSX.Element => {
     resizingColumn,
     handleMouseDown,
   } = useResizableColumns(columns, 'usersTableColumns');
+
+  const loadUsers = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const dbUsers = await fetchUsers();
+      setUsers(dbUsers.map(mapDBUserToUser));
+    } catch (error) {
+      console.error('Error loading users:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadUsers();
+  }, [loadUsers]);
 
   const handleSort = (key: string) => {
     if (key === 'actions') return;
@@ -83,9 +98,9 @@ export const Users = (): JSX.Element => {
   };
 
   const sortedUsers = React.useMemo(() => {
-    if (!sortConfig) return mockUsers;
+    if (!sortConfig) return users;
 
-    return [...mockUsers].sort((a, b) => {
+    return [...users].sort((a, b) => {
       const aVal = a[sortConfig.key as keyof User];
       const bVal = b[sortConfig.key as keyof User];
 
@@ -96,7 +111,7 @@ export const Users = (): JSX.Element => {
       if (aStr > bStr) return sortConfig.direction === 'asc' ? 1 : -1;
       return 0;
     });
-  }, [sortConfig]);
+  }, [sortConfig, users]);
 
   const handleEdit = (user: User) => {
     setSelectedUser(user);
@@ -107,8 +122,13 @@ export const Users = (): JSX.Element => {
     console.log('Duplicate user:', user);
   };
 
-  const handleDelete = (user: User) => {
-    console.log('Delete user:', user);
+  const handleDelete = async (user: User) => {
+    if (window.confirm(`Are you sure you want to delete ${user.firstName} ${user.lastName}?`)) {
+      const success = await deleteUser(user.id);
+      if (success) {
+        loadUsers();
+      }
+    }
   };
 
   const handleCreateNew = () => {
@@ -119,6 +139,7 @@ export const Users = (): JSX.Element => {
   const handleCloseModal = () => {
     setShowModal(false);
     setSelectedUser(null);
+    loadUsers();
   };
 
   return (
@@ -149,7 +170,7 @@ export const Users = (): JSX.Element => {
         >
           <Table className={`standard-table table-striped mb-0 ${isResizing ? 'resizing' : ''}`}>
             <caption className="visually-hidden">
-              Users table showing {mockUsers.length} records.
+              Users table showing {users.length} records.
               Use arrow keys to navigate, Enter or Space to sort columns.
               {sortConfig && ` Currently sorted by ${sortConfig.key} in ${sortConfig.direction}ending order.`}
             </caption>
@@ -164,7 +185,19 @@ export const Users = (): JSX.Element => {
               getSortIcon={getSortIcon}
             />
             <TableBody>
-              {sortedUsers.map((user, index) => (
+              {isLoading ? (
+                <TableRow>
+                  <TableCell colSpan={7} style={{ textAlign: 'center', padding: '2rem' }}>
+                    Loading users...
+                  </TableCell>
+                </TableRow>
+              ) : sortedUsers.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} style={{ textAlign: 'center', padding: '2rem' }}>
+                    No users found
+                  </TableCell>
+                </TableRow>
+              ) : sortedUsers.map((user, index) => (
                 <TableRow
                   key={user.id}
                   role="row"

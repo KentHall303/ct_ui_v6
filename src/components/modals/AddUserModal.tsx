@@ -3,6 +3,7 @@ import { Modal, Form, Row, Col, Collapse } from 'react-bootstrap';
 import { Button } from '../bootstrap/Button';
 import { FloatingInput, FloatingSelect } from '../bootstrap/FormControls';
 import { Info, ChevronDown, ChevronRight } from 'lucide-react';
+import { UserType, USER_TYPE_LABELS, createUser, updateUser } from '../../services/userService';
 
 const US_STATES = [
   { value: 'AL', label: 'Alabama' },
@@ -86,6 +87,7 @@ interface User {
   phone: string;
   email: string;
   apiId: string;
+  userType?: UserType;
 }
 
 interface AddUserModalProps {
@@ -103,7 +105,8 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
 }) => {
   const isEditMode = !!user;
 
-  const [userType, setUserType] = useState('Admin');
+  const [userType, setUserType] = useState<UserType>('standard');
+  const [isSaving, setIsSaving] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
@@ -139,13 +142,14 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
 
   useEffect(() => {
     if (show && user) {
+      setUserType(user.userType || 'standard');
       setFirstName(user.firstName || '');
       setLastName(user.lastName || '');
       setPhone(user.phone || '');
       setEmail(user.email || '');
       setUsername(user.username || '');
     } else if (show && !user) {
-      setUserType('Admin');
+      setUserType('standard');
       setFirstName('');
       setLastName('');
       setPhone('');
@@ -175,33 +179,41 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
     }
   }, [show, user]);
 
-  const handleSave = () => {
-    console.log('Saving user:', {
-      userType,
-      firstName,
-      lastName,
-      phone,
-      email,
-      username,
-      defaultPage,
-      defaultContactTab,
-      timezone,
-      address,
-      city,
-      state,
-      zipcode,
-      contactTypes,
-      showCalendar,
-      sendDailyReminders,
-      schedule,
-      customField,
-      calendlyUrl,
-    });
-
-    if (onSave) {
-      onSave();
+  const handleSave = async () => {
+    if (!firstName || !lastName || !email || !username) {
+      return;
     }
-    onHide();
+
+    setIsSaving(true);
+
+    try {
+      const userData = {
+        username,
+        first_name: firstName,
+        last_name: lastName,
+        email,
+        phone: phone || undefined,
+        user_type: userType,
+        timezone: timezone || undefined,
+        default_page: defaultPage || undefined,
+        default_contact_tab: defaultContactTab || undefined,
+      };
+
+      if (isEditMode && user) {
+        await updateUser(user.id, userData);
+      } else {
+        await createUser(userData);
+      }
+
+      if (onSave) {
+        onSave();
+      }
+      onHide();
+    } catch (error) {
+      console.error('Error saving user:', error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleScheduleChange = (index: number, field: string, value: string | boolean) => {
@@ -234,10 +246,12 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
               <FloatingSelect
                 label="User Type"
                 value={userType}
-                onChange={(e) => setUserType(e.target.value)}
+                onChange={(e) => setUserType(e.target.value as UserType)}
               >
-                <option value="Admin">Admin</option>
-                <option value="Standard">Standard</option>
+                <option value="standard">{USER_TYPE_LABELS.standard}</option>
+                <option value="admin">{USER_TYPE_LABELS.admin}</option>
+                <option value="salesperson">{USER_TYPE_LABELS.salesperson}</option>
+                <option value="subcontractor">{USER_TYPE_LABELS.subcontractor}</option>
               </FloatingSelect>
 
               <Row className="g-3">
@@ -574,11 +588,11 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
         </Row>
       </Modal.Body>
       <Modal.Footer className="border-0 pt-0">
-        <Button variant="secondary" onClick={onHide}>
+        <Button variant="secondary" onClick={onHide} disabled={isSaving}>
           Cancel
         </Button>
-        <Button variant="primary" onClick={handleSave}>
-          {isEditMode ? 'Save Changes' : 'Add User'}
+        <Button variant="primary" onClick={handleSave} disabled={isSaving}>
+          {isSaving ? 'Saving...' : (isEditMode ? 'Save Changes' : 'Add User')}
         </Button>
       </Modal.Footer>
     </Modal>
