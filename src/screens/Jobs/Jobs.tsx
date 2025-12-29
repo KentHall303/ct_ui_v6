@@ -814,12 +814,45 @@ const DispatchingView = () => {
       const endOfDay = new Date(selectedDate);
       endOfDay.setHours(23, 59, 59, 999);
 
-      const [eventsData, calendarsData] = await Promise.all([
-        fetchCalendarEventsWithCalendar(startOfDay, endOfDay, selectedSubcontractors.length > 0 ? selectedSubcontractors : undefined),
-        fetchCalendars()
-      ]);
+      const { data: eventsData, error } = await supabase
+        .from('calendar_events')
+        .select(`
+          *,
+          calendar:calendars(*),
+          estimator:users!user_id(id, first_name, last_name, email, phone, is_active)
+        `)
+        .gte('start_date', startOfDay.toISOString())
+        .lte('end_date', endOfDay.toISOString())
+        .order('start_date');
 
-      setEvents(eventsData);
+      if (error) {
+        console.error('Error fetching calendar events:', error);
+        setEvents([]);
+      } else {
+        let mappedEvents = (eventsData || []).map((event: any) => ({
+          ...event,
+          calendar: event.calendar || undefined,
+          estimator: event.estimator ? {
+            ...event.estimator,
+            name: `${event.estimator.first_name} ${event.estimator.last_name}`
+          } : undefined
+        }));
+
+        // Filter by selected subcontractors if any are selected
+        if (selectedSubcontractors.length > 0) {
+          const selectedIds = subcontractors
+            .filter(sub => selectedSubcontractors.includes(sub.name))
+            .map(sub => sub.id);
+
+          mappedEvents = mappedEvents.filter(event =>
+            event.user_id && selectedIds.includes(event.user_id)
+          );
+        }
+
+        setEvents(mappedEvents);
+      }
+
+      const calendarsData = await fetchCalendars();
       setDbEstimators(calendarsData);
       setAllDbEstimators(calendarsData);
     } catch (error) {
