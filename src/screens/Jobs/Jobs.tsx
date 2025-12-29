@@ -12,7 +12,6 @@ import { supabase } from "../../lib/supabase";
 import { sampleCalendarEvents, CalendarEvent, isEventStart, isEventEnd, isEventMiddle } from "../../data/sampleCalendarData";
 import { fetchCalendarEventsWithCalendar, fetchCalendars, CalendarEventWithCalendar, updateCalendarEvent, Calendar, fetchEstimators, Estimator } from "../../services/calendarService";
 import { DispatchingMapView } from "../../components/dispatching/DispatchingMapView";
-import { fetchSubcontractors, Subcontractor } from "../../services/subcontractorService";
 import { fetchJobsCalendarsGroupedByCategory, fetchJobsCalendarEvents, updateJobsCalendarVisibility, JobsCalendarWithContact, JobsCalendarEventWithCalendar, ContactsByCategory } from "../../services/jobsCalendarService";
 import { fetchQuotesWithJobs, updateQuoteJob, QuoteWithJobs, QuoteJob } from "../../services/quoteService";
 
@@ -211,11 +210,6 @@ const JobsHeader = ({
   currentView,
   onViewChange,
   onReportsClick,
-  rateFilter,
-  skillFilters,
-  availableSkills,
-  onRateFilterChange,
-  onSkillToggle,
   milestones,
   toggleMilestone,
   scheduling,
@@ -226,11 +220,6 @@ const JobsHeader = ({
   currentView: 'table' | 'calendar' | 'dispatching',
   onViewChange: (view: 'table' | 'calendar' | 'dispatching') => void,
   onReportsClick: () => void,
-  rateFilter?: { min?: number; max?: number },
-  skillFilters?: string[],
-  availableSkills?: string[],
-  onRateFilterChange?: (filter: { min?: number; max?: number }) => void,
-  onSkillToggle?: (skill: string) => void,
   milestones?: { complete: boolean; quoted: boolean; closed: boolean },
   toggleMilestone?: (milestone: 'complete' | 'quoted' | 'closed') => void,
   scheduling?: 'all' | 'scheduled' | 'unscheduled',
@@ -238,25 +227,6 @@ const JobsHeader = ({
   payments?: 'all' | 'unpaid' | 'paid',
   setPayments?: (value: 'all' | 'unpaid' | 'paid') => void
 }) => {
-  const [skillsDropdownOpen, setSkillsDropdownOpen] = React.useState(false);
-  const dropdownRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setSkillsDropdownOpen(false);
-      }
-    };
-
-    if (skillsDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [skillsDropdownOpen]);
-
   return (
   <div className="px-3 pt-3">
     <div className="bg-white rounded-3 pt-2 pb-2 px-3 border shadow-sm">
@@ -304,151 +274,6 @@ const JobsHeader = ({
           </button>
         </li>
       </ul>
-
-      {/* Rate and Skills Filters - Only show for dispatching view */}
-      {currentView === 'dispatching' && onRateFilterChange && onSkillToggle && (
-        <div className="d-flex align-items-center gap-3 ms-auto ps-3 border-start">
-          {/* Rate Filter Dropdown */}
-          <div className="position-relative">
-            <select
-              className="form-select form-select-sm bg-light"
-              style={{ minWidth: '140px', borderColor: '#dee2e6' }}
-              value={
-                rateFilter?.min === undefined && rateFilter?.max === undefined
-                  ? 'all'
-                  : rateFilter?.min === 0 && rateFilter?.max === 60
-                  ? '0-60'
-                  : rateFilter?.min === 60 && rateFilter?.max === 80
-                  ? '60-80'
-                  : rateFilter?.min === 80 && rateFilter?.max === 100
-                  ? '80-100'
-                  : rateFilter?.min === 100 && rateFilter?.max === undefined
-                  ? '100+'
-                  : 'all'
-              }
-              onChange={(e) => {
-                const value = e.target.value;
-                if (value === 'all') {
-                  onRateFilterChange({ min: undefined, max: undefined });
-                } else if (value === '0-60') {
-                  onRateFilterChange({ min: 0, max: 60 });
-                } else if (value === '60-80') {
-                  onRateFilterChange({ min: 60, max: 80 });
-                } else if (value === '80-100') {
-                  onRateFilterChange({ min: 80, max: 100 });
-                } else if (value === '100+') {
-                  onRateFilterChange({ min: 100, max: undefined });
-                }
-              }}
-            >
-              <option value="all">All Rates</option>
-              <option value="0-60">$0-$60/hr</option>
-              <option value="60-80">$60-$80/hr</option>
-              <option value="80-100">$80-$100/hr</option>
-              <option value="100+">$100+/hr</option>
-            </select>
-          </div>
-
-          {/* Skills Filter Dropdown */}
-          <div className="position-relative" ref={dropdownRef}>
-            <button
-              className="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2 bg-light"
-              style={{
-                borderColor: '#dee2e6',
-                color: '#6c757d'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#e9ecef';
-                e.currentTarget.style.color = '#495057';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = '#f8f9fa';
-                e.currentTarget.style.color = '#6c757d';
-              }}
-              type="button"
-              onClick={() => setSkillsDropdownOpen(!skillsDropdownOpen)}
-              aria-expanded={skillsDropdownOpen}
-            >
-              Skills
-              {skillFilters && skillFilters.length > 0 && (
-                <span className="badge bg-primary rounded-pill">{skillFilters.length}</span>
-              )}
-            </button>
-            <div
-              className={`dropdown-menu p-3 ${skillsDropdownOpen ? 'show' : ''}`}
-              style={{
-                position: 'absolute',
-                top: '100%',
-                right: 0,
-                left: 'auto',
-                minWidth: '320px',
-                maxWidth: '400px',
-                marginTop: '0.25rem',
-                zIndex: 1000
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="d-flex flex-wrap gap-2">
-                {availableSkills?.map((skill) => {
-                  const isSelected = skillFilters?.includes(skill);
-                  return (
-                    <button
-                      key={skill}
-                      type="button"
-                      className={`btn btn-sm ${
-                        isSelected
-                          ? 'btn-success'
-                          : 'btn-outline-secondary'
-                      }`}
-                      style={{
-                        fontSize: '0.75rem',
-                        ...(isSelected ? {} : {
-                          color: '#6c757d',
-                          borderColor: '#6c757d'
-                        })
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isSelected) {
-                          e.currentTarget.style.backgroundColor = '#6c757d';
-                          e.currentTarget.style.borderColor = '#6c757d';
-                          e.currentTarget.style.color = '#fff';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isSelected) {
-                          e.currentTarget.style.backgroundColor = 'transparent';
-                          e.currentTarget.style.borderColor = '#6c757d';
-                          e.currentTarget.style.color = '#6c757d';
-                        }
-                      }}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        onSkillToggle(skill);
-                      }}
-                    >
-                      {skill}
-                    </button>
-                  );
-                })}
-              </div>
-              {skillFilters && skillFilters.length > 0 && (
-                <div className="mt-3 pt-2 border-top">
-                  <button
-                    type="button"
-                    className="btn btn-sm btn-outline-danger w-100"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      skillFilters.forEach(skill => onSkillToggle(skill));
-                    }}
-                  >
-                    Clear All
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
 
     {/* Table View Controls - Only show for table view */}
@@ -928,20 +753,12 @@ const TableView = () => {
   );
 };
 
-const DispatchingView = ({
-  rateFilter = {},
-  skillFilters = [],
-  onAvailableSkillsLoad
-}: {
-  rateFilter?: { min?: number; max?: number };
-  skillFilters?: string[];
-  onAvailableSkillsLoad?: (skills: string[]) => void;
-}) => {
+const DispatchingView = () => {
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
   const [selectedDate, setSelectedDate] = React.useState(new Date());
   const [selectedSubcontractors, setSelectedSubcontractors] = React.useState<string[]>([]);
-  const [subcontractors, setSubcontractors] = React.useState<Subcontractor[]>([]);
+  const [subcontractors, setSubcontractors] = React.useState<Estimator[]>([]);
   const [events, setEvents] = React.useState<CalendarEventWithCalendar[]>([]);
   const [draggedEvent, setDraggedEvent] = React.useState<CalendarEventWithCalendar | null>(null);
   const [viewMode, setViewMode] = React.useState<'timeline' | 'map'>('timeline');
@@ -965,32 +782,28 @@ const DispatchingView = ({
     return () => window.removeEventListener("resize", computeHeight);
   }, []);
 
-  // Generate colors for subcontractors
   const colors = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#06b6d4', '#84cc16', '#ef4444', '#8b5cf6', '#14b8a6', '#f97316', '#a855f7', '#22c55e', '#eab308', '#06b6d4'];
   const subcontractorsWithColors = subcontractors.map((sub, idx) => ({
     ...sub,
     color: colors[idx % colors.length]
   }));
 
-  // Load subcontractors from database
   React.useEffect(() => {
-    const loadSubcontractors = async () => {
-      const data = await fetchSubcontractors({ isActive: true });
+    const loadSubcontractorUsers = async () => {
+      const data = await fetchEstimators();
       setSubcontractors(data);
-      // Pre-select first 3 subcontractors
       if (data.length > 0 && selectedSubcontractors.length === 0) {
         setSelectedSubcontractors(data.slice(0, 3).map(s => s.name));
       }
     };
-    loadSubcontractors();
+    loadSubcontractorUsers();
   }, []);
 
-  // Load calendar events from database
   React.useEffect(() => {
     if (subcontractors.length > 0) {
       loadCalendarData();
     }
-  }, [selectedDate, rateFilter, skillFilters, selectedSubcontractors, subcontractors.length]);
+  }, [selectedDate, selectedSubcontractors, subcontractors.length]);
 
   const loadCalendarData = async () => {
     setLoading(true);
@@ -1009,9 +822,6 @@ const DispatchingView = ({
       setEvents(eventsData);
       setDbEstimators(calendarsData);
       setAllDbEstimators(calendarsData);
-      if (onAvailableSkillsLoad) {
-        onAvailableSkillsLoad([]);
-      }
     } catch (error) {
       console.error('Error loading calendar data:', error);
     } finally {
@@ -1384,7 +1194,7 @@ const DispatchingView = ({
                       {subcontractor.name}
                     </span>
                     <span className="text-muted" style={{ fontSize: '0.65rem' }}>
-                      {subcontractor.specialty || 'General'}
+                      {subcontractor.email || subcontractor.phone || ''}
                     </span>
                   </div>
                 </label>
@@ -2147,10 +1957,6 @@ const CalendarView = () => {
 export const Jobs = (): JSX.Element => {
   const [currentView, setCurrentView] = React.useState<'table' | 'calendar' | 'dispatching'>('table');
   const [showReportsModal, setShowReportsModal] = React.useState(false);
-  const [rateFilter, setRateFilter] = React.useState<{ min?: number; max?: number }>({});
-  const [skillFilters, setSkillFilters] = React.useState<string[]>([]);
-  const [availableSkills, setAvailableSkills] = React.useState<string[]>([]);
-
   const [milestones, setMilestones] = React.useState({
     complete: true,
     quoted: false,
@@ -2158,14 +1964,6 @@ export const Jobs = (): JSX.Element => {
   });
   const [scheduling, setScheduling] = React.useState<'all' | 'scheduled' | 'unscheduled'>('all');
   const [payments, setPayments] = React.useState<'all' | 'unpaid' | 'paid'>('all');
-
-  const toggleSkillFilter = (skill: string) => {
-    setSkillFilters(prev =>
-      prev.includes(skill)
-        ? prev.filter(s => s !== skill)
-        : [...prev, skill]
-    );
-  };
 
   const toggleMilestone = (milestone: 'complete' | 'quoted' | 'closed') => {
     setMilestones(prev => ({
@@ -2182,11 +1980,6 @@ export const Jobs = (): JSX.Element => {
             currentView={currentView}
             onViewChange={setCurrentView}
             onReportsClick={() => setShowReportsModal(true)}
-            rateFilter={rateFilter}
-            skillFilters={skillFilters}
-            availableSkills={availableSkills}
-            onRateFilterChange={setRateFilter}
-            onSkillToggle={toggleSkillFilter}
             milestones={milestones}
             toggleMilestone={toggleMilestone}
             scheduling={scheduling}
@@ -2201,11 +1994,7 @@ export const Jobs = (): JSX.Element => {
           ) : currentView === 'calendar' ? (
             <CalendarView />
           ) : (
-            <DispatchingView
-              rateFilter={rateFilter}
-              skillFilters={skillFilters}
-              onAvailableSkillsLoad={setAvailableSkills}
-            />
+            <DispatchingView />
           )}
         </div>
       </div>

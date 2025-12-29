@@ -13,9 +13,10 @@ export interface Calendar {
 export interface Estimator {
   id: string;
   name: string;
+  first_name: string;
+  last_name: string;
   email: string | null;
   phone: string | null;
-  specialty: string | null;
   is_active: boolean;
 }
 
@@ -37,6 +38,7 @@ export interface CalendarEvent {
   quote_number: string | null;
   notes: string | null;
   estimator_id: string | null;
+  user_id: string | null;
   contact_id: string | null;
   latitude: number | null;
   longitude: number | null;
@@ -86,7 +88,7 @@ export async function fetchCalendarEventsWithCalendar(
     .select(`
       *,
       calendar:calendars(*),
-      estimator:subcontractors!estimator_id(id, name, email, phone, specialty, is_active)
+      estimator:users!user_id(id, first_name, last_name, email, phone, is_active)
     `)
     .lte('start_date', endDate.toISOString())
     .gte('end_date', startDate.toISOString())
@@ -106,7 +108,10 @@ export async function fetchCalendarEventsWithCalendar(
   return (data || []).map((event: any) => ({
     ...event,
     calendar: event.calendar || undefined,
-    estimator: event.estimator || undefined
+    estimator: event.estimator ? {
+      ...event.estimator,
+      name: `${event.estimator.first_name} ${event.estimator.last_name}`
+    } : undefined
   }));
 }
 
@@ -252,17 +257,21 @@ export async function deleteCalendarForContact(contactId: string): Promise<boole
 
 export async function fetchEstimators(): Promise<Estimator[]> {
   const { data, error } = await supabase
-    .from('subcontractors')
-    .select('id, name, email, phone, specialty, is_active')
+    .from('users')
+    .select('id, first_name, last_name, email, phone, is_active')
+    .eq('user_type', 'subcontractor')
     .eq('is_active', true)
-    .order('name');
+    .order('first_name');
 
   if (error) {
     console.error('Error fetching estimators:', error);
     return [];
   }
 
-  return data || [];
+  return (data || []).map(user => ({
+    ...user,
+    name: `${user.first_name} ${user.last_name}`
+  }));
 }
 
 export async function fetchCalendarEventsForDispatching(
@@ -279,7 +288,7 @@ export async function fetchCalendarEventsForDispatching(
     .select(`
       *,
       calendar:calendars(*),
-      estimator:subcontractors!estimator_id(id, name, email, phone, specialty, is_active)
+      estimator:users!user_id(id, first_name, last_name, email, phone, is_active)
     `)
     .gte('start_date', startOfDay.toISOString())
     .lte('start_date', endOfDay.toISOString())
@@ -293,6 +302,9 @@ export async function fetchCalendarEventsForDispatching(
   return (data || []).map((event: any) => ({
     ...event,
     calendar: event.calendar || undefined,
-    estimator: event.estimator || undefined
+    estimator: event.estimator ? {
+      ...event.estimator,
+      name: `${event.estimator.first_name} ${event.estimator.last_name}`
+    } : undefined
   }));
 }
