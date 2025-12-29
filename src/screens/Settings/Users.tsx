@@ -16,6 +16,10 @@ interface User {
   email: string;
   apiId: string;
   userType?: UserType;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipcode?: string;
 }
 
 function mapDBUserToUser(dbUser: DBUser): User {
@@ -28,6 +32,10 @@ function mapDBUserToUser(dbUser: DBUser): User {
     email: dbUser.email,
     apiId: dbUser.api_id || '',
     userType: dbUser.user_type,
+    address: dbUser.address || '',
+    city: dbUser.city || '',
+    state: dbUser.state || '',
+    zipcode: dbUser.zipcode || '',
   };
 }
 

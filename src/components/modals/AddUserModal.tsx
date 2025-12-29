@@ -88,6 +88,10 @@ interface User {
   email: string;
   apiId: string;
   userType?: UserType;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipcode?: string;
 }
 
 interface AddUserModalProps {
@@ -168,6 +172,10 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
       setPhone(user.phone || '');
       setEmail(user.email || '');
       setUsername(user.username || '');
+      setAddress(user.address || '');
+      setCity(user.city || '');
+      setState(user.state || '');
+      setZipcode(user.zipcode || '');
       setTouched({
         firstName: false,
         lastName: false,
