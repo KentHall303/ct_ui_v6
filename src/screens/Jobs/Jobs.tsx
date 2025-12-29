@@ -1831,6 +1831,7 @@ const CalendarView = () => {
   const [selectedCalendarIds, setSelectedCalendarIds] = React.useState<string[]>([]);
   const [events, setEvents] = React.useState<JobsCalendarEventWithCalendar[]>([]);
   const [currentDate, setCurrentDate] = React.useState(new Date(2025, 8, 15));
+  const [collapsedCategories, setCollapsedCategories] = React.useState<Set<string>>(new Set());
 
   React.useEffect(() => {
     const loadCalendars = async () => {
@@ -1946,33 +1947,64 @@ const CalendarView = () => {
     setCurrentDate(new Date());
   };
 
-  const renderCategorySection = (title: string, items: JobsCalendarWithContact[]) => (
-    <div className="mb-3">
-      <h6 className="fw-semibold text-dark mb-2" style={{ fontSize: '0.8rem' }}>{title}</h6>
-      <div className="d-flex flex-column gap-1">
-        {items.map((calendar) => (
-          <label
-            key={calendar.id}
-            className="d-flex align-items-center gap-2 py-1 px-2 rounded"
-            style={{ cursor: 'pointer', transition: 'background-color 0.15s' }}
-            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
-            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-          >
-            <input
-              type="checkbox"
-              checked={selectedCalendarIds.includes(calendar.id)}
-              onChange={() => toggleCalendar(calendar)}
-              className="form-check-input mt-0"
-              style={{ cursor: 'pointer', accentColor: calendar.color }}
-            />
-            <span className={`small ${selectedCalendarIds.includes(calendar.id) ? 'fw-medium text-dark' : 'text-secondary'}`}>
-              {calendar.name}
-            </span>
-          </label>
-        ))}
+  const toggleCategory = (categoryName: string) => {
+    setCollapsedCategories(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(categoryName)) {
+        newSet.delete(categoryName);
+      } else {
+        newSet.add(categoryName);
+      }
+      return newSet;
+    });
+  };
+
+  const renderCategorySection = (title: string, items: JobsCalendarWithContact[]) => {
+    const isCollapsed = collapsedCategories.has(title);
+
+    return (
+      <div className="mb-3">
+        <div
+          className="d-flex align-items-center justify-content-between mb-2 py-1 px-2 rounded"
+          style={{ cursor: 'pointer', transition: 'background-color 0.15s' }}
+          onClick={() => toggleCategory(title)}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+        >
+          <h6 className="fw-semibold text-dark mb-0" style={{ fontSize: '0.8rem' }}>{title}</h6>
+          {isCollapsed ? (
+            <ChevronDown size={14} className="text-secondary" />
+          ) : (
+            <ChevronUp size={14} className="text-secondary" />
+          )}
+        </div>
+        {!isCollapsed && (
+          <div className="d-flex flex-column gap-1">
+            {items.map((calendar) => (
+              <label
+                key={calendar.id}
+                className="d-flex align-items-center gap-2 py-1 px-2 rounded"
+                style={{ cursor: 'pointer', transition: 'background-color 0.15s' }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedCalendarIds.includes(calendar.id)}
+                  onChange={() => toggleCalendar(calendar)}
+                  className="form-check-input mt-0"
+                  style={{ cursor: 'pointer', accentColor: calendar.color }}
+                />
+                <span className={`small ${selectedCalendarIds.includes(calendar.id) ? 'fw-medium text-dark' : 'text-secondary'}`}>
+                  {calendar.name}
+                </span>
+              </label>
+            ))}
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div

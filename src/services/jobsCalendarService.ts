@@ -12,6 +12,7 @@ export interface JobsCalendar {
 
 export interface JobsCalendarWithContact extends JobsCalendar {
   contact_category: string;
+  is_user_based?: boolean;
 }
 
 export interface JobsCalendarEvent {
@@ -40,31 +41,54 @@ export interface ContactsByCategory {
 }
 
 export async function fetchJobsCalendarsGroupedByCategory(): Promise<ContactsByCategory> {
-  const { data, error } = await supabase
-    .from('jobs_calendars')
-    .select(`
-      *,
-      contacts!contact_id (
-        contact_category
-      )
-    `)
-    .order('name', { ascending: true });
+  const [calendarsResult, usersResult] = await Promise.all([
+    supabase
+      .from('jobs_calendars')
+      .select(`
+        *,
+        contacts!contact_id (
+          contact_category
+        )
+      `)
+      .order('name', { ascending: true }),
+    supabase
+      .from('users')
+      .select('*')
+      .eq('user_type', 'subcontractor')
+      .eq('is_active', true)
+      .order('first_name', { ascending: true })
+  ]);
 
-  if (error) {
-    console.error('Error fetching jobs calendars:', error);
+  if (calendarsResult.error) {
+    console.error('Error fetching jobs calendars:', calendarsResult.error);
     return { estimators: [], fieldManagers: [], subcontractors: [] };
   }
 
-  const calendars = (data || []).map((item: any) => ({
+  const calendars = (calendarsResult.data || []).map((item: any) => ({
     ...item,
     contact_category: item.contacts?.contact_category || 'Estimator',
     contacts: undefined
   })) as JobsCalendarWithContact[];
 
+  const subcontractorUsers = (usersResult.data || []).map((user: any) => ({
+    id: `user_${user.id}`,
+    contact_id: user.id,
+    name: `${user.first_name} ${user.last_name}`,
+    color: '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0'),
+    is_visible: true,
+    created_at: user.created_at,
+    updated_at: user.updated_at,
+    contact_category: 'Subcontractor',
+    is_user_based: true
+  })) as JobsCalendarWithContact[];
+
+  const existingSubcontractors = calendars.filter(c => c.contact_category === 'Subcontractor');
+  const allSubcontractors = [...existingSubcontractors, ...subcontractorUsers];
+
   return {
     estimators: calendars.filter(c => c.contact_category === 'Estimator'),
     fieldManagers: calendars.filter(c => c.contact_category === 'Field Manager'),
-    subcontractors: calendars.filter(c => c.contact_category === 'Subcontractor')
+    subcontractors: allSubcontractors
   };
 }
 
