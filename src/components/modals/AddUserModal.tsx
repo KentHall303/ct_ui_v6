@@ -140,6 +140,26 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
   const [newPassword, setNewPassword] = useState('');
   const [repeatPassword, setRepeatPassword] = useState('');
 
+  const [touched, setTouched] = useState({
+    firstName: false,
+    lastName: false,
+    phone: false,
+    email: false,
+    username: false,
+    address: false,
+    city: false,
+    state: false,
+    zipcode: false,
+  });
+
+  const handleBlur = (field: keyof typeof touched) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+  };
+
+  const isFieldInvalid = (field: keyof typeof touched, value: string) => {
+    return touched[field] && !value.trim();
+  };
+
   useEffect(() => {
     if (show && user) {
       setUserType(user.userType || 'standard');
@@ -148,6 +168,17 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
       setPhone(user.phone || '');
       setEmail(user.email || '');
       setUsername(user.username || '');
+      setTouched({
+        firstName: false,
+        lastName: false,
+        phone: false,
+        email: false,
+        username: false,
+        address: false,
+        city: false,
+        state: false,
+        zipcode: false,
+      });
     } else if (show && !user) {
       setUserType('standard');
       setFirstName('');
@@ -176,11 +207,37 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
       setCalendlyUrl('');
       setNewPassword('');
       setRepeatPassword('');
+      setTouched({
+        firstName: false,
+        lastName: false,
+        phone: false,
+        email: false,
+        username: false,
+        address: false,
+        city: false,
+        state: false,
+        zipcode: false,
+      });
     }
   }, [show, user]);
 
+  const isFormValid = () => {
+    return !!(
+      userType &&
+      firstName.trim() &&
+      lastName.trim() &&
+      phone.trim() &&
+      email.trim() &&
+      username.trim() &&
+      address.trim() &&
+      city.trim() &&
+      state &&
+      zipcode.trim()
+    );
+  };
+
   const handleSave = async () => {
-    if (!firstName || !lastName || !email || !username) {
+    if (!isFormValid()) {
       return;
     }
 
@@ -192,7 +249,11 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
         first_name: firstName,
         last_name: lastName,
         email,
-        phone: phone || undefined,
+        phone,
+        address,
+        city,
+        state,
+        zipcode,
         user_type: userType,
         timezone: timezone || undefined,
         default_page: defaultPage || undefined,
@@ -261,7 +322,9 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
+                    onBlur={() => handleBlur('firstName')}
                     placeholder="Enter first name"
+                    isInvalid={isFieldInvalid('firstName', firstName)}
                   />
                 </Col>
                 <Col md={6}>
@@ -270,7 +333,9 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
+                    onBlur={() => handleBlur('lastName')}
                     placeholder="Enter last name"
+                    isInvalid={isFieldInvalid('lastName', lastName)}
                   />
                 </Col>
               </Row>
@@ -280,7 +345,9 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                 type="text"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="(435) 938-8063"
+                onBlur={() => handleBlur('phone')}
+                placeholder="555-555-5555"
+                isInvalid={isFieldInvalid('phone', phone)}
               />
 
               <FloatingInput
@@ -288,15 +355,19 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onBlur={() => handleBlur('email')}
                 placeholder="email@example.com"
+                isInvalid={isFieldInvalid('email', email)}
               />
 
               <FloatingInput
-                label="Username"
+                label="Username *"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                onBlur={() => handleBlur('username')}
                 placeholder="Enter username"
+                isInvalid={isFieldInvalid('username', username)}
               />
 
               <Row className="g-3">
@@ -427,7 +498,9 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                     type="text"
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
+                    onBlur={() => handleBlur('address')}
                     placeholder="Enter address"
+                    isInvalid={isFieldInvalid('address', address)}
                   />
 
                   <Row className="g-3">
@@ -437,7 +510,9 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                         type="text"
                         value={city}
                         onChange={(e) => setCity(e.target.value)}
+                        onBlur={() => handleBlur('city')}
                         placeholder="Enter city"
+                        isInvalid={isFieldInvalid('city', city)}
                       />
                     </Col>
                     <Col md={6}>
@@ -445,6 +520,8 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                         label="State *"
                         value={state}
                         onChange={(e) => setState(e.target.value)}
+                        onBlur={() => handleBlur('state')}
+                        isInvalid={touched.state && !state}
                       >
                         <option value="">Select State</option>
                         {US_STATES.map(s => (
@@ -459,7 +536,9 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
                     type="text"
                     value={zipcode}
                     onChange={(e) => setZipcode(e.target.value)}
+                    onBlur={() => handleBlur('zipcode')}
                     placeholder="Enter zip"
+                    isInvalid={isFieldInvalid('zipcode', zipcode)}
                   />
                 </div>
               </fieldset>
@@ -591,7 +670,7 @@ export const AddUserModal: React.FC<AddUserModalProps> = ({
         <Button variant="secondary" onClick={onHide} disabled={isSaving}>
           Cancel
         </Button>
-        <Button variant="primary" onClick={handleSave} disabled={isSaving}>
+        <Button variant="primary" onClick={handleSave} disabled={isSaving || !isFormValid()}>
           {isSaving ? 'Saving...' : (isEditMode ? 'Save Changes' : 'Add User')}
         </Button>
       </Modal.Footer>

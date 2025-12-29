@@ -8,7 +8,11 @@ export interface User {
   first_name: string;
   last_name: string;
   email: string;
-  phone: string | null;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zipcode: string;
   user_type: UserType;
   api_id: string | null;
   timezone: string | null;
@@ -24,7 +28,11 @@ export interface CreateUserInput {
   first_name: string;
   last_name: string;
   email: string;
-  phone?: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zipcode: string;
   user_type: UserType;
   api_id?: string;
   timezone?: string;
@@ -38,6 +46,10 @@ export interface UpdateUserInput {
   last_name?: string;
   email?: string;
   phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipcode?: string;
   user_type?: UserType;
   api_id?: string;
   timezone?: string;
