@@ -1398,7 +1398,7 @@ const DispatchingView = () => {
                                       const result = await updateCalendarEvent(draggedEvent.id, {
                                         start_date: newStartDate.toISOString(),
                                         end_date: newEndDate.toISOString(),
-                                        estimator_id: estimator?.id || null
+                                        user_id: subcontractor?.id || null
                                       });
 
                                       console.log('Update result:', result);
@@ -1450,7 +1450,7 @@ const DispatchingView = () => {
                                       const result = await updateCalendarEvent(draggedEvent.id, {
                                         start_date: newStartDate.toISOString(),
                                         end_date: newEndDate.toISOString(),
-                                        estimator_id: estimator?.id || null
+                                        user_id: subcontractor?.id || null
                                       });
 
                                       console.log('Update result:', result);
