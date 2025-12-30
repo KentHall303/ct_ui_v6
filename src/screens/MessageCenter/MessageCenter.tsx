@@ -3,6 +3,7 @@ import { MessageSquare as MessageSquareIcon, Phone as PhoneIcon, Mail as MailIco
 import { Badge, Button, InputGroup, Form } from "react-bootstrap";
 import { messageService, Message, MessageCounts } from "../../services/messageService";
 import { FloatingSelect } from "../../components/bootstrap/FormControls";
+import { MessageCenterPageSettingsModal } from "./MessageCenterPageSettingsModal";
 
 interface MessageCenterHeaderProps {
   selectedType: string;
@@ -13,6 +14,7 @@ interface MessageCenterHeaderProps {
   onSearchChange: (term: string) => void;
   contactType: string;
   onContactTypeChange: (type: string) => void;
+  onOpenSettings: () => void;
 }
 
 const MessageCenterHeader: React.FC<MessageCenterHeaderProps> = ({
@@ -23,7 +25,8 @@ const MessageCenterHeader: React.FC<MessageCenterHeaderProps> = ({
   searchTerm,
   onSearchChange,
   contactType,
-  onContactTypeChange
+  onContactTypeChange,
+  onOpenSettings
 }) => {
   const communicationChannels = [
     { id: 'text', icon: MessageSquareIcon, label: 'Text', count: counts.text },
@@ -138,7 +141,8 @@ const MessageCenterHeader: React.FC<MessageCenterHeaderProps> = ({
             </button>
             <button
               className="btn btn-link p-2 text-secondary"
-              title="Settings"
+              onClick={onOpenSettings}
+              title="Page Settings"
               style={{ border: 'none', textDecoration: 'none' }}
             >
               <SettingsIcon size={20} />
@@ -719,6 +723,10 @@ const MessageCenterBody: React.FC<MessageCenterBodyProps> = ({ selectedType, sea
   );
 };
 
+const STORAGE_KEY_DATE_SORT = 'messageCenterDateSort';
+const STORAGE_KEY_MAX_DAYS = 'messageCenterMaxDays';
+const STORAGE_KEY_QUERY_OPTION = 'messageCenterQueryOption';
+
 export const MessageCenter = (): JSX.Element => {
   const [selectedType, setSelectedType] = React.useState('text');
   const [searchTerm, setSearchTerm] = React.useState('');
@@ -729,6 +737,18 @@ export const MessageCenter = (): JSX.Element => {
     email: 0,
     thumbtack: 0,
     total: 0
+  });
+
+  const [showSettingsModal, setShowSettingsModal] = React.useState(false);
+  const [dateSortOrder, setDateSortOrder] = React.useState(() => {
+    return localStorage.getItem(STORAGE_KEY_DATE_SORT) || 'Descending';
+  });
+  const [maxHistoryDays, setMaxHistoryDays] = React.useState(() => {
+    const stored = localStorage.getItem(STORAGE_KEY_MAX_DAYS);
+    return stored ? Number(stored) : 1;
+  });
+  const [contactQueryOption, setContactQueryOption] = React.useState(() => {
+    return localStorage.getItem(STORAGE_KEY_QUERY_OPTION) || 'Last Message of Each Message Type';
   });
 
   const fetchCounts = React.useCallback(async () => {
@@ -749,6 +769,20 @@ export const MessageCenter = (): JSX.Element => {
     window.location.reload();
   };
 
+  const handleOpenSettings = () => {
+    setShowSettingsModal(true);
+  };
+
+  const handleUpdateSettings = (newDateSort: string, newMaxDays: number, newQueryOption: string) => {
+    setDateSortOrder(newDateSort);
+    setMaxHistoryDays(newMaxDays);
+    setContactQueryOption(newQueryOption);
+
+    localStorage.setItem(STORAGE_KEY_DATE_SORT, newDateSort);
+    localStorage.setItem(STORAGE_KEY_MAX_DAYS, String(newMaxDays));
+    localStorage.setItem(STORAGE_KEY_QUERY_OPTION, newQueryOption);
+  };
+
   return (
     <div className="d-flex flex-column w-100 h-100" style={{ minHeight: 0 }}>
       <div className="flex-shrink-0">
@@ -761,6 +795,7 @@ export const MessageCenter = (): JSX.Element => {
           onSearchChange={setSearchTerm}
           contactType={contactType}
           onContactTypeChange={setContactType}
+          onOpenSettings={handleOpenSettings}
         />
       </div>
       <div className="flex-grow-1 d-flex flex-column" style={{ minHeight: 0 }}>
@@ -769,6 +804,15 @@ export const MessageCenter = (): JSX.Element => {
           searchTerm={searchTerm}
         />
       </div>
+
+      <MessageCenterPageSettingsModal
+        show={showSettingsModal}
+        onHide={() => setShowSettingsModal(false)}
+        dateSortOrder={dateSortOrder}
+        maxHistoryDays={maxHistoryDays}
+        contactQueryOption={contactQueryOption}
+        onUpdate={handleUpdateSettings}
+      />
     </div>
   );
 };
