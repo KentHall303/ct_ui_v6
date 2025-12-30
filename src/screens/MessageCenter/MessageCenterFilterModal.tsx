@@ -8,6 +8,7 @@ import { fetchUsers, User, USER_TYPE_LABELS, UserType } from '../../services/use
 import { ConnectionPlan } from '../../lib/supabase';
 import { US_STATES, CANADIAN_PROVINCES } from '../../data/stateProvinceData';
 import { LEAD_SOURCES } from '../../data/leadSourceData';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 interface MessageCenterFilterModalProps {
   show: boolean;
@@ -295,39 +296,66 @@ export const MessageCenterFilterModal: React.FC<MessageCenterFilterModalProps> =
               <label className="form-label" style={{ fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>
                 Message Direction:
               </label>
-              <div className="btn-group w-100" role="group" style={{ height: '58px' }}>
-                <button
-                  type="button"
-                  onClick={() => toggleDirection('inbound')}
-                  className={`btn ${
-                    localMessageDirection === 'inbound' || localMessageDirection === 'both'
-                      ? 'btn-primary'
-                      : 'btn-outline-secondary'
-                  }`}
-                  style={{
-                    flex: 1,
-                    transition: 'all 0.15s ease',
-                    fontWeight: localMessageDirection === 'inbound' || localMessageDirection === 'both' ? 600 : 400,
-                  }}
-                >
-                  Inbound
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toggleDirection('outbound')}
-                  className={`btn ${
-                    localMessageDirection === 'outbound' || localMessageDirection === 'both'
-                      ? 'btn-primary'
-                      : 'btn-outline-secondary'
-                  }`}
-                  style={{
-                    flex: 1,
-                    transition: 'all 0.15s ease',
-                    fontWeight: localMessageDirection === 'outbound' || localMessageDirection === 'both' ? 600 : 400,
-                  }}
-                >
-                  Outbound
-                </button>
+              <div className="d-flex align-items-center gap-3">
+                <div className="d-flex align-items-center gap-2">
+                  <div
+                    onClick={() => toggleDirection('inbound')}
+                    style={{
+                      width: '48px',
+                      height: '24px',
+                      borderRadius: '12px',
+                      backgroundColor: localMessageDirection === 'inbound' || localMessageDirection === 'both' ? '#a8d5ba' : '#d1d5db',
+                      position: 'relative',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                        backgroundColor: 'white',
+                        position: 'absolute',
+                        top: '2px',
+                        left: localMessageDirection === 'inbound' || localMessageDirection === 'both' ? '26px' : '2px',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
+                      }}
+                    />
+                  </div>
+                  <ArrowLeft size={20} style={{ color: '#6c757d' }} />
+                </div>
+
+                <div className="d-flex align-items-center gap-2">
+                  <div
+                    onClick={() => toggleDirection('outbound')}
+                    style={{
+                      width: '48px',
+                      height: '24px',
+                      borderRadius: '12px',
+                      backgroundColor: localMessageDirection === 'outbound' || localMessageDirection === 'both' ? '#a8d5ba' : '#d1d5db',
+                      position: 'relative',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                        backgroundColor: 'white',
+                        position: 'absolute',
+                        top: '2px',
+                        left: localMessageDirection === 'outbound' || localMessageDirection === 'both' ? '26px' : '2px',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
+                      }}
+                    />
+                  </div>
+                  <ArrowRight size={20} style={{ color: '#6c757d' }} />
+                </div>
               </div>
             </div>
           </div>
