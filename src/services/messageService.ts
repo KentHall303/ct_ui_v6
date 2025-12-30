@@ -39,12 +39,16 @@ export interface MessageFilters {
   actionPlan?: string;
   salesCycle?: string;
   leadSource?: string;
-  messageDirection?: 'inbound' | 'outbound' | 'both';
+  messageDirection?: 'inbound' | 'outbound' | 'both' | 'none';
   tags?: string;
 }
 
 export const messageService = {
   async getMessages(type?: string, filters?: MessageFilters): Promise<Message[]> {
+    if (filters?.messageDirection === 'none') {
+      return [];
+    }
+
     const hasContactFilters = filters?.userAssigned || filters?.state || filters?.salesCycle || filters?.leadSource;
 
     if (hasContactFilters) {

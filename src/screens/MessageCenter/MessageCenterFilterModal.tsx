@@ -18,7 +18,7 @@ interface MessageCenterFilterModalProps {
   state: string;
   salesCycle: string;
   leadSource: string;
-  messageDirection: 'inbound' | 'outbound' | 'both';
+  messageDirection: 'inbound' | 'outbound' | 'both' | 'none';
   tags: string;
   onApply: (
     actionPlan: string,
@@ -26,7 +26,7 @@ interface MessageCenterFilterModalProps {
     state: string,
     salesCycle: string,
     leadSource: string,
-    messageDirection: 'inbound' | 'outbound' | 'both',
+    messageDirection: 'inbound' | 'outbound' | 'both' | 'none',
     tags: string
   ) => void;
 }
@@ -55,7 +55,7 @@ export const MessageCenterFilterModal: React.FC<MessageCenterFilterModalProps> =
   const [localState, setLocalState] = useState<string>(state);
   const [localSalesCycle, setLocalSalesCycle] = useState<string>(salesCycle);
   const [localLeadSource, setLocalLeadSource] = useState<string>(leadSource);
-  const [localMessageDirection, setLocalMessageDirection] = useState<'inbound' | 'outbound' | 'both'>(messageDirection);
+  const [localMessageDirection, setLocalMessageDirection] = useState<'inbound' | 'outbound' | 'both' | 'none'>(messageDirection);
   const [localTags, setLocalTags] = useState<string>(tags);
 
   const [actionPlans, setActionPlans] = useState<ConnectionPlan[]>([]);
@@ -172,17 +172,16 @@ export const MessageCenterFilterModal: React.FC<MessageCenterFilterModalProps> =
   };
 
   const toggleDirection = (direction: 'inbound' | 'outbound') => {
-    if (localMessageDirection === 'both') {
+    const otherDirection = direction === 'inbound' ? 'outbound' : 'inbound';
+
+    if (localMessageDirection === 'none') {
       setLocalMessageDirection(direction);
     } else if (localMessageDirection === direction) {
-      const otherDirection = direction === 'inbound' ? 'outbound' : 'inbound';
-      if (localMessageDirection === otherDirection) {
-        setLocalMessageDirection('both');
-      } else {
-        setLocalMessageDirection('both');
-      }
-    } else {
+      setLocalMessageDirection('none');
+    } else if (localMessageDirection === otherDirection) {
       setLocalMessageDirection('both');
+    } else if (localMessageDirection === 'both') {
+      setLocalMessageDirection(otherDirection);
     }
   };
 
@@ -299,36 +298,6 @@ export const MessageCenterFilterModal: React.FC<MessageCenterFilterModalProps> =
               <div className="d-flex align-items-center gap-3">
                 <div className="d-flex align-items-center gap-2">
                   <div
-                    onClick={() => toggleDirection('inbound')}
-                    style={{
-                      width: '48px',
-                      height: '24px',
-                      borderRadius: '12px',
-                      backgroundColor: localMessageDirection === 'inbound' || localMessageDirection === 'both' ? '#a8d5ba' : '#d1d5db',
-                      position: 'relative',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: '20px',
-                        height: '20px',
-                        borderRadius: '50%',
-                        backgroundColor: 'white',
-                        position: 'absolute',
-                        top: '2px',
-                        left: localMessageDirection === 'inbound' || localMessageDirection === 'both' ? '26px' : '2px',
-                        transition: 'all 0.2s ease',
-                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
-                      }}
-                    />
-                  </div>
-                  <ArrowLeft size={20} style={{ color: '#6c757d' }} />
-                </div>
-
-                <div className="d-flex align-items-center gap-2">
-                  <div
                     onClick={() => toggleDirection('outbound')}
                     style={{
                       width: '48px',
@@ -349,6 +318,36 @@ export const MessageCenterFilterModal: React.FC<MessageCenterFilterModalProps> =
                         position: 'absolute',
                         top: '2px',
                         left: localMessageDirection === 'outbound' || localMessageDirection === 'both' ? '26px' : '2px',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
+                      }}
+                    />
+                  </div>
+                  <ArrowLeft size={20} style={{ color: '#6c757d' }} />
+                </div>
+
+                <div className="d-flex align-items-center gap-2">
+                  <div
+                    onClick={() => toggleDirection('inbound')}
+                    style={{
+                      width: '48px',
+                      height: '24px',
+                      borderRadius: '12px',
+                      backgroundColor: localMessageDirection === 'inbound' || localMessageDirection === 'both' ? '#a8d5ba' : '#d1d5db',
+                      position: 'relative',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                        backgroundColor: 'white',
+                        position: 'absolute',
+                        top: '2px',
+                        left: localMessageDirection === 'inbound' || localMessageDirection === 'both' ? '26px' : '2px',
                         transition: 'all 0.2s ease',
                         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
                       }}

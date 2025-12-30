@@ -805,9 +805,9 @@ export const MessageCenter = (): JSX.Element => {
   const [filterLeadSource, setFilterLeadSource] = React.useState(() => {
     return localStorage.getItem(STORAGE_KEY_FILTER_LEAD_SOURCE) || '';
   });
-  const [filterMessageDirection, setFilterMessageDirection] = React.useState<'inbound' | 'outbound' | 'both'>(() => {
+  const [filterMessageDirection, setFilterMessageDirection] = React.useState<'inbound' | 'outbound' | 'both' | 'none'>(() => {
     const stored = localStorage.getItem(STORAGE_KEY_FILTER_MESSAGE_DIRECTION);
-    return (stored as 'inbound' | 'outbound' | 'both') || 'both';
+    return (stored as 'inbound' | 'outbound' | 'both' | 'none') || 'both';
   });
   const [filterTags, setFilterTags] = React.useState(() => {
     return localStorage.getItem(STORAGE_KEY_FILTER_TAGS) || '';
@@ -875,7 +875,7 @@ export const MessageCenter = (): JSX.Element => {
     state: string,
     salesCycle: string,
     leadSource: string,
-    messageDirection: 'inbound' | 'outbound' | 'both',
+    messageDirection: 'inbound' | 'outbound' | 'both' | 'none',
     tags: string
   ) => {
     setFilterActionPlan(actionPlan);
