@@ -51,15 +51,15 @@ const MessageCenterHeader: React.FC<MessageCenterHeaderProps> = ({
                 onChange={(e) => onContactTypeChange(e.target.value)}
               >
                 <option value="all">All</option>
-                <option value="candidates">Candidates</option>
-                <option value="resale_candidates">Resale Candidates</option>
-                <option value="additional_locations">Additional Locations</option>
-                <option value="acquisitions">Acquisitions</option>
-                <option value="other">Other</option>
+                <option value="clients">Clients</option>
+                <option value="employee">Employee</option>
+                <option value="partner">Partner</option>
+                <option value="vendor">Vendor</option>
+                <option value="new-other">New Other</option>
               </FloatingSelect>
             </div>
 
-            <div className="d-flex gap-3 align-items-center">
+            <div className="d-flex gap-2 align-items-center">
               {communicationChannels.map((channel) => {
                 const Icon = channel.icon;
                 const isActive = selectedType === channel.id;
@@ -69,8 +69,8 @@ const MessageCenterHeader: React.FC<MessageCenterHeaderProps> = ({
                     onClick={() => onTypeChange(channel.id)}
                     className="btn btn-link p-0 position-relative d-flex align-items-center justify-content-center"
                     style={{
-                      width: '48px',
-                      height: '48px',
+                      width: '32px',
+                      height: '32px',
                       borderRadius: '50%',
                       backgroundColor: isActive ? '#0d6efd' : '#e9ecef',
                       color: isActive ? 'white' : '#6c757d',
@@ -79,7 +79,7 @@ const MessageCenterHeader: React.FC<MessageCenterHeaderProps> = ({
                     }}
                     title={channel.label}
                   >
-                    <Icon size={20} />
+                    <Icon size={16} />
                     {channel.count > 0 && (
                       <Badge
                         bg="success"
@@ -87,14 +87,14 @@ const MessageCenterHeader: React.FC<MessageCenterHeaderProps> = ({
                         style={{
                           top: '-4px',
                           right: '-4px',
-                          minWidth: '22px',
-                          height: '22px',
-                          borderRadius: '11px',
+                          minWidth: '18px',
+                          height: '18px',
+                          borderRadius: '9px',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
-                          fontSize: '0.7rem',
-                          padding: '0 5px',
+                          fontSize: '0.65rem',
+                          padding: '0 4px',
                           fontWeight: 600,
                           border: '2px solid white'
                         }}
@@ -180,11 +180,11 @@ const MessageListPanel: React.FC<MessageListPanelProps> = ({ messages, selectedM
 
   const getContactTypeAbbr = (contactType?: string) => {
     switch (contactType) {
-      case 'candidates': return 'Ca';
-      case 'resale_candidates': return 'Re';
-      case 'additional_locations': return 'AL';
-      case 'acquisitions': return 'Aq';
-      case 'other': return 'Ot';
+      case 'clients': return 'Cl';
+      case 'employee': return 'Em';
+      case 'partner': return 'Pa';
+      case 'vendor': return 'Ve';
+      case 'new-other': return 'NO';
       default: return 'Ct';
     }
   };
@@ -552,34 +552,20 @@ interface MessageCenterBodyProps {
 }
 
 const MessageCenterBody: React.FC<MessageCenterBodyProps> = ({ selectedType, searchTerm }) => {
-  const scrollRef = React.useRef<HTMLDivElement | null>(null);
-  const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [selectedMessage, setSelectedMessage] = React.useState<Message | null>(null);
   const [loading, setLoading] = React.useState(true);
   const [leftColumnWidth, setLeftColumnWidth] = React.useState(40);
   const [isResizing, setIsResizing] = React.useState(false);
 
-  React.useLayoutEffect(() => {
-    function computeHeight() {
-      if (!scrollRef.current) return;
-      const rect = scrollRef.current.getBoundingClientRect();
-      const vh = window.innerHeight;
-      const h = Math.max(400, Math.floor(vh - rect.top - 16));
-      setMaxHeight(h);
-    }
-    computeHeight();
-    window.addEventListener("resize", computeHeight);
-    return () => window.removeEventListener("resize", computeHeight);
-  }, []);
-
   const handleMouseDown = React.useCallback(() => {
     setIsResizing(true);
   }, []);
 
   const handleMouseMove = React.useCallback((e: MouseEvent) => {
-    if (!isResizing || !scrollRef.current) return;
-    const container = scrollRef.current;
+    if (!isResizing || !containerRef.current) return;
+    const container = containerRef.current;
     const containerRect = container.getBoundingClientRect();
     const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
     if (newWidth >= 25 && newWidth <= 75) {
@@ -674,18 +660,17 @@ const MessageCenterBody: React.FC<MessageCenterBodyProps> = ({ selectedType, sea
   }, [messages, searchTerm]);
 
   return (
-    <div className="px-3 pt-3">
+    <div className="px-3 pt-3 pb-3 flex-grow-1 d-flex flex-column" style={{ minHeight: 0 }}>
       <div
-        ref={scrollRef}
-        className="bg-white rounded-3 overflow-hidden border shadow-sm"
-        style={{ maxHeight: maxHeight ?? undefined }}
+        ref={containerRef}
+        className="bg-white rounded-3 overflow-hidden border shadow-sm flex-grow-1 d-flex flex-column"
+        style={{ minHeight: 0 }}
       >
-        <div className="d-flex h-100" style={{ position: 'relative' }}>
+        <div className="d-flex flex-grow-1" style={{ position: 'relative', minHeight: 0 }}>
           <div
             className="overflow-auto border-end"
             style={{
               width: `${leftColumnWidth}%`,
-              maxHeight: maxHeight ?? undefined,
               minWidth: '250px'
             }}
           >
@@ -721,10 +706,7 @@ const MessageCenterBody: React.FC<MessageCenterBodyProps> = ({ selectedType, sea
               if (!isResizing) e.currentTarget.style.backgroundColor = 'transparent';
             }}
           />
-          <div
-            className="overflow-auto flex-grow-1"
-            style={{ maxHeight: maxHeight ?? undefined }}
-          >
+          <div className="overflow-auto flex-grow-1 d-flex flex-column" style={{ minHeight: 0 }}>
             <CommunicationPanel
               message={selectedMessage}
               onDelete={handleDelete}
@@ -768,7 +750,7 @@ export const MessageCenter = (): JSX.Element => {
   };
 
   return (
-    <div className="d-flex flex-column w-100 h-100">
+    <div className="d-flex flex-column w-100 h-100" style={{ minHeight: 0 }}>
       <div className="flex-shrink-0">
         <MessageCenterHeader
           selectedType={selectedType}
@@ -781,10 +763,12 @@ export const MessageCenter = (): JSX.Element => {
           onContactTypeChange={setContactType}
         />
       </div>
-      <MessageCenterBody
-        selectedType={selectedType}
-        searchTerm={searchTerm}
-      />
+      <div className="flex-grow-1 d-flex flex-column" style={{ minHeight: 0 }}>
+        <MessageCenterBody
+          selectedType={selectedType}
+          searchTerm={searchTerm}
+        />
+      </div>
     </div>
   );
 };
