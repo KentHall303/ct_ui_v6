@@ -260,7 +260,8 @@ const MessageListPanel: React.FC<MessageListPanelProps> = ({ messages, selectedM
             cursor: 'pointer',
             padding: '8px 12px',
             transition: 'background-color 0.15s ease',
-            backgroundColor: isSelected ? '#e7f3ff' : 'white'
+            backgroundColor: isSelected ? '#e7f3ff' : 'white',
+            borderLeft: `4px solid ${getLeadStatusColor(message.lead_status)}`
           }}
           onMouseEnter={(e) => {
             if (!isSelected) {
@@ -274,8 +275,8 @@ const MessageListPanel: React.FC<MessageListPanelProps> = ({ messages, selectedM
           }}
         >
           <div className="d-flex align-items-center" style={{ gap: '4px' }}>
-            {/* Column 1: Icon + Contact Type + Status */}
-            <div className="d-flex align-items-center" style={{ minWidth: '50px', gap: '4px' }}>
+            {/* Column 1: Icon + Contact Type */}
+            <div className="d-flex align-items-center" style={{ minWidth: '42px' }}>
               <div className="position-relative">
                 <div
                   className="rounded-circle bg-light d-flex align-items-center justify-content-center text-secondary"
@@ -295,20 +296,11 @@ const MessageListPanel: React.FC<MessageListPanelProps> = ({ messages, selectedM
                     fontWeight: 600,
                     color: '#495057'
                   }}
+                  title={message.contact_type || 'Contact'}
                 >
                   {getContactTypeAbbr(message.contact_type)}
                 </div>
               </div>
-              <div
-                className="rounded-circle"
-                style={{
-                  width: '8px',
-                  height: '8px',
-                  backgroundColor: getLeadStatusColor(message.lead_status),
-                  flexShrink: 0
-                }}
-                title={message.lead_status || 'unknown'}
-              />
             </div>
 
             {/* Separator 1 */}
