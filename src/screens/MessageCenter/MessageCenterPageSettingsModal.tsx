@@ -1,6 +1,7 @@
 import React from 'react';
-import { Modal, Form } from 'react-bootstrap';
+import { Modal } from 'react-bootstrap';
 import { Button } from '../../components/bootstrap/Button';
+import { FloatingSelect, FloatingSelectOption } from '../../components/bootstrap/FormControls';
 
 interface MessageCenterPageSettingsModalProps {
   show: boolean;
@@ -38,49 +39,54 @@ export const MessageCenterPageSettingsModal: React.FC<MessageCenterPageSettingsM
 
   return (
     <Modal show={show} onHide={onHide} centered>
-      <Modal.Header closeButton className="border-bottom">
-        <Modal.Title className="h5">Page Settings</Modal.Title>
+      <Modal.Header closeButton className="border-0 pb-2">
+        <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 400 }}>
+          Page Settings
+        </Modal.Title>
       </Modal.Header>
-      <Modal.Body>
-        <div className="mb-3">
-          <label className="form-label fw-semibold mb-2">Date Sort Order:</label>
-          <Form.Select
+      <Modal.Body className="pt-3 pb-4" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+        <div className="d-flex flex-column gap-3">
+          <FloatingSelect
+            label="Date Sort Order"
             value={localDateSortOrder}
             onChange={(e) => setLocalDateSortOrder(e.target.value)}
           >
-            <option value="Ascending">Ascending</option>
-            <option value="Descending">Descending</option>
-          </Form.Select>
-        </div>
+            <FloatingSelectOption value="Ascending">Ascending</FloatingSelectOption>
+            <FloatingSelectOption value="Descending">Descending</FloatingSelectOption>
+          </FloatingSelect>
 
-        <div className="mb-3">
-          <label className="form-label fw-semibold mb-2">Max History Days:</label>
-          <Form.Select
+          <FloatingSelect
+            label="Max History Days"
             value={localMaxHistoryDays}
             onChange={(e) => setLocalMaxHistoryDays(Number(e.target.value))}
           >
             {MAX_HISTORY_OPTIONS.map(option => (
-              <option key={option} value={option}>{option}</option>
+              <FloatingSelectOption key={option} value={option}>
+                {option}
+              </FloatingSelectOption>
             ))}
-          </Form.Select>
-        </div>
+          </FloatingSelect>
 
-        <div className="mb-3">
-          <label className="form-label fw-semibold mb-2">Contact Query Option:</label>
-          <Form.Select
+          <FloatingSelect
+            label="Contact Query Option"
             value={localContactQueryOption}
             onChange={(e) => setLocalContactQueryOption(e.target.value)}
           >
-            <option value="Last Message of Each Message Type">Last Message of Each Message Type</option>
-            <option value="Last Message of Last Message Type">Last Message of Last Message Type</option>
-          </Form.Select>
+            <FloatingSelectOption value="Last Message of Each Message Type">
+              Last Message of Each Message Type
+            </FloatingSelectOption>
+            <FloatingSelectOption value="Last Message of Last Message Type">
+              Last Message of Last Message Type
+            </FloatingSelectOption>
+          </FloatingSelect>
+
+          <div className="d-flex justify-content-center mt-2">
+            <Button variant="primary" onClick={handleUpdate}>
+              Update
+            </Button>
+          </div>
         </div>
       </Modal.Body>
-      <Modal.Footer className="border-top justify-content-center">
-        <Button variant="primary" onClick={handleUpdate}>
-          Update
-        </Button>
-      </Modal.Footer>
     </Modal>
   );
 };
