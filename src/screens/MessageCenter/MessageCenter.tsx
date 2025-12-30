@@ -1,9 +1,10 @@
 import React from "react";
-import { MessageSquare as MessageSquareIcon, Phone as PhoneIcon, Mail as MailIcon, Pin as PinIcon, Search as SearchIcon, RefreshCw as RefreshIcon, Settings as SettingsIcon, Star as StarIcon, Trash as TrashIcon, Archive as ArchiveIcon, Clipboard as WhiteboardIcon, History as HistoryIcon, Calendar as EventIcon, SquareCheck as TaskIcon, Hash as ThumbmarkIcon, MessageCircle as SalesChatzIcon } from "lucide-react";
+import { MessageSquare as MessageSquareIcon, Phone as PhoneIcon, Mail as MailIcon, Pin as PinIcon, Search as SearchIcon, RefreshCw as RefreshIcon, Settings as SettingsIcon, Star as StarIcon, Trash as TrashIcon, Archive as ArchiveIcon, Clipboard as WhiteboardIcon, History as HistoryIcon, Calendar as EventIcon, SquareCheck as TaskIcon, Hash as ThumbmarkIcon, MessageCircle as SalesChatzIcon, Filter as FilterIcon } from "lucide-react";
 import { Badge, Button, InputGroup, Form } from "react-bootstrap";
-import { messageService, Message, MessageCounts } from "../../services/messageService";
+import { messageService, Message, MessageCounts, MessageFilters } from "../../services/messageService";
 import { FloatingSelect } from "../../components/bootstrap/FormControls";
 import { MessageCenterPageSettingsModal } from "./MessageCenterPageSettingsModal";
+import { MessageCenterFilterModal } from "./MessageCenterFilterModal";
 
 interface MessageCenterHeaderProps {
   selectedType: string;
@@ -15,6 +16,8 @@ interface MessageCenterHeaderProps {
   contactType: string;
   onContactTypeChange: (type: string) => void;
   onOpenSettings: () => void;
+  onOpenFilter: () => void;
+  hasActiveFilters: boolean;
 }
 
 const MessageCenterHeader: React.FC<MessageCenterHeaderProps> = ({
@@ -26,7 +29,9 @@ const MessageCenterHeader: React.FC<MessageCenterHeaderProps> = ({
   onSearchChange,
   contactType,
   onContactTypeChange,
-  onOpenSettings
+  onOpenSettings,
+  onOpenFilter,
+  hasActiveFilters
 }) => {
   const communicationChannels = [
     { id: 'text', icon: MessageSquareIcon, label: 'Text', count: counts.text },
@@ -138,6 +143,31 @@ const MessageCenterHeader: React.FC<MessageCenterHeaderProps> = ({
               style={{ border: 'none', textDecoration: 'none' }}
             >
               <RefreshIcon size={20} />
+            </button>
+            <button
+              className="btn btn-link p-2 position-relative"
+              onClick={onOpenFilter}
+              title="Filter Messages"
+              style={{
+                border: 'none',
+                textDecoration: 'none',
+                color: hasActiveFilters ? '#0d6efd' : '#6c757d'
+              }}
+            >
+              <FilterIcon size={20} />
+              {hasActiveFilters && (
+                <span
+                  className="position-absolute"
+                  style={{
+                    top: '4px',
+                    right: '4px',
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    backgroundColor: '#0d6efd'
+                  }}
+                />
+              )}
             </button>
             <button
               className="btn btn-link p-2 text-secondary"
@@ -553,9 +583,10 @@ const CommunicationPanel: React.FC<CommunicationPanelProps> = ({ message, onDele
 interface MessageCenterBodyProps {
   selectedType: string;
   searchTerm: string;
+  filters: MessageFilters;
 }
 
-const MessageCenterBody: React.FC<MessageCenterBodyProps> = ({ selectedType, searchTerm }) => {
+const MessageCenterBody: React.FC<MessageCenterBodyProps> = ({ selectedType, searchTerm, filters }) => {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [selectedMessage, setSelectedMessage] = React.useState<Message | null>(null);
@@ -599,14 +630,14 @@ const MessageCenterBody: React.FC<MessageCenterBodyProps> = ({ selectedType, sea
   const fetchMessages = React.useCallback(async () => {
     setLoading(true);
     try {
-      const data = await messageService.getMessages(selectedType);
+      const data = await messageService.getMessages(selectedType, filters);
       setMessages(data);
     } catch (error) {
       console.error('Failed to fetch messages:', error);
     } finally {
       setLoading(false);
     }
-  }, [selectedType]);
+  }, [selectedType, filters]);
 
   React.useEffect(() => {
     fetchMessages();
@@ -726,6 +757,9 @@ const MessageCenterBody: React.FC<MessageCenterBodyProps> = ({ selectedType, sea
 const STORAGE_KEY_DATE_SORT = 'messageCenterDateSort';
 const STORAGE_KEY_MAX_DAYS = 'messageCenterMaxDays';
 const STORAGE_KEY_QUERY_OPTION = 'messageCenterQueryOption';
+const STORAGE_KEY_FILTER_ACTION_PLAN = 'messageCenterFilterActionPlan';
+const STORAGE_KEY_FILTER_USER_ASSIGNED = 'messageCenterFilterUserAssigned';
+const STORAGE_KEY_FILTER_STATE = 'messageCenterFilterState';
 
 export const MessageCenter = (): JSX.Element => {
   const [selectedType, setSelectedType] = React.useState('text');
@@ -740,6 +774,7 @@ export const MessageCenter = (): JSX.Element => {
   });
 
   const [showSettingsModal, setShowSettingsModal] = React.useState(false);
+  const [showFilterModal, setShowFilterModal] = React.useState(false);
   const [dateSortOrder, setDateSortOrder] = React.useState(() => {
     return localStorage.getItem(STORAGE_KEY_DATE_SORT) || 'Descending';
   });
@@ -750,6 +785,24 @@ export const MessageCenter = (): JSX.Element => {
   const [contactQueryOption, setContactQueryOption] = React.useState(() => {
     return localStorage.getItem(STORAGE_KEY_QUERY_OPTION) || 'Last Message of Each Message Type';
   });
+
+  const [filterActionPlan, setFilterActionPlan] = React.useState(() => {
+    return localStorage.getItem(STORAGE_KEY_FILTER_ACTION_PLAN) || '';
+  });
+  const [filterUserAssigned, setFilterUserAssigned] = React.useState(() => {
+    return localStorage.getItem(STORAGE_KEY_FILTER_USER_ASSIGNED) || '';
+  });
+  const [filterState, setFilterState] = React.useState(() => {
+    return localStorage.getItem(STORAGE_KEY_FILTER_STATE) || '';
+  });
+
+  const hasActiveFilters = Boolean(filterActionPlan || filterUserAssigned || filterState);
+
+  const filters: MessageFilters = React.useMemo(() => ({
+    actionPlan: filterActionPlan || undefined,
+    userAssigned: filterUserAssigned || undefined,
+    state: filterState || undefined,
+  }), [filterActionPlan, filterUserAssigned, filterState]);
 
   const fetchCounts = React.useCallback(async () => {
     try {
@@ -783,6 +836,20 @@ export const MessageCenter = (): JSX.Element => {
     localStorage.setItem(STORAGE_KEY_QUERY_OPTION, newQueryOption);
   };
 
+  const handleOpenFilter = () => {
+    setShowFilterModal(true);
+  };
+
+  const handleApplyFilter = (actionPlan: string, userAssigned: string, state: string) => {
+    setFilterActionPlan(actionPlan);
+    setFilterUserAssigned(userAssigned);
+    setFilterState(state);
+
+    localStorage.setItem(STORAGE_KEY_FILTER_ACTION_PLAN, actionPlan);
+    localStorage.setItem(STORAGE_KEY_FILTER_USER_ASSIGNED, userAssigned);
+    localStorage.setItem(STORAGE_KEY_FILTER_STATE, state);
+  };
+
   return (
     <div className="d-flex flex-column w-100 h-100" style={{ minHeight: 0 }}>
       <div className="flex-shrink-0">
@@ -796,12 +863,15 @@ export const MessageCenter = (): JSX.Element => {
           contactType={contactType}
           onContactTypeChange={setContactType}
           onOpenSettings={handleOpenSettings}
+          onOpenFilter={handleOpenFilter}
+          hasActiveFilters={hasActiveFilters}
         />
       </div>
       <div className="flex-grow-1 d-flex flex-column" style={{ minHeight: 0 }}>
         <MessageCenterBody
           selectedType={selectedType}
           searchTerm={searchTerm}
+          filters={filters}
         />
       </div>
 
@@ -812,6 +882,15 @@ export const MessageCenter = (): JSX.Element => {
         maxHistoryDays={maxHistoryDays}
         contactQueryOption={contactQueryOption}
         onUpdate={handleUpdateSettings}
+      />
+
+      <MessageCenterFilterModal
+        show={showFilterModal}
+        onHide={() => setShowFilterModal(false)}
+        actionPlan={filterActionPlan}
+        userAssigned={filterUserAssigned}
+        state={filterState}
+        onApply={handleApplyFilter}
       />
     </div>
   );

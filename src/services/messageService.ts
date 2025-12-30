@@ -32,8 +32,57 @@ export interface MessageCounts {
   total: number;
 }
 
+export interface MessageFilters {
+  type?: string;
+  userAssigned?: string;
+  state?: string;
+  actionPlan?: string;
+}
+
 export const messageService = {
-  async getMessages(type?: string): Promise<Message[]> {
+  async getMessages(type?: string, filters?: MessageFilters): Promise<Message[]> {
+    const hasContactFilters = filters?.userAssigned || filters?.state;
+
+    if (hasContactFilters) {
+      const { data: contactIds, error: contactError } = await supabase
+        .from('contacts')
+        .select('id')
+        .match({
+          ...(filters?.userAssigned && { assigned_user: filters.userAssigned }),
+          ...(filters?.state && { state: filters.state }),
+        });
+
+      if (contactError) {
+        console.error('Error fetching contacts for filter:', contactError);
+        throw contactError;
+      }
+
+      const validContactIds = contactIds?.map(c => c.id) || [];
+
+      if (validContactIds.length === 0) {
+        return [];
+      }
+
+      let query = supabase
+        .from('messages')
+        .select('*')
+        .in('contact_id', validContactIds)
+        .order('timestamp', { ascending: false });
+
+      if (type && type !== 'all') {
+        query = query.eq('type', type);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('Error fetching messages:', error);
+        throw error;
+      }
+
+      return data || [];
+    }
+
     let query = supabase
       .from('messages')
       .select('*')
