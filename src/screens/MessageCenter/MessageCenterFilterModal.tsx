@@ -8,8 +8,6 @@ import { fetchUsers, User, USER_TYPE_LABELS, UserType } from '../../services/use
 import { ConnectionPlan } from '../../lib/supabase';
 import { US_STATES, CANADIAN_PROVINCES } from '../../data/stateProvinceData';
 import { LEAD_SOURCES } from '../../data/leadSourceData';
-import { Phone, MessageSquare, Mail } from 'lucide-react';
-import { FaThumbsUp } from 'react-icons/fa';
 
 interface MessageCenterFilterModalProps {
   show: boolean;
@@ -19,7 +17,6 @@ interface MessageCenterFilterModalProps {
   state: string;
   salesCycle: string;
   leadSource: string;
-  messageTypes: string[];
   messageDirection: 'inbound' | 'outbound' | 'both';
   tags: string;
   onApply: (
@@ -28,7 +25,6 @@ interface MessageCenterFilterModalProps {
     state: string,
     salesCycle: string,
     leadSource: string,
-    messageTypes: string[],
     messageDirection: 'inbound' | 'outbound' | 'both',
     tags: string
   ) => void;
@@ -49,7 +45,6 @@ export const MessageCenterFilterModal: React.FC<MessageCenterFilterModalProps> =
   state,
   salesCycle,
   leadSource,
-  messageTypes,
   messageDirection,
   tags,
   onApply,
@@ -59,7 +54,6 @@ export const MessageCenterFilterModal: React.FC<MessageCenterFilterModalProps> =
   const [localState, setLocalState] = useState<string>(state);
   const [localSalesCycle, setLocalSalesCycle] = useState<string>(salesCycle);
   const [localLeadSource, setLocalLeadSource] = useState<string>(leadSource);
-  const [localMessageTypes, setLocalMessageTypes] = useState<string[]>(messageTypes);
   const [localMessageDirection, setLocalMessageDirection] = useState<'inbound' | 'outbound' | 'both'>(messageDirection);
   const [localTags, setLocalTags] = useState<string>(tags);
 
@@ -76,10 +70,9 @@ export const MessageCenterFilterModal: React.FC<MessageCenterFilterModalProps> =
     setLocalState(state);
     setLocalSalesCycle(salesCycle);
     setLocalLeadSource(leadSource);
-    setLocalMessageTypes(messageTypes);
     setLocalMessageDirection(messageDirection);
     setLocalTags(tags);
-  }, [actionPlan, userAssigned, state, salesCycle, leadSource, messageTypes, messageDirection, tags, show]);
+  }, [actionPlan, userAssigned, state, salesCycle, leadSource, messageDirection, tags, show]);
 
   useEffect(() => {
     if (show) {
@@ -161,7 +154,6 @@ export const MessageCenterFilterModal: React.FC<MessageCenterFilterModalProps> =
       localState,
       localSalesCycle,
       localLeadSource,
-      localMessageTypes,
       localMessageDirection,
       localTags
     );
@@ -174,28 +166,22 @@ export const MessageCenterFilterModal: React.FC<MessageCenterFilterModalProps> =
     setLocalState('');
     setLocalSalesCycle('');
     setLocalLeadSource('');
-    setLocalMessageTypes([]);
     setLocalMessageDirection('both');
     setLocalTags('');
-  };
-
-  const toggleMessageType = (type: string) => {
-    setLocalMessageTypes(prev => {
-      if (prev.includes(type)) {
-        return prev.filter(t => t !== type);
-      } else {
-        return [...prev, type];
-      }
-    });
   };
 
   const toggleDirection = (direction: 'inbound' | 'outbound') => {
     if (localMessageDirection === 'both') {
       setLocalMessageDirection(direction);
     } else if (localMessageDirection === direction) {
-      setLocalMessageDirection('both');
+      const otherDirection = direction === 'inbound' ? 'outbound' : 'inbound';
+      if (localMessageDirection === otherDirection) {
+        setLocalMessageDirection('both');
+      } else {
+        setLocalMessageDirection('both');
+      }
     } else {
-      setLocalMessageDirection(direction);
+      setLocalMessageDirection('both');
     }
   };
 
@@ -210,8 +196,8 @@ export const MessageCenterFilterModal: React.FC<MessageCenterFilterModalProps> =
         </Modal.Title>
       </Modal.Header>
       <Modal.Body className="pt-3 pb-4" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
-        <div className="row g-3">
-          <div className="col-md-6">
+        <div className="d-flex gap-4">
+          <div className="d-flex flex-column gap-3" style={{ flex: '1' }}>
             <FloatingSelect
               label="Action Plan"
               value={localActionPlan}
@@ -227,33 +213,7 @@ export const MessageCenterFilterModal: React.FC<MessageCenterFilterModalProps> =
                 </FloatingSelectOption>
               ))}
             </FloatingSelect>
-          </div>
 
-          <div className="col-md-6">
-            <FloatingSelect
-              label="State"
-              value={localState}
-              onChange={(e) => setLocalState(e.target.value)}
-            >
-              <FloatingSelectOption value="">Please Select State</FloatingSelectOption>
-              <optgroup label="US States">
-                {US_STATES.map(state => (
-                  <option key={state.value} value={state.value}>
-                    {state.label}
-                  </option>
-                ))}
-              </optgroup>
-              <optgroup label="Canadian Provinces">
-                {CANADIAN_PROVINCES.map(province => (
-                  <option key={province.value} value={province.value}>
-                    {province.label}
-                  </option>
-                ))}
-              </optgroup>
-            </FloatingSelect>
-          </div>
-
-          <div className="col-md-6">
             <FloatingSelect
               label="Sales Cycle"
               value={localSalesCycle}
@@ -269,91 +229,7 @@ export const MessageCenterFilterModal: React.FC<MessageCenterFilterModalProps> =
                 </FloatingSelectOption>
               ))}
             </FloatingSelect>
-          </div>
 
-          <div className="col-md-6">
-            <div>
-              <label className="form-label" style={{ fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>
-                Message Type:
-              </label>
-              <div className="d-flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => toggleMessageType('call')}
-                  className={`btn d-flex align-items-center justify-content-center ${
-                    localMessageTypes.includes('call')
-                      ? 'btn-primary'
-                      : 'btn-outline-secondary'
-                  }`}
-                  style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '50%',
-                    padding: 0,
-                  }}
-                  title="Phone"
-                >
-                  <Phone size={20} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toggleMessageType('text')}
-                  className={`btn d-flex align-items-center justify-content-center ${
-                    localMessageTypes.includes('text')
-                      ? 'btn-primary'
-                      : 'btn-outline-secondary'
-                  }`}
-                  style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '50%',
-                    padding: 0,
-                  }}
-                  title="Text/SMS"
-                >
-                  <MessageSquare size={20} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toggleMessageType('email')}
-                  className={`btn d-flex align-items-center justify-content-center ${
-                    localMessageTypes.includes('email')
-                      ? 'btn-primary'
-                      : 'btn-outline-secondary'
-                  }`}
-                  style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '50%',
-                    padding: 0,
-                  }}
-                  title="Email"
-                >
-                  <Mail size={20} />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toggleMessageType('thumbtack')}
-                  className={`btn d-flex align-items-center justify-content-center ${
-                    localMessageTypes.includes('thumbtack')
-                      ? 'btn-primary'
-                      : 'btn-outline-secondary'
-                  }`}
-                  style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '50%',
-                    padding: 0,
-                  }}
-                  title="Thumbtack"
-                >
-                  <FaThumbsUp size={20} />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-6">
             <FloatingSelect
               label="Lead Source"
               value={localLeadSource}
@@ -366,45 +242,7 @@ export const MessageCenterFilterModal: React.FC<MessageCenterFilterModalProps> =
                 </FloatingSelectOption>
               ))}
             </FloatingSelect>
-          </div>
 
-          <div className="col-md-6">
-            <div>
-              <label className="form-label" style={{ fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>
-                Message Direction:
-              </label>
-              <div className="d-flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => toggleDirection('inbound')}
-                  className={`btn flex-fill ${
-                    localMessageDirection === 'inbound' || localMessageDirection === 'both'
-                      ? 'btn-success'
-                      : 'btn-outline-secondary'
-                  }`}
-                  style={{ height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                >
-                  <span style={{ fontSize: '1.25rem' }}>←</span>
-                  <span>Inbound</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => toggleDirection('outbound')}
-                  className={`btn flex-fill ${
-                    localMessageDirection === 'outbound' || localMessageDirection === 'both'
-                      ? 'btn-success'
-                      : 'btn-outline-secondary'
-                  }`}
-                  style={{ height: '48px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                >
-                  <span>Outbound</span>
-                  <span style={{ fontSize: '1.25rem' }}>→</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-md-6">
             <FloatingSelect
               label="User Assigned"
               value={localUserAssigned}
@@ -430,28 +268,92 @@ export const MessageCenterFilterModal: React.FC<MessageCenterFilterModalProps> =
             </FloatingSelect>
           </div>
 
-          <div className="col-12">
-            <div className="form-floating">
-              <input
-                type="text"
-                className="form-control"
-                id="tagsInput"
-                placeholder="Search by tags..."
-                value={localTags}
-                onChange={(e) => setLocalTags(e.target.value)}
-              />
-              <label htmlFor="tagsInput">Tags</label>
+          <div className="d-flex flex-column gap-3" style={{ flex: '1' }}>
+            <FloatingSelect
+              label="State"
+              value={localState}
+              onChange={(e) => setLocalState(e.target.value)}
+            >
+              <FloatingSelectOption value="">Please Select State</FloatingSelectOption>
+              <optgroup label="US States">
+                {US_STATES.map(state => (
+                  <option key={state.value} value={state.value}>
+                    {state.label}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Canadian Provinces">
+                {CANADIAN_PROVINCES.map(province => (
+                  <option key={province.value} value={province.value}>
+                    {province.label}
+                  </option>
+                ))}
+              </optgroup>
+            </FloatingSelect>
+
+            <div>
+              <label className="form-label" style={{ fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.5rem' }}>
+                Message Direction:
+              </label>
+              <div className="btn-group w-100" role="group" style={{ height: '58px' }}>
+                <button
+                  type="button"
+                  onClick={() => toggleDirection('inbound')}
+                  className={`btn ${
+                    localMessageDirection === 'inbound' || localMessageDirection === 'both'
+                      ? 'btn-primary'
+                      : 'btn-outline-secondary'
+                  }`}
+                  style={{
+                    flex: 1,
+                    transition: 'all 0.15s ease',
+                    fontWeight: localMessageDirection === 'inbound' || localMessageDirection === 'both' ? 600 : 400,
+                  }}
+                >
+                  Inbound
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleDirection('outbound')}
+                  className={`btn ${
+                    localMessageDirection === 'outbound' || localMessageDirection === 'both'
+                      ? 'btn-primary'
+                      : 'btn-outline-secondary'
+                  }`}
+                  style={{
+                    flex: 1,
+                    transition: 'all 0.15s ease',
+                    fontWeight: localMessageDirection === 'outbound' || localMessageDirection === 'both' ? 600 : 400,
+                  }}
+                >
+                  Outbound
+                </button>
+              </div>
             </div>
           </div>
+        </div>
 
-          <div className="col-12 d-flex justify-content-center gap-2 mt-3">
-            <Button variant="outline-secondary" onClick={handleClear} style={{ minWidth: '160px' }}>
-              Clear All Settings
-            </Button>
-            <Button variant="primary" onClick={handleApply} style={{ minWidth: '160px' }}>
-              Save and Update
-            </Button>
+        <div className="mt-3">
+          <div className="form-floating">
+            <input
+              type="text"
+              className="form-control"
+              id="tagsInput"
+              placeholder="Search by tags..."
+              value={localTags}
+              onChange={(e) => setLocalTags(e.target.value)}
+            />
+            <label htmlFor="tagsInput">Tags</label>
           </div>
+        </div>
+
+        <div className="d-flex justify-content-center gap-2 mt-4">
+          <Button variant="outline-secondary" onClick={handleClear} style={{ minWidth: '160px' }}>
+            Clear All Settings
+          </Button>
+          <Button variant="primary" onClick={handleApply} style={{ minWidth: '160px' }}>
+            Save and Update
+          </Button>
         </div>
       </Modal.Body>
     </Modal>

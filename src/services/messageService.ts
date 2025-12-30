@@ -39,7 +39,6 @@ export interface MessageFilters {
   actionPlan?: string;
   salesCycle?: string;
   leadSource?: string;
-  messageTypes?: string[];
   messageDirection?: 'inbound' | 'outbound' | 'both';
   tags?: string;
 }
@@ -89,10 +88,6 @@ export const messageService = {
         query = query.eq('type', type);
       }
 
-      if (filters?.messageTypes && filters.messageTypes.length > 0) {
-        query = query.in('type', filters.messageTypes);
-      }
-
       if (filters?.messageDirection && filters.messageDirection !== 'both') {
         query = query.eq('direction', filters.messageDirection);
       }
@@ -114,10 +109,6 @@ export const messageService = {
 
     if (type && type !== 'all') {
       query = query.eq('type', type);
-    }
-
-    if (filters?.messageTypes && filters.messageTypes.length > 0) {
-      query = query.in('type', filters.messageTypes);
     }
 
     if (filters?.messageDirection && filters.messageDirection !== 'both') {
