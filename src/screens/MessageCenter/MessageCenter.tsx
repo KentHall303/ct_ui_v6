@@ -760,6 +760,11 @@ const STORAGE_KEY_QUERY_OPTION = 'messageCenterQueryOption';
 const STORAGE_KEY_FILTER_ACTION_PLAN = 'messageCenterFilterActionPlan';
 const STORAGE_KEY_FILTER_USER_ASSIGNED = 'messageCenterFilterUserAssigned';
 const STORAGE_KEY_FILTER_STATE = 'messageCenterFilterState';
+const STORAGE_KEY_FILTER_SALES_CYCLE = 'messageCenterFilterSalesCycle';
+const STORAGE_KEY_FILTER_LEAD_SOURCE = 'messageCenterFilterLeadSource';
+const STORAGE_KEY_FILTER_MESSAGE_TYPES = 'messageCenterFilterMessageTypes';
+const STORAGE_KEY_FILTER_MESSAGE_DIRECTION = 'messageCenterFilterMessageDirection';
+const STORAGE_KEY_FILTER_TAGS = 'messageCenterFilterTags';
 
 export const MessageCenter = (): JSX.Element => {
   const [selectedType, setSelectedType] = React.useState('text');
@@ -795,14 +800,45 @@ export const MessageCenter = (): JSX.Element => {
   const [filterState, setFilterState] = React.useState(() => {
     return localStorage.getItem(STORAGE_KEY_FILTER_STATE) || '';
   });
+  const [filterSalesCycle, setFilterSalesCycle] = React.useState(() => {
+    return localStorage.getItem(STORAGE_KEY_FILTER_SALES_CYCLE) || '';
+  });
+  const [filterLeadSource, setFilterLeadSource] = React.useState(() => {
+    return localStorage.getItem(STORAGE_KEY_FILTER_LEAD_SOURCE) || '';
+  });
+  const [filterMessageTypes, setFilterMessageTypes] = React.useState<string[]>(() => {
+    const stored = localStorage.getItem(STORAGE_KEY_FILTER_MESSAGE_TYPES);
+    return stored ? JSON.parse(stored) : [];
+  });
+  const [filterMessageDirection, setFilterMessageDirection] = React.useState<'inbound' | 'outbound' | 'both'>(() => {
+    const stored = localStorage.getItem(STORAGE_KEY_FILTER_MESSAGE_DIRECTION);
+    return (stored as 'inbound' | 'outbound' | 'both') || 'both';
+  });
+  const [filterTags, setFilterTags] = React.useState(() => {
+    return localStorage.getItem(STORAGE_KEY_FILTER_TAGS) || '';
+  });
 
-  const hasActiveFilters = Boolean(filterActionPlan || filterUserAssigned || filterState);
+  const hasActiveFilters = Boolean(
+    filterActionPlan ||
+    filterUserAssigned ||
+    filterState ||
+    filterSalesCycle ||
+    filterLeadSource ||
+    filterMessageTypes.length > 0 ||
+    filterMessageDirection !== 'both' ||
+    filterTags
+  );
 
   const filters: MessageFilters = React.useMemo(() => ({
     actionPlan: filterActionPlan || undefined,
     userAssigned: filterUserAssigned || undefined,
     state: filterState || undefined,
-  }), [filterActionPlan, filterUserAssigned, filterState]);
+    salesCycle: filterSalesCycle || undefined,
+    leadSource: filterLeadSource || undefined,
+    messageTypes: filterMessageTypes.length > 0 ? filterMessageTypes : undefined,
+    messageDirection: filterMessageDirection,
+    tags: filterTags || undefined,
+  }), [filterActionPlan, filterUserAssigned, filterState, filterSalesCycle, filterLeadSource, filterMessageTypes, filterMessageDirection, filterTags]);
 
   const fetchCounts = React.useCallback(async () => {
     try {
@@ -840,14 +876,33 @@ export const MessageCenter = (): JSX.Element => {
     setShowFilterModal(true);
   };
 
-  const handleApplyFilter = (actionPlan: string, userAssigned: string, state: string) => {
+  const handleApplyFilter = (
+    actionPlan: string,
+    userAssigned: string,
+    state: string,
+    salesCycle: string,
+    leadSource: string,
+    messageTypes: string[],
+    messageDirection: 'inbound' | 'outbound' | 'both',
+    tags: string
+  ) => {
     setFilterActionPlan(actionPlan);
     setFilterUserAssigned(userAssigned);
     setFilterState(state);
+    setFilterSalesCycle(salesCycle);
+    setFilterLeadSource(leadSource);
+    setFilterMessageTypes(messageTypes);
+    setFilterMessageDirection(messageDirection);
+    setFilterTags(tags);
 
     localStorage.setItem(STORAGE_KEY_FILTER_ACTION_PLAN, actionPlan);
     localStorage.setItem(STORAGE_KEY_FILTER_USER_ASSIGNED, userAssigned);
     localStorage.setItem(STORAGE_KEY_FILTER_STATE, state);
+    localStorage.setItem(STORAGE_KEY_FILTER_SALES_CYCLE, salesCycle);
+    localStorage.setItem(STORAGE_KEY_FILTER_LEAD_SOURCE, leadSource);
+    localStorage.setItem(STORAGE_KEY_FILTER_MESSAGE_TYPES, JSON.stringify(messageTypes));
+    localStorage.setItem(STORAGE_KEY_FILTER_MESSAGE_DIRECTION, messageDirection);
+    localStorage.setItem(STORAGE_KEY_FILTER_TAGS, tags);
   };
 
   return (
@@ -890,6 +945,11 @@ export const MessageCenter = (): JSX.Element => {
         actionPlan={filterActionPlan}
         userAssigned={filterUserAssigned}
         state={filterState}
+        salesCycle={filterSalesCycle}
+        leadSource={filterLeadSource}
+        messageTypes={filterMessageTypes}
+        messageDirection={filterMessageDirection}
+        tags={filterTags}
         onApply={handleApplyFilter}
       />
     </div>

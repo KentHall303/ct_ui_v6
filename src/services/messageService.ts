@@ -37,20 +37,36 @@ export interface MessageFilters {
   userAssigned?: string;
   state?: string;
   actionPlan?: string;
+  salesCycle?: string;
+  leadSource?: string;
+  messageTypes?: string[];
+  messageDirection?: 'inbound' | 'outbound' | 'both';
+  tags?: string;
 }
 
 export const messageService = {
   async getMessages(type?: string, filters?: MessageFilters): Promise<Message[]> {
-    const hasContactFilters = filters?.userAssigned || filters?.state;
+    const hasContactFilters = filters?.userAssigned || filters?.state || filters?.salesCycle || filters?.leadSource;
 
     if (hasContactFilters) {
-      const { data: contactIds, error: contactError } = await supabase
+      let contactQuery = supabase
         .from('contacts')
-        .select('id')
-        .match({
-          ...(filters?.userAssigned && { assigned_user: filters.userAssigned }),
-          ...(filters?.state && { state: filters.state }),
-        });
+        .select('id');
+
+      if (filters?.userAssigned) {
+        contactQuery = contactQuery.eq('assigned_user', filters.userAssigned);
+      }
+      if (filters?.state) {
+        contactQuery = contactQuery.eq('state', filters.state);
+      }
+      if (filters?.salesCycle) {
+        contactQuery = contactQuery.eq('sales_cycle', filters.salesCycle);
+      }
+      if (filters?.leadSource) {
+        contactQuery = contactQuery.eq('lead_source', filters.leadSource);
+      }
+
+      const { data: contactIds, error: contactError } = await contactQuery;
 
       if (contactError) {
         console.error('Error fetching contacts for filter:', contactError);
@@ -73,6 +89,14 @@ export const messageService = {
         query = query.eq('type', type);
       }
 
+      if (filters?.messageTypes && filters.messageTypes.length > 0) {
+        query = query.in('type', filters.messageTypes);
+      }
+
+      if (filters?.messageDirection && filters.messageDirection !== 'both') {
+        query = query.eq('direction', filters.messageDirection);
+      }
+
       const { data, error } = await query;
 
       if (error) {
@@ -90,6 +114,14 @@ export const messageService = {
 
     if (type && type !== 'all') {
       query = query.eq('type', type);
+    }
+
+    if (filters?.messageTypes && filters.messageTypes.length > 0) {
+      query = query.in('type', filters.messageTypes);
+    }
+
+    if (filters?.messageDirection && filters.messageDirection !== 'both') {
+      query = query.eq('direction', filters.messageDirection);
     }
 
     const { data, error } = await query;
