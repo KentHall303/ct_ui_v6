@@ -1,6 +1,6 @@
 import React from "react";
 import { MessageSquare as MessageSquareIcon, Phone as PhoneIcon, Mail as MailIcon, Pin as PinIcon, Search as SearchIcon, RefreshCw as RefreshIcon, Settings as SettingsIcon, Star as StarIcon, Trash as TrashIcon, Archive as ArchiveIcon, Clipboard as WhiteboardIcon, History as HistoryIcon, Calendar as EventIcon, SquareCheck as TaskIcon, Hash as ThumbmarkIcon, MessageCircle as SalesChatzIcon, Filter as FilterIcon } from "lucide-react";
-import { Badge, Button, InputGroup, Form } from "react-bootstrap";
+import { Badge, Button, InputGroup, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 import { messageService, Message, MessageCounts, MessageFilters } from "../../services/messageService";
 import { FloatingSelect } from "../../components/bootstrap/FormControls";
 import { MessageCenterPageSettingsModal } from "./MessageCenterPageSettingsModal";
@@ -445,28 +445,33 @@ const CommunicationPanel: React.FC<CommunicationPanelProps> = ({ message, onDele
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
-                <button
+                <OverlayTrigger
                   key={tab.id}
-                  disabled
-                  title={tab.label}
-                  className={`btn btn-link text-decoration-none d-flex align-items-center justify-content-center border-0 rounded-0 text-secondary ${
-                    isCompactMode ? 'gap-0 px-2' : 'gap-2 px-3'
-                  }`}
-                  style={{
-                    whiteSpace: 'nowrap',
-                    borderBottom: '3px solid transparent',
-                    borderBottomLeftRadius: 0,
-                    borderBottomRightRadius: 0,
-                    opacity: 0.5,
-                    cursor: 'not-allowed',
-                    paddingTop: '12px',
-                    paddingBottom: '12px',
-                    flex: isCompactMode ? '1 1 0' : 'initial'
-                  }}
+                  placement="top"
+                  delay={{ show: 500, hide: 0 }}
+                  overlay={<Tooltip id={`tooltip-${tab.id}`}>{tab.label}</Tooltip>}
                 >
-                  <Icon size={18} />
-                  {!isCompactMode && <span className="small fw-medium">{tab.label}</span>}
-                </button>
+                  <button
+                    disabled
+                    className={`btn btn-link text-decoration-none d-flex align-items-center justify-content-center border-0 rounded-0 text-secondary ${
+                      isCompactMode ? 'gap-0 px-2' : 'gap-2 px-3'
+                    }`}
+                    style={{
+                      whiteSpace: 'nowrap',
+                      borderBottom: '3px solid transparent',
+                      borderBottomLeftRadius: 0,
+                      borderBottomRightRadius: 0,
+                      opacity: 0.5,
+                      cursor: 'not-allowed',
+                      paddingTop: '12px',
+                      paddingBottom: '12px',
+                      flex: isCompactMode ? '1 1 0' : 'initial'
+                    }}
+                  >
+                    <Icon size={18} />
+                    {!isCompactMode && <span className="small fw-medium">{tab.label}</span>}
+                  </button>
+                </OverlayTrigger>
               );
             })}
           </div>
@@ -551,25 +556,30 @@ const CommunicationPanel: React.FC<CommunicationPanelProps> = ({ message, onDele
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
-              <button
+              <OverlayTrigger
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                title={tab.label}
-                className={`btn btn-link text-decoration-none d-flex align-items-center justify-content-center border-0 rounded-0 ${
-                  isActive ? 'text-primary border-bottom border-primary border-3' : 'text-secondary'
-                } ${isCompactMode ? 'gap-0 px-2' : 'gap-2 px-3'}`}
-                style={{
-                  whiteSpace: 'nowrap',
-                  borderBottomLeftRadius: 0,
-                  borderBottomRightRadius: 0,
-                  paddingTop: '8px',
-                  paddingBottom: '8px',
-                  flex: isCompactMode ? '1 1 0' : 'initial'
-                }}
+                placement="top"
+                delay={{ show: 500, hide: 0 }}
+                overlay={<Tooltip id={`tooltip-active-${tab.id}`}>{tab.label}</Tooltip>}
               >
-                <Icon size={16} />
-                {!isCompactMode && <span className="small">{tab.label}</span>}
-              </button>
+                <button
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`btn btn-link text-decoration-none d-flex align-items-center justify-content-center border-0 rounded-0 ${
+                    isActive ? 'text-primary border-bottom border-primary border-3' : 'text-secondary'
+                  } ${isCompactMode ? 'gap-0 px-2' : 'gap-2 px-3'}`}
+                  style={{
+                    whiteSpace: 'nowrap',
+                    borderBottomLeftRadius: 0,
+                    borderBottomRightRadius: 0,
+                    paddingTop: '8px',
+                    paddingBottom: '8px',
+                    flex: isCompactMode ? '1 1 0' : 'initial'
+                  }}
+                >
+                  <Icon size={16} />
+                  {!isCompactMode && <span className="small">{tab.label}</span>}
+                </button>
+              </OverlayTrigger>
             );
           })}
         </div>
