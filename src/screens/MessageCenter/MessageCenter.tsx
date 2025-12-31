@@ -421,7 +421,7 @@ const CommunicationPanel: React.FC<CommunicationPanelProps> = ({ message, onDele
     const resizeObserver = new ResizeObserver((entries) => {
       for (const entry of entries) {
         const width = entry.contentRect.width;
-        setIsCompactMode(width < 600);
+        setIsCompactMode(width < 800);
       }
     });
 
