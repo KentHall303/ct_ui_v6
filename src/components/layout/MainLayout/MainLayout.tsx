@@ -4,6 +4,7 @@ import { Button, Offcanvas } from "react-bootstrap";
 import { Bell as BellIcon, CircleCheck as CheckCircleIcon, MessageSquare as MessageSquareIcon, PanelRightClose, Menu as MenuIcon } from "lucide-react";
 import { Topbar } from "../Topbar/Topbar";
 import { Navigation } from "../Navigation/Navigation";
+import { LayoutProvider } from "../../../contexts/LayoutContext";
 
 const rightSidebarButtons = [
   {
@@ -201,7 +202,9 @@ export const MainLayout = (): JSX.Element => {
             backgroundColor: '#e9ecef'
           }}
         >
-          <Outlet />
+          <LayoutProvider isLeftSidebarCollapsed={leftSidebarCollapsed}>
+            <Outlet />
+          </LayoutProvider>
         </div>
 
         {isMobile ? (

@@ -5,6 +5,7 @@ import { messageService, Message, MessageCounts, MessageFilters } from "../../se
 import { FloatingSelect } from "../../components/bootstrap/FormControls";
 import { MessageCenterPageSettingsModal } from "./MessageCenterPageSettingsModal";
 import { MessageCenterFilterModal } from "./MessageCenterFilterModal";
+import { useLayout } from "../../contexts/LayoutContext";
 
 interface MessageCenterHeaderProps {
   selectedType: string;
@@ -400,8 +401,9 @@ interface CommunicationPanelProps {
 
 const CommunicationPanel: React.FC<CommunicationPanelProps> = ({ message, onDelete, onToggleStar }) => {
   const [activeTab, setActiveTab] = React.useState('text');
-  const [isCompactMode, setIsCompactMode] = React.useState(false);
-  const tabsContainerRef = React.useRef<HTMLDivElement>(null);
+  const { isLeftSidebarCollapsed } = useLayout();
+
+  const isCompactMode = !isLeftSidebarCollapsed;
 
   const tabs = [
     { id: 'whiteboard', label: 'Whiteboard', icon: WhiteboardIcon },
@@ -414,31 +416,12 @@ const CommunicationPanel: React.FC<CommunicationPanelProps> = ({ message, onDele
     { id: 'saleschatz', label: 'SalesChatz', icon: SalesChatzIcon }
   ];
 
-  React.useEffect(() => {
-    const container = tabsContainerRef.current;
-    if (!container) return;
-
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const width = entry.contentRect.width;
-        setIsCompactMode(width < 800);
-      }
-    });
-
-    resizeObserver.observe(container);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, []);
-
   if (!message) {
     return (
       <div className="d-flex flex-column h-100 bg-white">
         {/* Tabs Section - Disabled State */}
         <div className="border-bottom bg-white">
           <div
-            ref={tabsContainerRef}
             className="d-flex gap-0"
             style={{ overflow: 'hidden' }}
           >
@@ -548,7 +531,6 @@ const CommunicationPanel: React.FC<CommunicationPanelProps> = ({ message, onDele
 
       <div className="border-bottom bg-white">
         <div
-          ref={tabsContainerRef}
           className="d-flex gap-0"
           style={{ overflow: 'hidden' }}
         >
