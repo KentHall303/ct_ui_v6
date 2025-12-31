@@ -400,6 +400,8 @@ interface CommunicationPanelProps {
 
 const CommunicationPanel: React.FC<CommunicationPanelProps> = ({ message, onDelete, onToggleStar }) => {
   const [activeTab, setActiveTab] = React.useState('text');
+  const [isCompactMode, setIsCompactMode] = React.useState(false);
+  const tabsContainerRef = React.useRef<HTMLDivElement>(null);
 
   const tabs = [
     { id: 'whiteboard', label: 'Whiteboard', icon: WhiteboardIcon },
@@ -412,30 +414,58 @@ const CommunicationPanel: React.FC<CommunicationPanelProps> = ({ message, onDele
     { id: 'saleschatz', label: 'SalesChatz', icon: SalesChatzIcon }
   ];
 
+  React.useEffect(() => {
+    const container = tabsContainerRef.current;
+    if (!container) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const width = entry.contentRect.width;
+        setIsCompactMode(width < 600);
+      }
+    });
+
+    resizeObserver.observe(container);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
   if (!message) {
     return (
       <div className="d-flex flex-column h-100 bg-white">
         {/* Tabs Section - Disabled State */}
         <div className="border-bottom bg-white">
-          <div className="d-flex gap-0" style={{ overflowX: 'auto', scrollbarWidth: 'thin' }}>
+          <div
+            ref={tabsContainerRef}
+            className="d-flex gap-0"
+            style={{ overflow: 'hidden' }}
+          >
             {tabs.map((tab) => {
               const Icon = tab.icon;
               return (
                 <button
                   key={tab.id}
                   disabled
-                  className="btn btn-link text-decoration-none d-flex align-items-center gap-2 px-3 py-3 border-0 rounded-0 text-secondary"
+                  title={tab.label}
+                  className={`btn btn-link text-decoration-none d-flex align-items-center justify-content-center border-0 rounded-0 text-secondary ${
+                    isCompactMode ? 'gap-0 px-2' : 'gap-2 px-3'
+                  }`}
                   style={{
                     whiteSpace: 'nowrap',
                     borderBottom: '3px solid transparent',
                     borderBottomLeftRadius: 0,
                     borderBottomRightRadius: 0,
                     opacity: 0.5,
-                    cursor: 'not-allowed'
+                    cursor: 'not-allowed',
+                    paddingTop: '12px',
+                    paddingBottom: '12px',
+                    flex: isCompactMode ? '1 1 0' : 'initial'
                   }}
                 >
                   <Icon size={18} />
-                  <span className="small fw-medium">{tab.label}</span>
+                  {!isCompactMode && <span className="small fw-medium">{tab.label}</span>}
                 </button>
               );
             })}
@@ -512,7 +542,11 @@ const CommunicationPanel: React.FC<CommunicationPanelProps> = ({ message, onDele
       </div>
 
       <div className="border-bottom bg-white">
-        <div className="d-flex gap-0" style={{ overflowX: 'auto' }}>
+        <div
+          ref={tabsContainerRef}
+          className="d-flex gap-0"
+          style={{ overflow: 'hidden' }}
+        >
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
@@ -520,17 +554,21 @@ const CommunicationPanel: React.FC<CommunicationPanelProps> = ({ message, onDele
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`btn btn-link text-decoration-none d-flex align-items-center gap-2 px-3 py-2 border-0 rounded-0 ${
+                title={tab.label}
+                className={`btn btn-link text-decoration-none d-flex align-items-center justify-content-center border-0 rounded-0 ${
                   isActive ? 'text-primary border-bottom border-primary border-3' : 'text-secondary'
-                }`}
+                } ${isCompactMode ? 'gap-0 px-2' : 'gap-2 px-3'}`}
                 style={{
                   whiteSpace: 'nowrap',
                   borderBottomLeftRadius: 0,
-                  borderBottomRightRadius: 0
+                  borderBottomRightRadius: 0,
+                  paddingTop: '8px',
+                  paddingBottom: '8px',
+                  flex: isCompactMode ? '1 1 0' : 'initial'
                 }}
               >
                 <Icon size={16} />
-                <span className="small">{tab.label}</span>
+                {!isCompactMode && <span className="small">{tab.label}</span>}
               </button>
             );
           })}
