@@ -1,4 +1,4 @@
-import { supabase, ConnectionPlan, ConnectionPlanAction, ConnectionPlanWithActions } from '../lib/supabase';
+import { supabase, ConnectionPlan, ConnectionPlanAction, ConnectionPlanWithActions, ActionPlanType } from '../lib/supabase';
 
 export const connectionPlanService = {
   async getAll(): Promise<ConnectionPlan[]> {
@@ -6,6 +6,21 @@ export const connectionPlanService = {
       .from('connection_plans')
       .select('*')
       .eq('is_active', true)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      throw new Error(`Failed to fetch connection plans: ${error.message}`);
+    }
+
+    return data || [];
+  },
+
+  async getByPlanType(planType: ActionPlanType): Promise<ConnectionPlan[]> {
+    const { data, error } = await supabase
+      .from('connection_plans')
+      .select('*')
+      .eq('is_active', true)
+      .eq('plan_type', planType)
       .order('created_at', { ascending: false });
 
     if (error) {

@@ -12,7 +12,7 @@ import { connectionPlanService } from '../../services/connectionPlanService';
 import { ConnectionPlan } from '../../lib/supabase';
 import { formatDateTime } from '../../utils/dateUtils';
 
-const ConnectionPlans = (): JSX.Element => {
+const EventsPlans = (): JSX.Element => {
   const [plans, setPlans] = React.useState<ConnectionPlan[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -24,7 +24,7 @@ const ConnectionPlans = (): JSX.Element => {
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [editingPlan, setEditingPlan] = React.useState<ConnectionPlan | null>(null);
   const [showInfo, setShowInfo] = React.useState(() => {
-    const saved = localStorage.getItem('connectionPlansInfoVisible');
+    const saved = localStorage.getItem('eventsPlansInfoVisible');
     return saved !== null ? saved === 'true' : true;
   });
 
@@ -45,7 +45,7 @@ const ConnectionPlans = (): JSX.Element => {
     isResizing,
     resizingColumn,
     handleMouseDown,
-  } = useResizableColumns(columns, 'connectionPlansColumns');
+  } = useResizableColumns(columns, 'eventsPlansColumns');
 
   React.useEffect(() => {
     loadPlans();
@@ -54,7 +54,7 @@ const ConnectionPlans = (): JSX.Element => {
   const toggleInfo = () => {
     setShowInfo((prev) => {
       const newValue = !prev;
-      localStorage.setItem('connectionPlansInfoVisible', String(newValue));
+      localStorage.setItem('eventsPlansInfoVisible', String(newValue));
       return newValue;
     });
   };
@@ -63,11 +63,11 @@ const ConnectionPlans = (): JSX.Element => {
     try {
       setLoading(true);
       setError(null);
-      const data = await connectionPlanService.getByPlanType('Connection Plans');
+      const data = await connectionPlanService.getByPlanType('Events Plans');
       setPlans(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load connection plans');
-      console.error('Error loading connection plans:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load events plans');
+      console.error('Error loading events plans:', err);
     } finally {
       setLoading(false);
     }
@@ -84,8 +84,8 @@ const ConnectionPlans = (): JSX.Element => {
       await connectionPlanService.duplicate(plan.id);
       await loadPlans();
     } catch (err) {
-      console.error('Error duplicating connection plan:', err);
-      alert('Failed to duplicate connection plan. Please try again.');
+      console.error('Error duplicating events plan:', err);
+      alert('Failed to duplicate events plan. Please try again.');
     } finally {
       setDuplicating(null);
     }
@@ -166,7 +166,7 @@ const ConnectionPlans = (): JSX.Element => {
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
-        <p className="mt-3 text-muted">Loading connection plans...</p>
+        <p className="mt-3 text-muted">Loading events plans...</p>
       </div>
     );
   }
@@ -191,7 +191,7 @@ const ConnectionPlans = (): JSX.Element => {
           <div className="d-flex align-items-start justify-content-between">
             <div className="flex-grow-1" style={{ maxWidth: 'calc(100% - 140px)' }}>
               <div className="d-flex align-items-center gap-2 mb-1">
-                <h2 className="h4 fw-bold text-dark mb-0">Connection Plans</h2>
+                <h2 className="h4 fw-bold text-dark mb-0">Events Plans</h2>
                 <button
                   onClick={toggleInfo}
                   className="btn btn-link p-0 text-secondary border-0"
@@ -210,13 +210,12 @@ const ConnectionPlans = (): JSX.Element => {
               <Collapse in={showInfo}>
                 <div>
                   <div className="text-muted mb-3" style={{ fontSize: '0.875rem' }}>
-                    ID: 1605
+                    ID: 1608
                   </div>
                   <p className="text-secondary mb-2" style={{ fontSize: '0.9375rem', lineHeight: '1.5' }}>
-                    Connection Plans support the "Speed to Lead" process via short-term,
-                    automated communications, typically have a Lead Source attached and can
-                    flow to a Retention Plan for continued long-term outreach in instances where
-                    the lead does not engage.
+                    Events Plans are tailored for event-based follow-ups such as trade shows, webinars,
+                    and conferences. These plans help nurture leads generated from events through
+                    systematic post-event engagement sequences.
                   </p>
                   <a
                     href="https://support.clienttether.com/action-plans/"
@@ -235,7 +234,7 @@ const ConnectionPlans = (): JSX.Element => {
               size="sm"
               className="rounded-pill d-flex align-items-center gap-2 flex-shrink-0"
               style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
-              title="Add new connection plan"
+              title="Add new events plan"
               onClick={() => {
                 setShowAddModal(true);
               }}
@@ -254,7 +253,7 @@ const ConnectionPlans = (): JSX.Element => {
         >
           <Table className={`standard-table table-striped mb-0 ${isResizing ? 'resizing' : ''}`}>
             <caption className="visually-hidden">
-              Connection plans table showing {plans.length} records.
+              Events plans table showing {plans.length} records.
               Use arrow keys to navigate, Enter or Space to sort columns.
               {sortConfig && ` Currently sorted by ${sortConfig.key} in ${sortConfig.direction}ending order.`}
             </caption>
@@ -358,7 +357,7 @@ const ConnectionPlans = (): JSX.Element => {
                     <div className="d-flex gap-2 justify-content-center">
                       <button
                         className="btn btn-link p-0 border rounded-circle d-flex align-items-center justify-content-center"
-                        title="Edit connection plan"
+                        title="Edit events plan"
                         style={{
                           width: '24px',
                           height: '24px',
@@ -374,7 +373,7 @@ const ConnectionPlans = (): JSX.Element => {
                       </button>
                       <button
                         className="btn btn-link p-0 border rounded-circle d-flex align-items-center justify-content-center"
-                        title="Duplicate connection plan"
+                        title="Duplicate events plan"
                         style={{
                           width: '24px',
                           height: '24px',
@@ -407,10 +406,10 @@ const ConnectionPlans = (): JSX.Element => {
   );
 };
 
-export const ConnectionPlansPage: React.FC = (): JSX.Element => {
+export const EventsPlansPage: React.FC = (): JSX.Element => {
   return (
     <BodyLayout>
-      <ConnectionPlans />
+      <EventsPlans />
     </BodyLayout>
   );
 };

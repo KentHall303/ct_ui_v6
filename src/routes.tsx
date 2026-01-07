@@ -28,6 +28,11 @@ const ExportListTemplatesPage = React.lazy(() => import('./screens/Templates/Exp
 const DropdownsTemplatesPage = React.lazy(() => import('./screens/Templates/DropdownsTemplatesPage').then(m => ({ default: m.DropdownsTemplatesPage })));
 const EmailTemplateModalTestPage = React.lazy(() => import('./screens/Templates/EmailTemplateModalTestPage').then(m => ({ default: m.EmailTemplateModalTestPage })));
 const ConnectionPlansPage = React.lazy(() => import('./screens/ActionPlans/ConnectionPlansPage').then(m => ({ default: m.ConnectionPlansPage })));
+const ConversionPlansPage = React.lazy(() => import('./screens/ActionPlans/ConversionPlansPage').then(m => ({ default: m.ConversionPlansPage })));
+const RetentionPlansPage = React.lazy(() => import('./screens/ActionPlans/RetentionPlansPage').then(m => ({ default: m.RetentionPlansPage })));
+const EventsPlansPage = React.lazy(() => import('./screens/ActionPlans/EventsPlansPage').then(m => ({ default: m.EventsPlansPage })));
+const SeasonalPlansPage = React.lazy(() => import('./screens/ActionPlans/SeasonalPlansPage').then(m => ({ default: m.SeasonalPlansPage })));
+const ParallelTriggerPlansPage = React.lazy(() => import('./screens/ActionPlans/ParallelTriggerPlansPage').then(m => ({ default: m.ParallelTriggerPlansPage })));
 const SeedDataPage = React.lazy(() => import('./screens/SeedData/SeedDataPage'));
 const AccountPage = React.lazy(() => import('./screens/Settings/AccountPage').then(m => ({ default: m.AccountPage })));
 const AccountInfoPage = React.lazy(() => import('./screens/Settings/AccountInfoPage').then(m => ({ default: m.AccountInfoPage })));
@@ -173,23 +178,23 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/action-plans/conversion',
-    element: <PlaceholderPage title="Conversion Plans" description="Conversion Plans content will be implemented here." />
+    element: <ConversionPlansPage />
   },
   {
     path: '/action-plans/retention',
-    element: <PlaceholderPage title="Retention Plans" description="Retention Plans content will be implemented here." />
+    element: <RetentionPlansPage />
   },
   {
     path: '/action-plans/events',
-    element: <PlaceholderPage title="Events Plans" description="Events Plans content will be implemented here." />
+    element: <EventsPlansPage />
   },
   {
     path: '/action-plans/seasonal',
-    element: <PlaceholderPage title="Seasonal Plans" description="Seasonal Plans content will be implemented here." />
+    element: <SeasonalPlansPage />
   },
   {
     path: '/action-plans/parallel-trigger',
-    element: <PlaceholderPage title="Parallel Trigger Plans" description="Parallel Trigger Plans content will be implemented here." />
+    element: <ParallelTriggerPlansPage />
   },
   {
     path: '/templates',
