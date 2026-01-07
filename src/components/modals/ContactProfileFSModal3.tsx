@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Row, Col, Container, Form, Card, InputGroup, Nav, Tab } from "react-bootstrap";
 import { X, TrendingUp, Star, Plus, Copy, Trash2, Info, FileText, Download, ChartBar as BarChart3, ChevronDown, Presentation, History, MessageSquare, Mail, Calendar, SquareCheck as CheckSquare, Hash, MessageCircle, Bold, Italic, Underline, Strikethrough, AlignLeft, AlignCenter, AlignRight, List, ListOrdered, Link as LinkIcon, Image as ImageIcon, Code, Maximize2, MoveVertical as MoreVertical, Bell, Paperclip, Send, Smile, Grid3x3, CirclePlus as PlusCircle, Expand, GripVertical, Coins, Settings, MoveHorizontal as MoreHorizontal } from "lucide-react";
 import { Button } from "../../components/bootstrap/Button";
@@ -7,42 +7,195 @@ import { ContactInfoCard } from "../../components/ContactInfoCard";
 import { FloatingInput, FloatingSelect, FloatingSelectOption } from "../../components/bootstrap/FormControls";
 import { ChipCheck } from "../../components/bootstrap/ChipCheck";
 import { CardHeaderActionsMenu, CardHeaderActionItem } from "../../components/CardHeaderActionsMenu";
+import { Contact } from "../../lib/supabase";
+import { contactService } from "../../services/contactService";
+import { userService, User } from "../../services/userService";
+import { salesCycleService, SalesCycle } from "../../services/salesCycleService";
+import { actionPlanService, ActionPlanGroup } from "../../services/actionPlanService";
+import { stateProvinceData } from "../../data/stateProvinceData";
+import { leadSourceData } from "../../data/leadSourceData";
 
 interface ContactProfileFSModal3Props {
   show: boolean;
   onHide: () => void;
+  mode?: 'create' | 'edit';
+  initialData?: Contact | null;
+  onSave?: () => void | Promise<void>;
 }
 
 export const ContactProfileFSModal3: React.FC<ContactProfileFSModal3Props> = ({
   show,
   onHide,
+  mode = 'edit',
+  initialData = null,
+  onSave,
 }) => {
   const opportunitiesCardRef = React.useRef<HTMLDivElement>(null);
   const [opportunitiesHeight, setOpportunitiesHeight] = useState<number | null>(null);
 
-  const [assignedUser, setAssignedUser] = useState("Select User");
-  const [firstName, setFirstName] = useState("Christine");
-  const [lastName, setLastName] = useState("Sparks");
-  const [company, setCompany] = useState("Footprints Bath and Tile");
+  const [users, setUsers] = useState<User[]>([]);
+  const [salesCycles, setSalesCycles] = useState<SalesCycle[]>([]);
+  const [actionPlanGroups, setActionPlanGroups] = useState<ActionPlanGroup[]>([]);
+  const [loadingData, setLoadingData] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<{ firstName?: string; lastName?: string }>({});
+
+  const [assignedUser, setAssignedUser] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [company, setCompany] = useState("");
   const [title, setTitle] = useState("");
-  const [email, setEmail] = useState("christine@footprints.com");
-  const [cellPhone, setCellPhone] = useState("(555) 123-4567");
+  const [email, setEmail] = useState("");
+  const [cellPhone, setCellPhone] = useState("");
   const [okToSms, setOkToSms] = useState(true);
   const [blocked, setBlocked] = useState(false);
   const [secondaryPhone, setSecondaryPhone] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
-  const [state, setState] = useState("Choose State");
+  const [state, setState] = useState("");
   const [postalCode, setPostalCode] = useState("");
-  const [contactType, setContactType] = useState("Select Type");
+  const [contactType, setContactType] = useState("");
 
-  const [opportunityName, setOpportunityName] = useState("Shed Repairs");
-  const [dealSize, setDealSize] = useState("550");
-  const [odds, setOdds] = useState("90");
+  const [opportunityName, setOpportunityName] = useState("");
+  const [dealSize, setDealSize] = useState("");
+  const [odds, setOdds] = useState("");
   const [closeDate, setCloseDate] = useState("");
-  const [actionPlan, setActionPlan] = useState("Estimate Won");
-  const [salesCycle, setSalesCycle] = useState("Estimate Won");
-  const [leadSource, setLeadSource] = useState("Google PPC");
+  const [actionPlan, setActionPlan] = useState("");
+  const [salesCycleId, setSalesCycleId] = useState("");
+  const [leadSource, setLeadSource] = useState("");
+
+  useEffect(() => {
+    if (show) {
+      loadDropdownData();
+      if (mode === 'edit' && initialData) {
+        populateFormFromContact(initialData);
+      } else if (mode === 'create') {
+        resetForm();
+      }
+    }
+  }, [show, mode, initialData]);
+
+  const loadDropdownData = async () => {
+    setLoadingData(true);
+    try {
+      const [usersData, cyclesData, plansData] = await Promise.all([
+        userService.getAll(),
+        salesCycleService.getAll(),
+        actionPlanService.getAllGroupedByType(),
+      ]);
+      setUsers(usersData);
+      setSalesCycles(cyclesData);
+      setActionPlanGroups(plansData);
+
+      if (mode === 'create' && cyclesData.length > 0) {
+        const newLeadCycle = cyclesData.find(c => c.name === 'New Lead');
+        setSalesCycleId(newLeadCycle?.id || cyclesData[0].id);
+      }
+    } catch (err) {
+      console.error('Error loading dropdown data:', err);
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
+  const populateFormFromContact = (contact: Contact) => {
+    const nameParts = contact.name?.split(' ') || ['', ''];
+    setFirstName(nameParts[0] || '');
+    setLastName(nameParts.slice(1).join(' ') || '');
+    setEmail(contact.email || '');
+    setCellPhone(contact.cell_phone || '');
+    setState(contact.state || '');
+    setAddress(contact.address || '');
+    setCity(contact.city || '');
+    setPostalCode(contact.postal_code || '');
+    setLeadSource(contact.lead_source || '');
+    setAssignedUser(contact.assigned_user || '');
+  };
+
+  const resetForm = () => {
+    setFirstName('');
+    setLastName('');
+    setEmail('');
+    setCellPhone('');
+    setState('');
+    setAddress('');
+    setCity('');
+    setPostalCode('');
+    setLeadSource('');
+    setAssignedUser('');
+    setCompany('');
+    setTitle('');
+    setSecondaryPhone('');
+    setOkToSms(true);
+    setBlocked(false);
+    setContactType('');
+    setOpportunityName('');
+    setDealSize('');
+    setOdds('');
+    setCloseDate('');
+    setActionPlan('');
+    setErrors({});
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: { firstName?: string; lastName?: string } = {};
+    if (!firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+    }
+    if (!lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSaveContact = async () => {
+    if (!validateForm()) return;
+
+    setSaving(true);
+    try {
+      if (mode === 'create') {
+        await contactService.createWithOpportunity({
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          email: email.trim() || undefined,
+          cellPhone: cellPhone.trim() || undefined,
+          state: state || undefined,
+          address: address.trim() || undefined,
+          city: city.trim() || undefined,
+          postalCode: postalCode.trim() || undefined,
+          leadSource: leadSource || undefined,
+          assignedUser: assignedUser || undefined,
+          salesCycleId: salesCycleId || undefined,
+          actionPlanId: actionPlan || undefined,
+        });
+      } else if (mode === 'edit' && initialData) {
+        await contactService.updateWithOpportunity(initialData.id, {
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          email: email.trim() || undefined,
+          cellPhone: cellPhone.trim() || undefined,
+          state: state || undefined,
+          address: address.trim() || undefined,
+          city: city.trim() || undefined,
+          postalCode: postalCode.trim() || undefined,
+          leadSource: leadSource || undefined,
+          assignedUser: assignedUser || undefined,
+          salesCycleId: salesCycleId || undefined,
+          actionPlanId: actionPlan || undefined,
+        });
+      }
+
+      if (onSave) {
+        await onSave();
+      }
+      onHide();
+    } catch (err) {
+      console.error('Error saving contact:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
   const [milestones, setMilestones] = useState({
     apptSet: false,
     quoted: false,
@@ -140,19 +293,25 @@ export const ContactProfileFSModal3: React.FC<ContactProfileFSModal3Props> = ({
       >
         {/* Contact Full Name - Left Aligned */}
         <div className="h6 fw-bold mb-0 lh-1 text-dark">
-          Christine Sparks v3
+          {mode === 'create' ? 'New Client' : `${firstName} ${lastName}`.trim() || 'Contact Profile'}
         </div>
 
         {/* Account Name - Center Aligned */}
         <div className="position-absolute start-50 translate-middle-x small fw-bold mb-0 lh-1 text-secondary">
-          Footprints Bath and Tile - Central Mass
+          {company || (mode === 'edit' ? 'Contact Details' : 'Enter Contact Information')}
         </div>
 
-        {/* Right side container with Last Contact Date and Close Button */}
+        {/* Right side container with Save Button and Close Button */}
         <div className="d-flex align-items-center gap-3">
-          <div className="small text-secondary">
-            <span className="fw-semibold">Last Contact Date:</span> Oct 25, 2025
-          </div>
+          <Button
+            variant="success"
+            size="sm"
+            onClick={handleSaveContact}
+            disabled={saving || loadingData}
+            style={{ minWidth: '100px' }}
+          >
+            {saving ? 'Saving...' : mode === 'create' ? 'Create Client' : 'Save Changes'}
+          </Button>
 
           <Button
             variant="outline-secondary"
@@ -257,9 +416,14 @@ export const ContactProfileFSModal3: React.FC<ContactProfileFSModal3Props> = ({
                                     value={actionPlan}
                                     onChange={(e) => setActionPlan(e.target.value)}
                                   >
-                                    <FloatingSelectOption value="Estimate Won">Estimate Won</FloatingSelectOption>
-                                    <FloatingSelectOption value="Proposal Sent">Proposal Sent</FloatingSelectOption>
-                                    <FloatingSelectOption value="Follow Up">Follow Up</FloatingSelectOption>
+                                    <FloatingSelectOption value="">Select Action Plan</FloatingSelectOption>
+                                    {actionPlanGroups.map((group) => (
+                                      <optgroup key={group.type} label={group.type}>
+                                        {group.plans.map((plan) => (
+                                          <option key={plan.id} value={plan.id}>{plan.name}</option>
+                                        ))}
+                                      </optgroup>
+                                    ))}
                                   </FloatingSelect>
                                 </div>
 
@@ -267,12 +431,15 @@ export const ContactProfileFSModal3: React.FC<ContactProfileFSModal3Props> = ({
                                 <div className="col-12 col-md-6">
                                   <FloatingSelect
                                     label="Sales Cycle"
-                                    value={salesCycle}
-                                    onChange={(e) => setSalesCycle(e.target.value)}
+                                    value={salesCycleId}
+                                    onChange={(e) => setSalesCycleId(e.target.value)}
                                   >
-                                    <FloatingSelectOption value="Estimate Won">Estimate Won</FloatingSelectOption>
-                                    <FloatingSelectOption value="Negotiation">Negotiation</FloatingSelectOption>
-                                    <FloatingSelectOption value="Closed Won">Closed Won</FloatingSelectOption>
+                                    <FloatingSelectOption value="">Select Sales Cycle</FloatingSelectOption>
+                                    {salesCycles.map((cycle) => (
+                                      <FloatingSelectOption key={cycle.id} value={cycle.id}>
+                                        {cycle.name}
+                                      </FloatingSelectOption>
+                                    ))}
                                   </FloatingSelect>
                                 </div>
 
@@ -351,14 +518,16 @@ export const ContactProfileFSModal3: React.FC<ContactProfileFSModal3Props> = ({
 
                                 <div className="col-6 col-md-3">
                                   <FloatingSelect
-                                    label="Lead Source *"
+                                    label="Lead Source"
                                     value={leadSource}
                                     onChange={(e) => setLeadSource(e.target.value)}
                                   >
-                                    <FloatingSelectOption value="Google PPC">Google PPC</FloatingSelectOption>
-                                    <FloatingSelectOption value="Referral">Referral</FloatingSelectOption>
-                                    <FloatingSelectOption value="Website">Website</FloatingSelectOption>
-                                    <FloatingSelectOption value="Social Media">Social Media</FloatingSelectOption>
+                                    <FloatingSelectOption value="">Select Lead Source</FloatingSelectOption>
+                                    {leadSourceData.map((source) => (
+                                      <FloatingSelectOption key={source.value} value={source.value}>
+                                        {source.label}
+                                      </FloatingSelectOption>
+                                    ))}
                                   </FloatingSelect>
                                 </div>
                               </div>
@@ -615,22 +784,39 @@ export const ContactProfileFSModal3: React.FC<ContactProfileFSModal3Props> = ({
                     value={assignedUser}
                     onChange={(e) => setAssignedUser(e.target.value)}
                   >
-                    <FloatingSelectOption value="Select User">Select User</FloatingSelectOption>
-                    <FloatingSelectOption value="John Doe">John Doe</FloatingSelectOption>
-                    <FloatingSelectOption value="Jane Smith">Jane Smith</FloatingSelectOption>
+                    <FloatingSelectOption value="">Select User</FloatingSelectOption>
+                    {users.map((user) => (
+                      <FloatingSelectOption key={user.id} value={`${user.first_name} ${user.last_name}`}>
+                        {user.first_name} {user.last_name}
+                      </FloatingSelectOption>
+                    ))}
                   </FloatingSelect>
 
-                  <FloatingInput
-                    label="First Name"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                  />
+                  <div>
+                    <FloatingInput
+                      label="First Name *"
+                      value={firstName}
+                      onChange={(e) => {
+                        setFirstName(e.target.value);
+                        if (errors.firstName) setErrors(prev => ({ ...prev, firstName: undefined }));
+                      }}
+                      className={errors.firstName ? 'is-invalid' : ''}
+                    />
+                    {errors.firstName && <div className="text-danger small mt-1">{errors.firstName}</div>}
+                  </div>
 
-                  <FloatingInput
-                    label="Last Name"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                  />
+                  <div>
+                    <FloatingInput
+                      label="Last Name *"
+                      value={lastName}
+                      onChange={(e) => {
+                        setLastName(e.target.value);
+                        if (errors.lastName) setErrors(prev => ({ ...prev, lastName: undefined }));
+                      }}
+                      className={errors.lastName ? 'is-invalid' : ''}
+                    />
+                    {errors.lastName && <div className="text-danger small mt-1">{errors.lastName}</div>}
+                  </div>
 
                   <FloatingInput
                     label="Company"
@@ -722,10 +908,12 @@ export const ContactProfileFSModal3: React.FC<ContactProfileFSModal3Props> = ({
                         value={state}
                         onChange={(e) => setState(e.target.value)}
                       >
-                        <FloatingSelectOption value="Choose State">Choose State</FloatingSelectOption>
-                        <FloatingSelectOption value="MA">Massachusetts</FloatingSelectOption>
-                        <FloatingSelectOption value="NY">New York</FloatingSelectOption>
-                        <FloatingSelectOption value="CT">Connecticut</FloatingSelectOption>
+                        <FloatingSelectOption value="">Choose State</FloatingSelectOption>
+                        {stateProvinceData.map((st) => (
+                          <FloatingSelectOption key={st.abbreviation} value={st.abbreviation}>
+                            {st.name}
+                          </FloatingSelectOption>
+                        ))}
                       </FloatingSelect>
                     </div>
                     <div className="col-12 col-md-6">

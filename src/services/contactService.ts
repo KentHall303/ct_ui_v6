@@ -1,5 +1,6 @@
-import { supabase, Contact } from '../lib/supabase';
+import { supabase, Contact, Opportunity } from '../lib/supabase';
 import { createCalendarForContact, updateCalendarName, deleteCalendarForContact } from './calendarService';
+import { salesCycleService, SalesCycle } from './salesCycleService';
 
 export interface ContactsQueryParams {
   page?: number;
@@ -145,5 +146,186 @@ export const contactService = {
     if (error) {
       throw new Error(`Failed to delete contact: ${error.message}`);
     }
+  },
+
+  async createWithOpportunity(contactData: {
+    firstName: string;
+    lastName: string;
+    email?: string;
+    cellPhone?: string;
+    state?: string;
+    address?: string;
+    city?: string;
+    postalCode?: string;
+    leadSource?: string;
+    assignedUser?: string;
+    salesCycleId?: string;
+    actionPlanId?: string;
+  }): Promise<{ contact: Contact; opportunity: Opportunity }> {
+    let salesCycle: SalesCycle | null = null;
+
+    if (contactData.salesCycleId) {
+      salesCycle = await salesCycleService.getById(contactData.salesCycleId);
+    } else {
+      const allCycles = await salesCycleService.getAll();
+      salesCycle = allCycles.find(c => c.name === 'New Lead') || allCycles[0] || null;
+    }
+
+    if (!salesCycle) {
+      throw new Error('No sales cycle available');
+    }
+
+    const fullName = `${contactData.firstName} ${contactData.lastName}`.trim();
+
+    const { data: contact, error: contactError } = await supabase
+      .from('contacts')
+      .insert({
+        name: fullName,
+        email: contactData.email || null,
+        cell_phone: contactData.cellPhone || null,
+        state: contactData.state || null,
+        address: contactData.address || null,
+        city: contactData.city || null,
+        postal_code: contactData.postalCode || null,
+        lead_source: contactData.leadSource || null,
+        assigned_user: contactData.assignedUser || null,
+        sales_cycle: salesCycle.name,
+        created_date: new Date().toISOString().split('T')[0],
+        status_color: 'bg-success',
+      })
+      .select()
+      .single();
+
+    if (contactError) {
+      throw new Error(`Failed to create contact: ${contactError.message}`);
+    }
+
+    const { data: opportunity, error: opportunityError } = await supabase
+      .from('opportunities')
+      .insert({
+        contact_id: contact.id,
+        contact_name: fullName,
+        email: contactData.email || null,
+        phone: contactData.cellPhone || null,
+        sales_cycle_id: salesCycle.id,
+        priority: 'new_lead',
+        lead_source: contactData.leadSource || null,
+        contact_type: 'residential',
+        order_position: 0,
+      })
+      .select()
+      .single();
+
+    if (opportunityError) {
+      await supabase.from('contacts').delete().eq('id', contact.id);
+      throw new Error(`Failed to create opportunity: ${opportunityError.message}`);
+    }
+
+    const { error: linkError } = await supabase
+      .from('contacts')
+      .update({ opportunity_id: opportunity.id })
+      .eq('id', contact.id);
+
+    if (linkError) {
+      console.error('Failed to link contact to opportunity:', linkError);
+    }
+
+    if (contact && contact.name) {
+      await createCalendarForContact(contact.id, contact.name);
+    }
+
+    return { contact: { ...contact, opportunity_id: opportunity.id }, opportunity };
+  },
+
+  async updateWithOpportunity(
+    contactId: string,
+    contactData: {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      cellPhone?: string;
+      state?: string;
+      address?: string;
+      city?: string;
+      postalCode?: string;
+      leadSource?: string;
+      assignedUser?: string;
+      salesCycleId?: string;
+      actionPlanId?: string;
+    }
+  ): Promise<{ contact: Contact; opportunity?: Opportunity }> {
+    const existingContact = await this.getById(contactId);
+    if (!existingContact) {
+      throw new Error('Contact not found');
+    }
+
+    let fullName = existingContact.name;
+    if (contactData.firstName !== undefined || contactData.lastName !== undefined) {
+      const nameParts = existingContact.name?.split(' ') || ['', ''];
+      const firstName = contactData.firstName ?? nameParts[0];
+      const lastName = contactData.lastName ?? nameParts.slice(1).join(' ');
+      fullName = `${firstName} ${lastName}`.trim();
+    }
+
+    let salesCycleName = existingContact.sales_cycle;
+    if (contactData.salesCycleId) {
+      const salesCycle = await salesCycleService.getById(contactData.salesCycleId);
+      if (salesCycle) {
+        salesCycleName = salesCycle.name;
+      }
+    }
+
+    const { data: contact, error: contactError } = await supabase
+      .from('contacts')
+      .update({
+        name: fullName,
+        email: contactData.email ?? existingContact.email,
+        cell_phone: contactData.cellPhone ?? existingContact.cell_phone,
+        state: contactData.state ?? existingContact.state,
+        address: contactData.address ?? existingContact.address,
+        city: contactData.city ?? existingContact.city,
+        postal_code: contactData.postalCode ?? existingContact.postal_code,
+        lead_source: contactData.leadSource ?? existingContact.lead_source,
+        assigned_user: contactData.assignedUser ?? existingContact.assigned_user,
+        sales_cycle: salesCycleName,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', contactId)
+      .select()
+      .single();
+
+    if (contactError) {
+      throw new Error(`Failed to update contact: ${contactError.message}`);
+    }
+
+    if (fullName !== existingContact.name) {
+      await updateCalendarName(contact.id, fullName);
+    }
+
+    let opportunity: Opportunity | undefined;
+    if (existingContact.opportunity_id && contactData.salesCycleId) {
+      const salesCycle = await salesCycleService.getById(contactData.salesCycleId);
+      if (salesCycle) {
+        const { data: updatedOpp, error: oppError } = await supabase
+          .from('opportunities')
+          .update({
+            contact_name: fullName,
+            email: contactData.email ?? existingContact.email,
+            phone: contactData.cellPhone ?? existingContact.cell_phone,
+            sales_cycle_id: salesCycle.id,
+            lead_source: contactData.leadSource ?? existingContact.lead_source,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingContact.opportunity_id)
+          .select()
+          .single();
+
+        if (!oppError && updatedOpp) {
+          opportunity = updatedOpp;
+        }
+      }
+    }
+
+    return { contact, opportunity };
   },
 };

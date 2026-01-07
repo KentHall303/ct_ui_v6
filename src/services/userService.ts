@@ -176,3 +176,11 @@ export async function deleteUser(id: string): Promise<boolean> {
     return false;
   }
 }
+
+export const userService = {
+  getAll: () => fetchUsers({ isActive: true }),
+  getById: fetchUserById,
+  create: createUser,
+  update: updateUser,
+  delete: deleteUser,
+};

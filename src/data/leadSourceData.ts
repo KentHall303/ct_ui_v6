@@ -13,3 +13,8 @@ export const LEAD_SOURCES = [
   'Walk-in',
   'Other'
 ];
+
+export const leadSourceData = LEAD_SOURCES.map(source => ({
+  value: source,
+  label: source
+}));

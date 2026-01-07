@@ -639,7 +639,7 @@ export const AddConnectionPlanModal: React.FC<AddConnectionPlanModalProps> = ({
                 {isContactTypeOpen && (
                   <div className="position-absolute w-100 bg-white border rounded mt-1 shadow-sm" style={{ zIndex: 1050, maxHeight: '200px', overflowY: 'auto' }}>
                     <div className="p-1">
-                      {['All', 'Client', 'Vendor', 'Employee', 'Partner'].map(type => (
+                      {['All', 'Clients', 'Employee', 'Partner', 'Vendor', 'New Other'].map(type => (
                         <div
                           key={type}
                           className="dropdown-item small py-1"

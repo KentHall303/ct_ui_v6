@@ -7,6 +7,7 @@ import { useResizableColumns, ColumnConfig } from "../../hooks/useResizableColum
 import { contactService } from "../../services/contactService";
 import { Contact } from "../../lib/supabase";
 import { PageSettingsModal, ColumnOption } from "./PageSettingsModal";
+import { ContactProfileFSModal3 } from "../../components/modals/ContactProfileFSModal3";
 import { RefreshCw as RefreshCwIcon, Settings as SettingsIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronsLeft as ChevronsLeftIcon, ChevronsRight as ChevronsRightIcon, Phone as PhoneIcon, Star as StarIcon, Mail as MailIcon, MessageSquare as MessageSquareIcon, Merge as MergeIcon, Bitcoin as EditIcon, Users as UsersIcon, SeparatorHorizontal as SeparatorHorizontalIcon, Send as SendIcon, Link as LinkIcon, Upload as UploadIcon, Download as DownloadIcon, Pin as PushPinIcon, RotateCcw as RotateCcwIcon, Trash as TrashIcon, ChevronUp, ChevronDown, Search, Circle } from "lucide-react";
 
 const STORAGE_KEY_VISIBLE_COLUMNS = 'contactsVisibleColumns';
@@ -80,6 +81,7 @@ interface ContactsHeaderProps {
   onSearch: (search: string) => void;
   onRefresh: () => void;
   onOpenSettings: () => void;
+  onNewClient: () => void;
   activePriorityFilter: string | null;
   onPriorityFilterChange: (priority: string) => void;
 }
@@ -95,6 +97,7 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
   onSearch,
   onRefresh,
   onOpenSettings,
+  onNewClient,
   activePriorityFilter,
   onPriorityFilterChange
 }) => {
@@ -188,6 +191,7 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
                 padding: '0.375rem 0.75rem'
               }}
               title="Add new client"
+              onClick={onNewClient}
             >
               New Client
             </BSButton>
@@ -414,6 +418,10 @@ export const Contacts = (): JSX.Element => {
   );
   const [showSettingsModal, setShowSettingsModal] = React.useState(false);
 
+  const [showContactModal, setShowContactModal] = React.useState(false);
+  const [contactModalMode, setContactModalMode] = React.useState<'create' | 'edit'>('create');
+  const [selectedContact, setSelectedContact] = React.useState<Contact | null>(null);
+
   const [sortConfig, setSortConfig] = React.useState<{
     key: string;
     direction: 'asc' | 'desc';
@@ -574,6 +582,27 @@ export const Contacts = (): JSX.Element => {
     setCurrentPage(1);
   };
 
+  const handleNewClient = () => {
+    setSelectedContact(null);
+    setContactModalMode('create');
+    setShowContactModal(true);
+  };
+
+  const handleEditContact = (contact: Contact) => {
+    setSelectedContact(contact);
+    setContactModalMode('edit');
+    setShowContactModal(true);
+  };
+
+  const handleContactModalClose = () => {
+    setShowContactModal(false);
+    setSelectedContact(null);
+  };
+
+  const handleContactSaved = () => {
+    loadContacts();
+  };
+
   const renderCell = (contact: Contact, columnId: string) => {
     switch (columnId) {
       case 'email':
@@ -703,6 +732,7 @@ export const Contacts = (): JSX.Element => {
           onSearch={handleSearch}
           onRefresh={handleRefresh}
           onOpenSettings={handleOpenSettings}
+          onNewClient={handleNewClient}
           activePriorityFilter={activePriorityFilter}
           onPriorityFilterChange={handlePriorityFilterChange}
         />
@@ -781,8 +811,20 @@ export const Contacts = (): JSX.Element => {
                       role="gridcell"
                     >
                       <div className="d-flex flex-column">
-                        <div className="fw-medium small text-dark">
-                          <span id={`contact-${contact.id}-name`}>{contact.name}</span>
+                        <div className="fw-medium small">
+                          <span
+                            id={`contact-${contact.id}-name`}
+                            className="text-primary"
+                            style={{ cursor: 'pointer', textDecoration: 'none' }}
+                            onClick={() => handleEditContact(contact)}
+                            onMouseEnter={(e) => (e.currentTarget.style.textDecoration = 'underline')}
+                            onMouseLeave={(e) => (e.currentTarget.style.textDecoration = 'none')}
+                            role="button"
+                            tabIndex={0}
+                            onKeyDown={(e) => e.key === 'Enter' && handleEditContact(contact)}
+                          >
+                            {contact.name}
+                          </span>
                         </div>
                         <div className="d-flex align-items-center gap-1 text-secondary" style={{ fontSize: '0.75rem' }}>
                           <StarIcon size={12} />
@@ -820,6 +862,14 @@ export const Contacts = (): JSX.Element => {
         visibleColumns={visibleColumns}
         pageSize={pageSize}
         onUpdate={handleSettingsUpdate}
+      />
+
+      <ContactProfileFSModal3
+        show={showContactModal}
+        onHide={handleContactModalClose}
+        mode={contactModalMode}
+        initialData={selectedContact}
+        onSave={handleContactSaved}
       />
     </div>
   );

@@ -194,6 +194,8 @@ export interface TokenCategoryWithTokens extends TokenCategory {
   tokens: Token[];
 }
 
+export type ActionPlanType = 'Connection Plans' | 'Conversion Plans' | 'Retention Plans' | 'Events Plans' | 'Seasonal Plans' | 'Parallel Trigger Plans';
+
 export interface ConnectionPlan {
   id: string;
   name: string;
@@ -208,6 +210,7 @@ export interface ConnectionPlan {
   build_pending_traditional: boolean;
   build_pending_domino: boolean;
   protect_from_overwriting: boolean;
+  plan_type: ActionPlanType;
   created_at: string;
   updated_at: string;
 }

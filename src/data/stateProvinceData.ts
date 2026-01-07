@@ -77,3 +77,8 @@ export const ALL_STATES_PROVINCES: StateProvince[] = [
   ...US_STATES,
   ...CANADIAN_PROVINCES,
 ];
+
+export const stateProvinceData = US_STATES.map(state => ({
+  abbreviation: state.value,
+  name: state.label
+}));
