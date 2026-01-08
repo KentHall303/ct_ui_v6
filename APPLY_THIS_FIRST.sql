@@ -1,19 +1,40 @@
 /*
   ============================================================
-  MASTER DATABASE SETUP FILE
-  Version: 2.0 - December 2024
+  MASTER DATABASE SETUP FILE - SCHEMA & SEED ORCHESTRATION
+  Version: 3.0 - January 2025
   ============================================================
 
-  This file creates all database tables and seed data that
-  the application needs to function properly.
+  This file creates core database tables and provides instructions
+  for applying all seed data files in the correct dependency order.
 
-  HOW TO USE:
+  WHY THIS APPROACH:
+  - Keeps this file under 2000 lines to avoid build issues
+  - Core schema defined here (templates, connection_plans, etc.)
+  - Additional seed data loaded via separate migration files
+  - Ensures everyone gets identical database state
+
+  HOW TO USE THIS FILE:
+
+  STEP 1: RUN THIS FILE
+  ======================================
   1. Open your Supabase project dashboard
   2. Go to SQL Editor (left sidebar)
   3. Copy this ENTIRE file
   4. Paste it into the SQL Editor
   5. Click "Run" button
-  6. Done! Your database is now complete.
+
+  STEP 2: APPLY SEED DATA (OPTIONAL BUT RECOMMENDED)
+  ======================================
+  After running this file, you can apply additional seed data
+  for demo/testing purposes. See the "SEED DATA APPLICATION GUIDE"
+  section at the end of this file for detailed instructions.
+
+  WHAT THIS FILE DOES:
+  - Drops and recreates: templates, connection_plans, connection_plan_actions
+  - Creates these tables with correct schema
+  - Inserts 69 starter templates (email, text, task, notes, appt invites, export)
+  - Inserts 4 connection plans with 18 actions
+  - Enables Row Level Security (RLS) with public access policies
 
   IMPORTANT: This file will DROP and recreate the following
   tables to ensure correct schema:
@@ -28,7 +49,7 @@
 */
 
 -- ============================================================
--- STEP 1: DROP EXISTING TABLES (for schema updates)
+-- PART 1: DROP EXISTING TABLES (for schema consistency)
 -- ============================================================
 -- This ensures everyone has the correct schema even if they
 -- had older versions of these tables.
@@ -38,7 +59,7 @@ DROP TABLE IF EXISTS connection_plans CASCADE;
 DROP TABLE IF EXISTS templates CASCADE;
 
 -- ============================================================
--- STEP 2: CREATE TEMPLATES TABLE
+-- PART 2: CREATE TEMPLATES TABLE
 -- ============================================================
 
 CREATE TABLE templates (
@@ -56,6 +77,7 @@ CREATE TABLE templates (
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now(),
 
+  -- Email-specific fields
   subject text,
   contact_type text DEFAULT 'All',
   exclude_client boolean DEFAULT false,
@@ -63,16 +85,19 @@ CREATE TABLE templates (
   bcc_email text,
   content_tcpa text CHECK (content_tcpa IS NULL OR content_tcpa IN ('Promotional', 'Transactional', 'Mixed')),
 
+  -- Text/SMS-specific fields
   select_token text,
   protect_from_overwriting boolean DEFAULT false,
   protect_from_sharing boolean DEFAULT false,
 
+  -- Task-specific fields
   title text,
   detail text,
   due_in_days integer,
   assignee_type text CHECK (assignee_type IS NULL OR assignee_type IN ('account_owner', 'assigned_user', 'specific_user')),
   priority text,
 
+  -- Appointment-specific fields
   calendar_title text,
   external_calendar_title text
 );
@@ -105,7 +130,7 @@ CREATE POLICY "Allow public delete access to templates"
   USING (true);
 
 -- ============================================================
--- STEP 3: CREATE CONNECTION PLANS TABLE
+-- PART 3: CREATE CONNECTION PLANS TABLE
 -- ============================================================
 
 CREATE TABLE connection_plans (
@@ -117,6 +142,7 @@ CREATE TABLE connection_plans (
   lead_sources text,
   specific_date text,
   plan_id text,
+  plan_type text,
   count integer DEFAULT 0,
   is_active boolean DEFAULT true,
   show_only_here boolean DEFAULT false,
@@ -132,6 +158,7 @@ ALTER TABLE connection_plans ENABLE ROW LEVEL SECURITY;
 CREATE INDEX idx_connection_plans_is_active ON connection_plans(is_active);
 CREATE INDEX idx_connection_plans_contact_types ON connection_plans(contact_types);
 CREATE INDEX idx_connection_plans_created_at ON connection_plans(created_at);
+CREATE INDEX idx_connection_plans_plan_type ON connection_plans(plan_type);
 
 CREATE POLICY "Public read access"
   ON connection_plans
@@ -155,7 +182,7 @@ CREATE POLICY "Public delete access"
   USING (true);
 
 -- ============================================================
--- STEP 4: CREATE CONNECTION PLAN ACTIONS TABLE
+-- PART 4: CREATE CONNECTION PLAN ACTIONS TABLE
 -- ============================================================
 
 CREATE TABLE connection_plan_actions (
@@ -200,7 +227,7 @@ CREATE POLICY "Allow public delete access to connection_plan_actions"
   USING (true);
 
 -- ============================================================
--- STEP 5: SEED EMAIL TEMPLATES (10 records)
+-- PART 5: SEED EMAIL TEMPLATES (10 records)
 -- ============================================================
 
 INSERT INTO templates (name, subject, contact_type, exclude_client, content, category, is_active, usage_count)
@@ -432,7 +459,7 @@ Best regards,
   );
 
 -- ============================================================
--- STEP 6: SEED TEXT TEMPLATES (15 records)
+-- PART 6: SEED TEXT TEMPLATES (15 records)
 -- ============================================================
 
 INSERT INTO templates (
@@ -597,7 +624,7 @@ INSERT INTO templates (
   );
 
 -- ============================================================
--- STEP 7: SEED TASK TEMPLATES (15 records)
+-- PART 7: SEED TASK TEMPLATES (15 records)
 -- ============================================================
 
 INSERT INTO templates (
@@ -794,7 +821,7 @@ INSERT INTO templates (
   );
 
 -- ============================================================
--- STEP 8: SEED NOTES/LOGS TEMPLATES (9 records)
+-- PART 8: SEED NOTES/LOGS TEMPLATES (9 records)
 -- ============================================================
 
 INSERT INTO templates (name, content, category, is_active, usage_count)
@@ -1060,7 +1087,7 @@ VALUES
   );
 
 -- ============================================================
--- STEP 9: SEED APPOINTMENT INVITE TEMPLATES (12 records)
+-- PART 9: SEED APPOINTMENT INVITE TEMPLATES (12 records)
 -- ============================================================
 
 INSERT INTO templates (
@@ -1464,7 +1491,7 @@ See you soon!
   );
 
 -- ============================================================
--- STEP 10: SEED EXPORT LIST TEMPLATES (8 records)
+-- PART 10: SEED EXPORT LIST TEMPLATES (8 records)
 -- ============================================================
 
 INSERT INTO templates (
@@ -1550,7 +1577,7 @@ INSERT INTO templates (
   );
 
 -- ============================================================
--- STEP 11: SEED CONNECTION PLANS (4 records)
+-- PART 11: SEED CONNECTION PLANS (4 records)
 -- ============================================================
 
 INSERT INTO connection_plans (id, name, contact_types, lead_sources, next_plan, count, is_active, show_only_here, build_pending_traditional, build_pending_domino, protect_from_overwriting, created_at, updated_at)
@@ -1617,7 +1644,7 @@ VALUES
   );
 
 -- ============================================================
--- STEP 12: SEED CONNECTION PLAN ACTIONS (18 records)
+-- PART 12: SEED CONNECTION PLAN ACTIONS (18 records)
 -- ============================================================
 
 -- Actions for New Lead Follow-Up Plan (5 actions)
@@ -1835,22 +1862,435 @@ VALUES
   );
 
 -- ============================================================
--- VERIFICATION
+-- VERIFICATION QUERIES
 -- ============================================================
-
--- Run these to verify the data was inserted correctly:
+-- You can run these after applying the file to verify data:
+--
 -- SELECT 'templates' as table_name, COUNT(*) as count FROM templates;
 -- SELECT 'connection_plans' as table_name, COUNT(*) as count FROM connection_plans;
 -- SELECT 'connection_plan_actions' as table_name, COUNT(*) as count FROM connection_plan_actions;
-
+--
 -- Expected counts:
 -- templates: 69 (10 email + 15 text + 15 task + 9 notes_logs + 12 appt_invites + 8 export_list)
 -- connection_plans: 4
 -- connection_plan_actions: 18
 
 -- ============================================================
--- SUCCESS!
+-- SUCCESS! CORE SETUP COMPLETE
+-- ============================================================
+-- If you see no errors above, your core database setup is complete!
+--
+-- NEXT STEPS: Apply additional seed data (optional)
+-- See the detailed guide below for instructions.
 -- ============================================================
 
--- If you see no errors above, your database is now complete!
--- You can now use the application with full functionality.
+
+/*
+  ============================================================
+  ============================================================
+
+  SEED DATA APPLICATION GUIDE (OPTIONAL)
+
+  After running this file, you can optionally apply additional
+  seed data for testing and demo purposes. The seed files must
+  be applied in the correct order to satisfy foreign key
+  dependencies.
+
+  ============================================================
+  ============================================================
+
+  OVERVIEW:
+  ---------
+  - The seed files are located in: supabase/migrations/
+  - They must be applied in dependency order
+  - Some seed files supersede others (use latest versions only)
+  - All seed files use ON CONFLICT DO NOTHING for safe re-running
+
+  ============================================================
+  SECTION 1: CORE DATA TABLES (Foundation)
+  ============================================================
+  These create the main schema and tables that other seeds depend on.
+  Most of these should already be applied via migrations, but if not:
+
+  Schema Creation Files (apply if tables don't exist):
+  ----------------------------------------------------
+  1. 20251004172104_create_meetings_and_subcontractors_schema.sql
+     - Creates: meetings, subcontractors, jobs, customers tables
+
+  2. 20251018151400_create_bid_types_schema.sql
+     - Creates: bid_types, bid_categories, bid_line_items tables
+
+  3. 20251007175631_create_cogs_items_table.sql
+     - Creates: cogs_items table for cost tracking
+
+  4. 20251007221155_create_messages_table.sql
+     - Creates: messages table
+     - Updates: 20251008002531_add_message_fields_for_display.sql
+
+  5. 20251009000001_create_payments_table.sql
+     - Creates: payments table
+
+  6. 20251025211347_create_pipeline_tables.sql
+     - Creates: sales_cycles, opportunities, sales_cycle_items tables
+
+  7. 20251121230254_create_token_management_schema.sql
+     - Creates: tokens table
+
+  8. 20251217201359_create_contacts_table.sql
+     - Creates: contacts table
+     - Links: 20251217201409_add_contact_id_to_opportunities.sql
+
+  9. 20251218000243_create_calendars_table.sql
+     - Creates: calendars table
+
+  10. 20251218000319_create_calendar_events_with_calendar_id.sql
+      - Creates: calendar_events table
+      - Update: 20251226170646_add_contact_id_to_calendars.sql
+      - Update: 20251226191343_add_estimator_id_to_calendar_events.sql
+      - Update: 20251226191407_add_coordinates_to_calendar_events.sql
+      - Update: 20251229183003_add_user_id_to_calendar_events.sql
+
+  11. 20251227005235_create_users_table.sql
+      - Creates: users table
+      - Updates: 20251229170732_add_address_fields_to_users.sql
+
+  12. 20251226183447_create_jobs_calendar_system.sql
+      - Creates: jobs_calendar, quotes tables
+
+  ============================================================
+  SECTION 2: ESSENTIAL SEED DATA (Apply in Order)
+  ============================================================
+  These populate tables with data needed for the app to function.
+
+  STEP 1: User Data
+  ------------------
+  File: 20251227005254_seed_users_data.sql
+  - Creates 15 sample users (admin, standard, salesperson, subcontractor)
+  - MUST run before: calendar events, any user-linked data
+
+  Follow-up:
+  - 20251229170803_populate_users_with_address_data.sql
+  - 20251229170816_add_not_null_constraints_to_users.sql
+
+  STEP 2: Token Data
+  -------------------
+  File: 20251121230342_seed_token_data.sql (LATEST VERSION)
+  - Creates sample token/credit card records for demos
+  - Note: Supersedes 20251119013937_seed_token_data_fixed.sql
+
+  STEP 3: Contacts & Opportunities
+  ---------------------------------
+  File: 20251217201619_seed_contacts_and_opportunities_data.sql (LATEST VERSION)
+  - Creates 25 contacts with matching opportunities
+  - Links contacts to opportunities properly
+  - MUST run before: calendar events that reference contacts
+  - Note: Supersedes 20251216183744_seed_unified_contacts_opportunities.sql
+
+  STEP 4: Customers & Jobs
+  -------------------------
+  File: 20251212191952_seed_customers_and_jobs.sql
+  - Creates 10 customers and 12 jobs
+  - MUST run before: payments, COGS, meetings
+
+  STEP 5: Subcontractors
+  -----------------------
+  File: 20251212192018_seed_subcontractors.sql (LATEST VERSION)
+  - Creates sample subcontractor records
+  - MUST run before: meetings, calendar events
+  - Note: Supersedes 20251117215300_seed_subcontractors.sql
+
+  STEP 6: Meetings
+  ----------------
+  File: 20251212192126_seed_meetings_fixed.sql (LATEST VERSION)
+  - Creates sample meeting records
+  - Requires: customers, subcontractors
+  - Note: Supersedes 20251117215400_seed_meetings_and_jobs.sql
+
+  STEP 7: Payments
+  ----------------
+  File: 20251212192220_seed_payments_fixed.sql (LATEST VERSION)
+  - Creates sample payment records
+  - Requires: customers, jobs
+  - Note: Supersedes 20251117215500_seed_payments.sql
+
+  STEP 8: COGS Items
+  -------------------
+  File: 20251212192316_seed_cogs_items.sql (LATEST VERSION)
+  - Creates cost of goods sold records
+  - Requires: jobs
+  - Note: Supersedes 20251117215600_seed_cogs_items.sql
+
+  STEP 9: Messages
+  ----------------
+  File: 20251230213733_seed_franchise_messages.sql (LATEST VERSION)
+  - Creates sample message threads
+  - Note: Supersedes 20251212192434_seed_messages.sql and 20251117215700_seed_messages.sql
+
+  STEP 10: Bid Types
+  -------------------
+  File: 20251117215800_seed_additional_bid_types.sql
+  - Creates sample bid types, categories, and line items
+  - Standalone - no dependencies
+
+  ============================================================
+  SECTION 3: ACTION PLANS & TEMPLATES
+  ============================================================
+  Additional action plans beyond the core 4 already loaded.
+
+  Action Plans by Type:
+  ---------------------
+  File: 20260107215920_seed_action_plans_by_type.sql (LATEST VERSION)
+  - Adds 14 action plans categorized by type:
+    * Conversion Plans (3 plans)
+    * Retention Plans (3 plans)
+    * Events Plans (3 plans)
+    * Seasonal Plans (3 plans)
+    * Parallel Trigger Plans (2 plans)
+  - These supplement the 4 connection plans already loaded in this file
+  - Safe to run - uses INSERT with NOT EXISTS check
+
+  ============================================================
+  SECTION 4: CALENDAR SEED DATA (Apply in Order)
+  ============================================================
+  Multiple options available depending on your needs:
+
+  OPTION A: Basic Calendar Data
+  ------------------------------
+  1. File: 20251218000337_seed_placeholder_calendars.sql
+     - Creates basic calendar records
+
+  2. File: 20251218000557_seed_calendar_events_all_weeks.sql
+     - Creates calendar events for multiple weeks
+     - Alternative: 20251029223914_seed_calendar_events.sql (smaller dataset)
+
+  OPTION B: High-Density Calendar (Heavy Testing)
+  ------------------------------------------------
+  File: 20251218014737_seed_high_density_calendar_events.sql
+  - Creates many events for stress testing
+  - Use INSTEAD OF the basic calendar events above
+
+  OPTION C: Dispatching Demo Data (Most Complete)
+  ------------------------------------------------
+  For full dispatching feature demo with realistic schedules:
+
+  1. 20251226191444_seed_dispatching_subcontractors.sql
+     - Creates subcontractors for dispatching
+
+  2. 20251226191527_seed_dispatching_contacts_with_addresses.sql
+     - Creates contacts with full addresses
+
+  3. 20251229191239_seed_dispatching_week1_cleanup.sql
+     - Cleans up old data before seeding
+
+  4. 20251229191414_seed_dispatching_week1_days0to4.sql
+     - Week 1, Days 0-4 events
+
+  5. 20251229191529_seed_dispatching_week1_days5to9.sql
+     - Week 1, Days 5-9 events
+
+  6. 20251229191626_seed_dispatching_week2_days10to13.sql
+     - Week 2, Days 10-13 events
+
+  7. 20251229183040_seed_subcontractor_users_and_link_events.sql
+     - Links users to calendar events
+
+  8. 20251226183611_seed_jobs_calendar_and_quotes_data_fixed.sql
+     - Creates jobs calendar and quotes
+
+  9. 20251226170706_seed_contact_calendars_and_reassign_events.sql
+     - Links calendars to contacts
+
+  10. 20251226191651_seed_dispatching_calendar_events.sql
+      - Final calendar event assignments
+
+  ============================================================
+  HOW TO APPLY SEED FILES:
+  ============================================================
+
+  METHOD 1: Supabase Dashboard (Recommended for Beginners)
+  ---------------------------------------------------------
+  1. Open your Supabase project dashboard
+  2. Go to SQL Editor in the left sidebar
+  3. For each file you want to apply (in order):
+     a. Open the file in a text editor
+     b. Copy the ENTIRE contents
+     c. Paste into a new SQL Editor query
+     d. Click "Run"
+     e. Wait for success message
+  4. Move to next file
+
+  METHOD 2: Supabase CLI (Advanced)
+  ----------------------------------
+  If you have Supabase CLI installed:
+
+  ```bash
+  # Navigate to your project directory
+  cd /path/to/project
+
+  # Apply a specific migration
+  supabase db push --file supabase/migrations/[filename].sql
+  ```
+
+  METHOD 3: Apply All Seeds Script (Expert)
+  ------------------------------------------
+  You can create a shell script to apply all seeds:
+
+  ```bash
+  #!/bin/bash
+  # Save as: apply-all-seeds.sh
+
+  MIGRATIONS_DIR="./supabase/migrations"
+
+  # Array of seed files in dependency order
+  SEED_FILES=(
+    "20251227005254_seed_users_data.sql"
+    "20251229170803_populate_users_with_address_data.sql"
+    "20251121230342_seed_token_data.sql"
+    "20251217201619_seed_contacts_and_opportunities_data.sql"
+    # ... add more files here in order
+  )
+
+  for file in "${SEED_FILES[@]}"; do
+    echo "Applying: $file"
+    supabase db push --file "$MIGRATIONS_DIR/$file"
+    if [ $? -ne 0 ]; then
+      echo "Error applying $file"
+      exit 1
+    fi
+  done
+
+  echo "All seed files applied successfully!"
+  ```
+
+  ============================================================
+  VERIFICATION:
+  ============================================================
+  After applying seed files, run these queries to verify:
+
+  -- Check record counts
+  SELECT 'users' as table_name, COUNT(*) as count FROM users
+  UNION ALL
+  SELECT 'contacts', COUNT(*) FROM contacts
+  UNION ALL
+  SELECT 'opportunities', COUNT(*) FROM opportunities
+  UNION ALL
+  SELECT 'customers', COUNT(*) FROM customers
+  UNION ALL
+  SELECT 'jobs', COUNT(*) FROM jobs
+  UNION ALL
+  SELECT 'calendar_events', COUNT(*) FROM calendar_events
+  UNION ALL
+  SELECT 'messages', COUNT(*) FROM messages
+  UNION ALL
+  SELECT 'payments', COUNT(*) FROM payments;
+
+  Expected counts (if ALL seeds applied):
+  - users: 15+
+  - contacts: 25+
+  - opportunities: 25+
+  - customers: 10+
+  - jobs: 12+
+  - calendar_events: varies by option (100s to 1000s)
+  - templates: 69
+  - connection_plans: 4 + 14 = 18 (if action plans applied)
+
+  ============================================================
+  OBSOLETE/SUPERSEDED FILES (DO NOT USE):
+  ============================================================
+  These files have been replaced by newer versions:
+
+  ❌ 20251030195332_seed_email_templates.sql
+     USE INSTEAD: Already included in this file (APPLY_THIS_FIRST.sql)
+
+  ❌ 20251117200503_seed_text_templates.sql
+     USE INSTEAD: Already included in this file (APPLY_THIS_FIRST.sql)
+
+  ❌ 20251119013937_seed_token_data_fixed.sql
+     USE INSTEAD: 20251121230342_seed_token_data.sql
+
+  ❌ 20251216183744_seed_unified_contacts_opportunities.sql
+     USE INSTEAD: 20251217201619_seed_contacts_and_opportunities_data.sql
+
+  ❌ 20251117215300_seed_subcontractors.sql
+     USE INSTEAD: 20251212192018_seed_subcontractors.sql
+
+  ❌ 20251117215400_seed_meetings_and_jobs.sql
+     USE INSTEAD: 20251212192126_seed_meetings_fixed.sql
+
+  ❌ 20251117215500_seed_payments.sql
+     USE INSTEAD: 20251212192220_seed_payments_fixed.sql
+
+  ❌ 20251117215600_seed_cogs_items.sql
+     USE INSTEAD: 20251212192316_seed_cogs_items.sql
+
+  ❌ 20251212192434_seed_messages.sql
+     USE INSTEAD: 20251230213733_seed_franchise_messages.sql
+
+  ❌ All "seed_correct_*" files (20251219180xxx series)
+     These were experimental - use the versions listed above instead
+
+  ❌ 20251203195311_seed_connection_plans_data.sql
+     USE INSTEAD: Already included in this file + 20260107215920_seed_action_plans_by_type.sql
+
+  ============================================================
+  RECOMMENDED SETUP PROFILES:
+  ============================================================
+
+  MINIMAL SETUP (Core functionality only):
+  ----------------------------------------
+  - Just run this file (APPLY_THIS_FIRST.sql)
+  - Result: 69 templates, 4 connection plans working
+  - No additional seed data needed
+
+  STANDARD SETUP (Good for development):
+  --------------------------------------
+  1. This file (APPLY_THIS_FIRST.sql)
+  2. 20251227005254_seed_users_data.sql
+  3. 20251217201619_seed_contacts_and_opportunities_data.sql
+  4. 20251212191952_seed_customers_and_jobs.sql
+  5. 20251218000337_seed_placeholder_calendars.sql
+  6. 20251218000557_seed_calendar_events_all_weeks.sql
+
+  Result: Working CRM with contacts, jobs, basic calendar
+
+  FULL DEMO SETUP (Everything):
+  ------------------------------
+  1. This file (APPLY_THIS_FIRST.sql)
+  2. All files from Section 2 (Essential Seed Data)
+  3. All files from Section 3 (Action Plans)
+  4. Option C from Section 4 (Dispatching Demo)
+
+  Result: Fully populated system with all features
+
+  ============================================================
+  TROUBLESHOOTING:
+  ============================================================
+
+  Problem: Foreign key constraint errors
+  Solution: Check dependency order - ensure parent tables
+            are populated before child tables
+
+  Problem: Duplicate key errors
+  Solution: Most seed files use ON CONFLICT DO NOTHING,
+            but some don't. You may need to clear data first.
+
+  Problem: Permission denied errors
+  Solution: Ensure RLS policies are set up correctly.
+            This file sets up public access for templates
+            and connection_plans.
+
+  Problem: File not found errors
+  Solution: Ensure you're in the correct directory.
+            Seed files are in: supabase/migrations/
+
+  ============================================================
+  NEED HELP?
+  ============================================================
+
+  - Check the migration file comments for details
+  - Review RLS policies if getting permission errors
+  - Start with MINIMAL setup and add more as needed
+  - Contact your team lead for assistance
+
+  ============================================================
+*/
