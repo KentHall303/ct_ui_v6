@@ -131,17 +131,19 @@ export const AccountPage: React.FC = () => {
       <div className="d-flex flex-column w-100 h-100">
         <div className="px-3 pt-3 flex-shrink-0">
           <div className="bg-white rounded-3 pt-3 px-4 pb-3 border shadow-sm">
-            <h2 className="h4 fw-bold text-dark mb-3">Accounts Information</h2>
-            <Button
-              variant="success"
-              size="sm"
-              className="rounded-pill d-flex align-items-center gap-2"
-              style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
-              onClick={handleCreateNewAccount}
-            >
-              <Plus size={14} />
-              <span>Create New Account</span>
-            </Button>
+            <div className="d-flex align-items-center justify-content-between">
+              <h2 className="h4 fw-bold text-dark mb-0">Accounts Information</h2>
+              <Button
+                variant="success"
+                size="sm"
+                className="rounded-pill d-flex align-items-center gap-2"
+                style={{ boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}
+                onClick={handleCreateNewAccount}
+              >
+                <Plus size={14} />
+                <span>Create New Account</span>
+              </Button>
+            </div>
           </div>
         </div>
 
