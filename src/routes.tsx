@@ -37,8 +37,13 @@ const SeedDataPage = React.lazy(() => import('./screens/SeedData/SeedDataPage'))
 const AccountPage = React.lazy(() => import('./screens/Settings/AccountPage').then(m => ({ default: m.AccountPage })));
 const AccountInfoPage = React.lazy(() => import('./screens/Settings/AccountInfoPage').then(m => ({ default: m.AccountInfoPage })));
 const ActionPlansSettingsPage = React.lazy(() => import('./screens/Settings/ActionPlansSettingsPage').then(m => ({ default: m.ActionPlansSettingsPage })));
+const AddOnsPage = React.lazy(() => import('./screens/Settings/AddOnsPage').then(m => ({ default: m.AddOnsPage })));
+const AnnouncementsPage = React.lazy(() => import('./screens/Settings/AnnouncementsPage').then(m => ({ default: m.AnnouncementsPage })));
+const AngiAdsPage = React.lazy(() => import('./screens/Settings/AngiAdsPage').then(m => ({ default: m.AngiAdsPage })));
+const AngiLeadsPage = React.lazy(() => import('./screens/Settings/AngiLeadsPage').then(m => ({ default: m.AngiLeadsPage })));
 const ApiMonitorPage = React.lazy(() => import('./screens/Settings/ApiMonitorPage').then(m => ({ default: m.ApiMonitorPage })));
 const AppointmentsPage = React.lazy(() => import('./screens/Settings/AppointmentsPage').then(m => ({ default: m.AppointmentsPage })));
+const AuditLogsPage = React.lazy(() => import('./screens/Settings/AuditLogsPage').then(m => ({ default: m.AuditLogsPage })));
 const BidTypesSettingsPage = React.lazy(() => import('./screens/Settings/BidTypesSettingsPage').then(m => ({ default: m.BidTypesSettingsPage })));
 const CalendarSettingsPage = React.lazy(() => import('./screens/Settings/CalendarSettingsPage').then(m => ({ default: m.CalendarSettingsPage })));
 const ChartBuilderPage = React.lazy(() => import('./screens/Settings/ChartBuilderPage').then(m => ({ default: m.ChartBuilderPage })));
@@ -305,12 +310,32 @@ export const routes: RouteObject[] = [
     element: <ActionPlansSettingsPage />
   },
   {
+    path: '/settings/add-ons',
+    element: <AddOnsPage />
+  },
+  {
+    path: '/settings/announcements',
+    element: <AnnouncementsPage />
+  },
+  {
+    path: '/settings/angi-ads',
+    element: <AngiAdsPage />
+  },
+  {
+    path: '/settings/angi-leads',
+    element: <AngiLeadsPage />
+  },
+  {
     path: '/settings/api-monitor',
     element: <ApiMonitorPage />
   },
   {
     path: '/settings/appointments',
     element: <AppointmentsPage />
+  },
+  {
+    path: '/settings/audit-logs',
+    element: <AuditLogsPage />
   },
   {
     path: '/settings/bid-types',

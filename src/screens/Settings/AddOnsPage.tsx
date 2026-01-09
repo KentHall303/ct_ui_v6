@@ -1,11 +1,11 @@
 import React from 'react';
 import { BodyPageLayout } from '../../components/layout/BodyPageLayout/BodyPageLayout';
 
-export const ApiMonitorPage: React.FC = () => {
+export const AddOnsPage: React.FC = () => {
   return (
-    <BodyPageLayout title="API">
+    <BodyPageLayout title="Add-Ons">
       <div className="p-4">
-        <p className="text-muted">API settings will be implemented here.</p>
+        <p className="text-muted">Add-ons and extensions will be implemented here.</p>
       </div>
     </BodyPageLayout>
   );
