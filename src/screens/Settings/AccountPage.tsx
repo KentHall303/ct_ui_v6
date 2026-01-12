@@ -5,7 +5,7 @@ import { Table, TableBody, TableRow, TableCell } from '../../components/bootstra
 import { ResizableTableHead } from '../../components/bootstrap/ResizableTableHead';
 import { useResizableColumns, ColumnConfig } from '../../hooks/useResizableColumns';
 import { Plus, LogIn, Edit2, XCircle, ChevronUp, ChevronDown, ChevronRight } from 'lucide-react';
-import { Collapse, Form, Row, Col } from 'react-bootstrap';
+import { Collapse, Form } from 'react-bootstrap';
 import { fetchUsers, User } from '../../services/userService';
 
 type SortDirection = 'asc' | 'desc';
@@ -148,116 +148,111 @@ export const AccountPage: React.FC = () => {
         </div>
 
         <div className="px-3 pt-3 flex-shrink-0">
-          <Row>
-            <Col md={6}>
-              <div className="bg-white rounded-3 border shadow-sm h-100">
-                <div
-                  className="d-flex align-items-center justify-content-between px-4 py-3"
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setShowAccountsDisplay(!showAccountsDisplay)}
-                >
-                  <h3 className="h6 fw-semibold text-dark mb-0">Accounts Display</h3>
-                  {showAccountsDisplay ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+          <div className="bg-white rounded-3 border shadow-sm">
+            <div
+              className="d-flex align-items-center justify-content-between px-4 py-3"
+              style={{ cursor: 'pointer' }}
+              onClick={() => setShowAccountsDisplay(!showAccountsDisplay)}
+            >
+              <h3 className="h6 fw-semibold text-dark mb-0">Accounts Display</h3>
+              {showAccountsDisplay ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+            </div>
+            <Collapse in={showAccountsDisplay}>
+              <div>
+                <div className="px-4 pb-4">
+                  <p className="text-muted mb-3" style={{ fontSize: '0.875rem' }}>
+                    Please select the display option you would prefer for the Account List on the Account page.
+                  </p>
+                  <Form>
+                    <Form.Check
+                      type="radio"
+                      id="display-account-name"
+                      name="accountsDisplay"
+                      label="Account Name"
+                      checked={accountsDisplayOption === 'account_name'}
+                      onChange={() => setAccountsDisplayOption('account_name')}
+                      className="mb-2"
+                    />
+                    <Form.Check
+                      type="radio"
+                      id="display-account-admin"
+                      name="accountsDisplay"
+                      label="Account Admin"
+                      checked={accountsDisplayOption === 'account_admin'}
+                      onChange={() => setAccountsDisplayOption('account_admin')}
+                      className="mb-2"
+                    />
+                    <Form.Check
+                      type="radio"
+                      id="display-notification-settings"
+                      name="accountsDisplay"
+                      label="Notification Settings"
+                      checked={accountsDisplayOption === 'notification_settings'}
+                      onChange={() => setAccountsDisplayOption('notification_settings')}
+                    />
+                  </Form>
                 </div>
-                <Collapse in={showAccountsDisplay}>
-                  <div>
-                    <div className="px-4 pb-4">
-                      <p className="text-muted mb-3" style={{ fontSize: '0.875rem' }}>
-                        Please select the display option you would prefer for the Account List on the Account page.
-                      </p>
-                      <Form>
-                        <Form.Check
-                          type="radio"
-                          id="display-account-name"
-                          name="accountsDisplay"
-                          label="Account Name"
-                          checked={accountsDisplayOption === 'account_name'}
-                          onChange={() => setAccountsDisplayOption('account_name')}
-                          className="mb-2"
-                        />
-                        <Form.Check
-                          type="radio"
-                          id="display-account-admin"
-                          name="accountsDisplay"
-                          label="Account Admin"
-                          checked={accountsDisplayOption === 'account_admin'}
-                          onChange={() => setAccountsDisplayOption('account_admin')}
-                          className="mb-2"
-                        />
-                        <Form.Check
-                          type="radio"
-                          id="display-notification-settings"
-                          name="accountsDisplay"
-                          label="Notification Settings"
-                          checked={accountsDisplayOption === 'notification_settings'}
-                          onChange={() => setAccountsDisplayOption('notification_settings')}
-                        />
-                      </Form>
-                    </div>
-                  </div>
-                </Collapse>
               </div>
-            </Col>
-            <Col md={6}>
-              <div className="bg-white rounded-3 border shadow-sm h-100">
-                <div
-                  className="d-flex align-items-center justify-content-between px-4 py-3"
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => setShowFeatureClone(!showFeatureClone)}
-                >
-                  <h3 className="h6 fw-semibold text-dark mb-0">Feature Clone Overview</h3>
-                  {showFeatureClone ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+            </Collapse>
+
+            <hr className="my-0 mx-4" style={{ borderColor: '#e0e0e0' }} />
+
+            <div
+              className="d-flex align-items-center justify-content-between px-4 py-3"
+              style={{ cursor: 'pointer' }}
+              onClick={() => setShowFeatureClone(!showFeatureClone)}
+            >
+              <h3 className="h6 fw-semibold text-dark mb-0">Feature Clone Overview</h3>
+              {showFeatureClone ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+            </div>
+            <Collapse in={showFeatureClone}>
+              <div>
+                <div className="px-4 pb-4">
+                  <Form>
+                    <Form.Check
+                      type="checkbox"
+                      id="clone-core-addons"
+                      label="Core Add-Ons"
+                      checked={featureCloneOptions.coreAddOns}
+                      onChange={() => handleFeatureCloneChange('coreAddOns')}
+                      className="mb-2"
+                    />
+                    <Form.Check
+                      type="checkbox"
+                      id="clone-proposal-settings"
+                      label="Proposal Settings (Preferences, Tax Display, Pdf Details)"
+                      checked={featureCloneOptions.proposalSettings}
+                      onChange={() => handleFeatureCloneChange('proposalSettings')}
+                      className="mb-2"
+                    />
+                    <Form.Check
+                      type="checkbox"
+                      id="clone-proposal-bid-types"
+                      label="Proposal Bid Types"
+                      checked={featureCloneOptions.proposalBidTypes}
+                      onChange={() => handleFeatureCloneChange('proposalBidTypes')}
+                      className="mb-2"
+                    />
+                    <Form.Check
+                      type="checkbox"
+                      id="clone-proposal-templates"
+                      label="Proposal Templates"
+                      checked={featureCloneOptions.proposalTemplates}
+                      onChange={() => handleFeatureCloneChange('proposalTemplates')}
+                      className="mb-2"
+                    />
+                    <Form.Check
+                      type="checkbox"
+                      id="clone-proposal-other-types"
+                      label="Proposal Other types"
+                      checked={featureCloneOptions.proposalOtherTypes}
+                      onChange={() => handleFeatureCloneChange('proposalOtherTypes')}
+                    />
+                  </Form>
                 </div>
-                <Collapse in={showFeatureClone}>
-                  <div>
-                    <div className="px-4 pb-4">
-                      <Form>
-                        <Form.Check
-                          type="checkbox"
-                          id="clone-core-addons"
-                          label="Core Add-Ons"
-                          checked={featureCloneOptions.coreAddOns}
-                          onChange={() => handleFeatureCloneChange('coreAddOns')}
-                          className="mb-2"
-                        />
-                        <Form.Check
-                          type="checkbox"
-                          id="clone-proposal-settings"
-                          label="Proposal Settings (Preferences, Tax Display, Pdf Details)"
-                          checked={featureCloneOptions.proposalSettings}
-                          onChange={() => handleFeatureCloneChange('proposalSettings')}
-                          className="mb-2"
-                        />
-                        <Form.Check
-                          type="checkbox"
-                          id="clone-proposal-bid-types"
-                          label="Proposal Bid Types"
-                          checked={featureCloneOptions.proposalBidTypes}
-                          onChange={() => handleFeatureCloneChange('proposalBidTypes')}
-                          className="mb-2"
-                        />
-                        <Form.Check
-                          type="checkbox"
-                          id="clone-proposal-templates"
-                          label="Proposal Templates"
-                          checked={featureCloneOptions.proposalTemplates}
-                          onChange={() => handleFeatureCloneChange('proposalTemplates')}
-                          className="mb-2"
-                        />
-                        <Form.Check
-                          type="checkbox"
-                          id="clone-proposal-other-types"
-                          label="Proposal Other types"
-                          checked={featureCloneOptions.proposalOtherTypes}
-                          onChange={() => handleFeatureCloneChange('proposalOtherTypes')}
-                        />
-                      </Form>
-                    </div>
-                  </div>
-                </Collapse>
               </div>
-            </Col>
-          </Row>
+            </Collapse>
+          </div>
         </div>
 
         <div className="px-3 pt-3 pb-3 flex-fill" style={{ minHeight: 0, overflow: 'hidden' }}>
