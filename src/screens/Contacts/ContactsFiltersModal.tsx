@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Modal, Form, Row, Col, Collapse } from 'react-bootstrap';
+import { Modal, Form, Collapse } from 'react-bootstrap';
 import { Button } from '../../components/bootstrap/Button';
-import { Plus, X } from 'lucide-react';
+import { X } from 'lucide-react';
+import { FloatingInput, FloatingSelect, FloatingSelectOption } from '../../components/bootstrap/FormControls';
 import { US_STATES } from '../../data/stateProvinceData';
 import { LEAD_SOURCES } from '../../data/leadSourceData';
 import { salesCycleService, SalesCycle } from '../../services/salesCycleService';
 import { userService, User } from '../../services/userService';
 import { actionPlanService } from '../../services/actionPlanService';
-import { savedFiltersService, SavedFilter, SavedFilterGroup, FilterConfig, AdvancedFilterRow } from '../../services/savedFiltersService';
+import { savedFiltersService, SavedFilterGroup, FilterConfig, AdvancedFilterRow } from '../../services/savedFiltersService';
 import { ConnectionPlan } from '../../lib/supabase';
 
 interface ContactsFiltersModalProps {
@@ -247,307 +248,267 @@ export const ContactsFiltersModal: React.FC<ContactsFiltersModalProps> = ({
   };
 
   return (
-    <Modal show={show} onHide={onHide} size="lg" centered>
-      <Modal.Header className="border-bottom d-flex justify-content-between align-items-center">
-        <Modal.Title className="h5">Filters</Modal.Title>
-        <button
-          type="button"
-          className="btn-close"
-          onClick={onHide}
-          aria-label="Close"
-        />
+    <Modal show={show} onHide={onHide} size="lg" centered backdrop="static">
+      <Modal.Header closeButton className="border-0 pb-2">
+        <Modal.Title style={{ fontSize: '1.5rem', fontWeight: 400 }}>
+          Filters
+        </Modal.Title>
       </Modal.Header>
-      <Modal.Body>
-        <Row className="mb-3">
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label className="small fw-semibold">Action Plan:</Form.Label>
-              <Form.Select
-                size="sm"
+      <Modal.Body className="pt-3 pb-4">
+        <div className="d-flex flex-column gap-3">
+          <div className="row g-3">
+            <div className="col-md-6">
+              <FloatingSelect
+                label="Action Plan"
                 value={actionPlan}
                 onChange={(e) => setActionPlan(e.target.value)}
               >
-                <option value="all">All</option>
+                <FloatingSelectOption value="all">All</FloatingSelectOption>
                 {actionPlans.map(plan => (
-                  <option key={plan.id} value={plan.id}>{plan.name}</option>
+                  <FloatingSelectOption key={plan.id} value={plan.id}>{plan.name}</FloatingSelectOption>
                 ))}
-              </Form.Select>
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label className="small fw-semibold">State</Form.Label>
-              <Form.Select
-                size="sm"
+              </FloatingSelect>
+            </div>
+            <div className="col-md-6">
+              <FloatingSelect
+                label="State"
                 value={state}
                 onChange={(e) => setState(e.target.value)}
               >
-                <option value="">Please Select State</option>
+                <FloatingSelectOption value="">Please Select State</FloatingSelectOption>
                 {US_STATES.map(s => (
-                  <option key={s.value} value={s.value}>{s.label}</option>
+                  <FloatingSelectOption key={s.value} value={s.value}>{s.label}</FloatingSelectOption>
                 ))}
-              </Form.Select>
-            </Form.Group>
-          </Col>
-        </Row>
+              </FloatingSelect>
+            </div>
+          </div>
 
-        <Row className="mb-3">
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label className="small fw-semibold">Sales Cycle:</Form.Label>
-              <Form.Select
-                size="sm"
+          <div className="row g-3">
+            <div className="col-md-6">
+              <FloatingSelect
+                label="Sales Cycle"
                 value={salesCycle}
                 onChange={(e) => setSalesCycle(e.target.value)}
               >
-                <option value="all">All</option>
+                <FloatingSelectOption value="all">All</FloatingSelectOption>
                 {salesCycles.map(cycle => (
-                  <option key={cycle.id} value={cycle.id}>{cycle.name}</option>
+                  <FloatingSelectOption key={cycle.id} value={cycle.id}>{cycle.name}</FloatingSelectOption>
                 ))}
-              </Form.Select>
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label className="small fw-semibold">Previous Accounts</Form.Label>
-              <Form.Select
-                size="sm"
+              </FloatingSelect>
+            </div>
+            <div className="col-md-6">
+              <FloatingSelect
+                label="Previous Accounts"
                 value={previousAccounts}
                 onChange={(e) => setPreviousAccounts(e.target.value)}
               >
-                <option value="">Please Select Previous Account</option>
-              </Form.Select>
-            </Form.Group>
-          </Col>
-        </Row>
+                <FloatingSelectOption value="">Please Select Previous Account</FloatingSelectOption>
+              </FloatingSelect>
+            </div>
+          </div>
 
-        <Row className="mb-3">
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label className="small fw-semibold">Lead Source:</Form.Label>
-              <Form.Select
-                size="sm"
+          <div className="row g-3">
+            <div className="col-md-6">
+              <FloatingSelect
+                label="Lead Source"
                 value={leadSource}
                 onChange={(e) => setLeadSource(e.target.value)}
               >
-                <option value="all">All</option>
+                <FloatingSelectOption value="all">All</FloatingSelectOption>
                 {LEAD_SOURCES.map(source => (
-                  <option key={source} value={source}>{source}</option>
+                  <FloatingSelectOption key={source} value={source}>{source}</FloatingSelectOption>
                 ))}
-              </Form.Select>
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label className="small fw-semibold">Saved Filters</Form.Label>
-              <Form.Select
-                size="sm"
+              </FloatingSelect>
+            </div>
+            <div className="col-md-6">
+              <FloatingSelect
+                label="Saved Filters"
                 value={savedFilter}
                 onChange={(e) => handleSavedFilterSelect(e.target.value)}
               >
-                <option value="">Select Filter</option>
+                <FloatingSelectOption value="">Select Filter</FloatingSelectOption>
                 {savedFilters.map(group => (
-                  <optgroup key={group.type} label={group.type}>
+                  <React.Fragment key={group.type}>
                     {group.filters.map(filter => (
-                      <option key={filter.id} value={filter.id}>{filter.name}</option>
+                      <FloatingSelectOption key={filter.id} value={filter.id}>
+                        {group.type}: {filter.name}
+                      </FloatingSelectOption>
                     ))}
-                  </optgroup>
+                  </React.Fragment>
                 ))}
-              </Form.Select>
-            </Form.Group>
-          </Col>
-        </Row>
+              </FloatingSelect>
+            </div>
+          </div>
 
-        <Row className="mb-3">
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label className="small fw-semibold">Assigned User:</Form.Label>
-              <Form.Select
-                size="sm"
+          <div className="row g-3">
+            <div className="col-md-6">
+              <FloatingSelect
+                label="Assigned User"
                 value={assignedUser}
                 onChange={(e) => setAssignedUser(e.target.value)}
               >
-                <option value="all">All</option>
+                <FloatingSelectOption value="all">All</FloatingSelectOption>
                 {users.map(user => (
-                  <option key={user.id} value={user.id}>
+                  <FloatingSelectOption key={user.id} value={user.id}>
                     {user.first_name} {user.last_name}
-                  </option>
+                  </FloatingSelectOption>
                 ))}
-              </Form.Select>
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label className="small fw-semibold">Find Duplicates</Form.Label>
-              <Form.Select
-                size="sm"
+              </FloatingSelect>
+            </div>
+            <div className="col-md-6">
+              <FloatingSelect
+                label="Find Duplicates"
                 value={findDuplicates}
                 onChange={(e) => setFindDuplicates(e.target.value)}
               >
-                <option value="">Select Filter</option>
+                <FloatingSelectOption value="">Select Filter</FloatingSelectOption>
                 {FIND_DUPLICATES_OPTIONS.map(opt => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  <FloatingSelectOption key={opt.value} value={opt.value}>{opt.label}</FloatingSelectOption>
                 ))}
-              </Form.Select>
-            </Form.Group>
-          </Col>
-        </Row>
+              </FloatingSelect>
+            </div>
+          </div>
 
-        <Row className="mb-3">
-          <Col md={6}>
-            <Form.Group>
-              <Form.Label className="small fw-semibold">Tags</Form.Label>
-              <Form.Control
+          <div className="row g-3">
+            <div className="col-md-6">
+              <FloatingInput
+                label="Tags"
                 type="text"
-                size="sm"
                 placeholder="Search by tags..."
                 value={tags}
                 onChange={(e) => setTags(e.target.value)}
               />
-            </Form.Group>
-          </Col>
-        </Row>
+            </div>
+          </div>
 
-        <Collapse in={showAdvanced}>
-          <div className="border-top pt-3 mt-3">
-            <div className="mb-3">
-              {advancedRows.map((row, index) => (
-                <Row key={index} className="mb-2 align-items-end">
-                  <Col md={3}>
-                    <Form.Group>
-                      {index === 0 && <Form.Label className="small fw-semibold">Search</Form.Label>}
-                      <Form.Select
-                        size="sm"
+          <Collapse in={showAdvanced}>
+            <div className="border-top pt-3 mt-2">
+              <div className="mb-3">
+                {advancedRows.map((row, index) => (
+                  <div key={index} className="row g-2 mb-2 align-items-end">
+                    <div className="col-md-3">
+                      <FloatingSelect
+                        label={index === 0 ? "Search" : "Field"}
                         value={row.field}
                         onChange={(e) => handleAdvancedRowChange(index, 'field', e.target.value)}
                       >
-                        <option value="">Select Field Name</option>
+                        <FloatingSelectOption value="">Select Field Name</FloatingSelectOption>
                         {FIELD_OPTIONS.map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          <FloatingSelectOption key={opt.value} value={opt.value}>{opt.label}</FloatingSelectOption>
                         ))}
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={3}>
-                    <Form.Group>
-                      {index === 0 && <Form.Label className="small fw-semibold">That is</Form.Label>}
-                      <Form.Select
-                        size="sm"
+                      </FloatingSelect>
+                    </div>
+                    <div className="col-md-3">
+                      <FloatingSelect
+                        label={index === 0 ? "That is" : "Operator"}
                         value={row.operator}
                         onChange={(e) => handleAdvancedRowChange(index, 'operator', e.target.value)}
                       >
-                        <option value="">Select Matching Option</option>
+                        <FloatingSelectOption value="">Select Matching Option</FloatingSelectOption>
                         {MATCHING_OPTIONS.map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          <FloatingSelectOption key={opt.value} value={opt.value}>{opt.label}</FloatingSelectOption>
                         ))}
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={3}>
-                    <Form.Group>
-                      {index === 0 && <Form.Label className="small fw-semibold">The Value</Form.Label>}
-                      <Form.Control
+                      </FloatingSelect>
+                    </div>
+                    <div className="col-md-3">
+                      <FloatingInput
+                        label={index === 0 ? "The Value" : "Value"}
                         type="text"
-                        size="sm"
                         value={row.value}
                         onChange={(e) => handleAdvancedRowChange(index, 'value', e.target.value)}
                         disabled={row.operator === 'is_empty' || row.operator === 'is_not_empty'}
                       />
-                    </Form.Group>
-                  </Col>
-                  <Col md={2}>
-                    <Form.Group>
-                      {index === 0 && <Form.Label className="small fw-semibold">Continue With</Form.Label>}
-                      <Form.Select
-                        size="sm"
+                    </div>
+                    <div className="col-md-2">
+                      <FloatingSelect
+                        label={index === 0 ? "Continue With" : "Continue"}
                         value={row.continueWith}
                         onChange={(e) => handleAdvancedRowChange(index, 'continueWith', e.target.value)}
                       >
-                        <option value="">Select Extension Option</option>
+                        <FloatingSelectOption value="">Select Option</FloatingSelectOption>
                         {CONTINUE_OPTIONS.map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          <FloatingSelectOption key={opt.value} value={opt.value}>{opt.label}</FloatingSelectOption>
                         ))}
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                  <Col md={1}>
-                    {advancedRows.length > 1 && (
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="text-danger p-0"
-                        onClick={() => handleRemoveAdvancedRow(index)}
-                      >
-                        <X size={16} />
-                      </Button>
-                    )}
-                  </Col>
-                </Row>
-              ))}
-            </div>
+                      </FloatingSelect>
+                    </div>
+                    <div className="col-md-1 d-flex align-items-center justify-content-center" style={{ minHeight: '58px' }}>
+                      {advancedRows.length > 1 && (
+                        <Button
+                          variant="link"
+                          size="sm"
+                          className="text-danger p-0"
+                          onClick={() => handleRemoveAdvancedRow(index)}
+                        >
+                          <X size={18} />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-            <div className="mb-3">
-              <span
-                className="text-success small"
-                style={{ cursor: 'pointer' }}
-                onClick={handleAddAdvancedRow}
-              >
-                Add More
-              </span>
-            </div>
+              <div className="mb-3">
+                <span
+                  className="text-success small fw-medium"
+                  style={{ cursor: 'pointer' }}
+                  onClick={handleAddAdvancedRow}
+                >
+                  + Add More
+                </span>
+              </div>
 
-            <div className="d-flex justify-content-end gap-2">
-              <Button variant="secondary" size="sm" onClick={handleAdvancedCancel}>
-                Cancel
-              </Button>
-              <Button variant="primary" size="sm" onClick={() => setShowSaveDialog(true)}>
-                Save Filter
-              </Button>
-              <Button variant="success" size="sm" onClick={handleAdvancedClear}>
-                Clear
-              </Button>
-              <Button variant="primary" size="sm" onClick={handleAdvancedSearch}>
-                Search
-              </Button>
+              <div className="d-flex justify-content-end gap-2">
+                <Button variant="secondary" onClick={handleAdvancedCancel}>
+                  Cancel
+                </Button>
+                <Button variant="primary" onClick={() => setShowSaveDialog(true)}>
+                  Save Filter
+                </Button>
+                <Button variant="success" onClick={handleAdvancedClear}>
+                  Clear
+                </Button>
+                <Button variant="primary" onClick={handleAdvancedSearch}>
+                  Search
+                </Button>
+              </div>
             </div>
-          </div>
-        </Collapse>
+          </Collapse>
 
-        {showSaveDialog && (
-          <div className="border rounded p-3 mt-3 bg-light">
-            <Form.Group className="mb-2">
-              <Form.Label className="small fw-semibold">Filter Name:</Form.Label>
-              <Form.Control
-                type="text"
-                size="sm"
-                placeholder="Enter filter name..."
-                value={newFilterName}
-                onChange={(e) => setNewFilterName(e.target.value)}
-              />
-            </Form.Group>
-            <div className="d-flex justify-content-end gap-2">
-              <Button variant="secondary" size="sm" onClick={() => setShowSaveDialog(false)}>
-                Cancel
-              </Button>
-              <Button variant="primary" size="sm" onClick={handleSaveFilter} disabled={saving || !newFilterName.trim()}>
-                {saving ? 'Saving...' : 'Save'}
-              </Button>
+          {showSaveDialog && (
+            <div className="border rounded p-3 mt-2 bg-light">
+              <div className="mb-3">
+                <FloatingInput
+                  label="Filter Name"
+                  type="text"
+                  placeholder="Enter filter name..."
+                  value={newFilterName}
+                  onChange={(e) => setNewFilterName(e.target.value)}
+                />
+              </div>
+              <div className="d-flex justify-content-end gap-2">
+                <Button variant="secondary" onClick={() => setShowSaveDialog(false)}>
+                  Cancel
+                </Button>
+                <Button variant="primary" onClick={handleSaveFilter} disabled={saving || !newFilterName.trim()}>
+                  {saving ? 'Saving...' : 'Save'}
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </Modal.Body>
-      <Modal.Footer className="border-top">
+      <Modal.Footer className="border-0 pt-0">
         <div className="d-flex gap-2">
-          <Button variant="primary" size="sm" onClick={() => setShowAdvanced(!showAdvanced)}>
+          <Button variant="primary" onClick={() => setShowAdvanced(!showAdvanced)}>
             Advanced Filters
           </Button>
-          <Button variant="primary" size="sm" onClick={() => setShowSaveDialog(true)}>
+          <Button variant="primary" onClick={() => setShowSaveDialog(true)}>
             Save Filter
           </Button>
-          <Button variant="info" size="sm" onClick={handleClearAll}>
+          <Button variant="info" onClick={handleClearAll}>
             Clear All Settings
           </Button>
-          <Button variant="primary" size="sm" onClick={handleApply}>
+          <Button variant="primary" onClick={handleApply}>
             Apply Filter
           </Button>
         </div>

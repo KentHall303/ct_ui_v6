@@ -785,8 +785,10 @@ export const Contacts = (): JSX.Element => {
           className="bg-white rounded-3 border shadow-sm contacts-table-scroll flex-grow-1"
           style={{ maxHeight: maxHeight ?? undefined, overflowY: 'auto', overflowX: 'auto' }}
         >
-          <div style={{ minWidth: '1400px' }}>
-            <Table className={`standard-table table-striped mb-0 ${isResizing ? 'resizing' : ''}`}>
+          <Table
+            className={`standard-table table-striped mb-0 ${isResizing ? 'resizing' : ''}`}
+            style={{ width: `${columns.reduce((sum, col) => sum + (columnWidths[col.id] || col.defaultWidth), 0)}px` }}
+          >
               <caption className="visually-hidden">
                 Contacts table showing {contacts.length} client records.
                 Use arrow keys to navigate, Enter or Space to sort columns.
@@ -892,7 +894,6 @@ export const Contacts = (): JSX.Element => {
                 ))}
               </TableBody>
             </Table>
-          </div>
         </div>
       </div>
 
