@@ -8,7 +8,9 @@ import { contactService } from "../../services/contactService";
 import { Contact } from "../../lib/supabase";
 import { PageSettingsModal, ColumnOption } from "./PageSettingsModal";
 import { ContactProfileFSModal3 } from "../../components/modals/ContactProfileFSModal3";
-import { RefreshCw as RefreshCwIcon, Settings as SettingsIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronsLeft as ChevronsLeftIcon, ChevronsRight as ChevronsRightIcon, Phone as PhoneIcon, Star as StarIcon, Mail as MailIcon, MessageSquare as MessageSquareIcon, Merge as MergeIcon, Bitcoin as EditIcon, Users as UsersIcon, SeparatorHorizontal as SeparatorHorizontalIcon, Send as SendIcon, Link as LinkIcon, Upload as UploadIcon, Download as DownloadIcon, Pin as PushPinIcon, RotateCcw as RotateCcwIcon, Trash as TrashIcon, ChevronUp, ChevronDown, Search, Circle, UserPlus as UserPlusIcon } from "lucide-react";
+import { RefreshCw as RefreshCwIcon, Settings as SettingsIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronsLeft as ChevronsLeftIcon, ChevronsRight as ChevronsRightIcon, Phone as PhoneIcon, Star as StarIcon, Mail as MailIcon, MessageSquare as MessageSquareIcon, Merge as MergeIcon, Bitcoin as EditIcon, Users as UsersIcon, SeparatorHorizontal as SeparatorHorizontalIcon, Send as SendIcon, Link as LinkIcon, Upload as UploadIcon, Download as DownloadIcon, Pin as PushPinIcon, RotateCcw as RotateCcwIcon, Trash as TrashIcon, ChevronUp, ChevronDown, Search, Circle, UserPlus as UserPlusIcon, Filter as FilterIcon, X as XIcon } from "lucide-react";
+import { ContactsFiltersModal } from "./ContactsFiltersModal";
+import { FilterConfig } from "../../services/savedFiltersService";
 
 const STORAGE_KEY_VISIBLE_COLUMNS = 'contactsVisibleColumns';
 const STORAGE_KEY_PAGE_SIZE = 'contactsPageSize';
@@ -29,7 +31,7 @@ const twoOrMoreSelectedButtons = [
 
 const oneOrMoreSelectedButtons = [
   { label: "Send to Account", variant: "info", icon: SendIcon },
-  { label: "Reassign", variant: "info", icon: UserPlusIcon },
+  { label: "Reassign", variant: "warning", icon: UserPlusIcon },
   { label: "Release", variant: "warning", icon: RotateCcwIcon },
   { label: "Delete", variant: "destructive", icon: TrashIcon },
 ];
@@ -85,6 +87,9 @@ interface ContactsHeaderProps {
   onNewClient: () => void;
   activePriorityFilter: string | null;
   onPriorityFilterChange: (priority: string) => void;
+  onOpenFilters: () => void;
+  onClearFilters: () => void;
+  hasActiveFilters: boolean;
 }
 
 const ContactsHeader: React.FC<ContactsHeaderProps> = ({
@@ -100,7 +105,10 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
   onOpenSettings,
   onNewClient,
   activePriorityFilter,
-  onPriorityFilterChange
+  onPriorityFilterChange,
+  onOpenFilters,
+  onClearFilters,
+  hasActiveFilters
 }) => {
   const [searchValue, setSearchValue] = React.useState('');
 
@@ -328,9 +336,19 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
                 variant="link"
                 size="sm"
                 className="p-1 text-decoration-none"
-                onClick={onRefresh}
+                onClick={onOpenFilters}
+                title="Advanced Filters"
               >
-                <RefreshCwIcon size={16} />
+                <FilterIcon size={16} />
+              </Button>
+              <Button
+                variant="link"
+                size="sm"
+                className={`p-1 text-decoration-none ${hasActiveFilters ? 'text-danger' : ''}`}
+                onClick={onClearFilters}
+                title="Clear Filters"
+              >
+                <XIcon size={16} />
               </Button>
               <Button
                 variant="link"
@@ -422,6 +440,9 @@ export const Contacts = (): JSX.Element => {
   const [showContactModal, setShowContactModal] = React.useState(false);
   const [contactModalMode, setContactModalMode] = React.useState<'create' | 'edit'>('create');
   const [selectedContact, setSelectedContact] = React.useState<Contact | null>(null);
+
+  const [showFiltersModal, setShowFiltersModal] = React.useState(false);
+  const [appliedFilters, setAppliedFilters] = React.useState<FilterConfig>({});
 
   const [sortConfig, setSortConfig] = React.useState<{
     key: string;
@@ -604,6 +625,22 @@ export const Contacts = (): JSX.Element => {
     loadContacts();
   };
 
+  const handleOpenFilters = () => {
+    setShowFiltersModal(true);
+  };
+
+  const handleApplyFilters = (filters: FilterConfig) => {
+    setAppliedFilters(filters);
+    setCurrentPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setAppliedFilters({});
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = Object.keys(appliedFilters).length > 0;
+
   const renderCell = (contact: Contact, columnId: string) => {
     switch (columnId) {
       case 'email':
@@ -736,6 +773,9 @@ export const Contacts = (): JSX.Element => {
           onNewClient={handleNewClient}
           activePriorityFilter={activePriorityFilter}
           onPriorityFilterChange={handlePriorityFilterChange}
+          onOpenFilters={handleOpenFilters}
+          onClearFilters={handleClearFilters}
+          hasActiveFilters={hasActiveFilters}
         />
       </div>
 
@@ -863,6 +903,14 @@ export const Contacts = (): JSX.Element => {
         visibleColumns={visibleColumns}
         pageSize={pageSize}
         onUpdate={handleSettingsUpdate}
+      />
+
+      <ContactsFiltersModal
+        show={showFiltersModal}
+        onHide={() => setShowFiltersModal(false)}
+        onApply={handleApplyFilters}
+        onClear={handleClearFilters}
+        initialFilters={appliedFilters}
       />
 
       <ContactProfileFSModal3
