@@ -8,7 +8,7 @@ import { contactService } from "../../services/contactService";
 import { Contact } from "../../lib/supabase";
 import { PageSettingsModal, ColumnOption } from "./PageSettingsModal";
 import { ContactProfileFSModal3 } from "../../components/modals/ContactProfileFSModal3";
-import { RefreshCw as RefreshCwIcon, Settings as SettingsIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronsLeft as ChevronsLeftIcon, ChevronsRight as ChevronsRightIcon, Phone as PhoneIcon, Star as StarIcon, Mail as MailIcon, MessageSquare as MessageSquareIcon, Merge as MergeIcon, Bitcoin as EditIcon, Users as UsersIcon, SeparatorHorizontal as SeparatorHorizontalIcon, Send as SendIcon, Link as LinkIcon, Upload as UploadIcon, Download as DownloadIcon, Pin as PushPinIcon, RotateCcw as RotateCcwIcon, Trash as TrashIcon, ChevronUp, ChevronDown, Search, Circle } from "lucide-react";
+import { RefreshCw as RefreshCwIcon, Settings as SettingsIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronsLeft as ChevronsLeftIcon, ChevronsRight as ChevronsRightIcon, Phone as PhoneIcon, Star as StarIcon, Mail as MailIcon, MessageSquare as MessageSquareIcon, Merge as MergeIcon, Bitcoin as EditIcon, Users as UsersIcon, SeparatorHorizontal as SeparatorHorizontalIcon, Send as SendIcon, Link as LinkIcon, Upload as UploadIcon, Download as DownloadIcon, Pin as PushPinIcon, RotateCcw as RotateCcwIcon, Trash as TrashIcon, ChevronUp, ChevronDown, Search, Circle, UserPlus as UserPlusIcon } from "lucide-react";
 
 const STORAGE_KEY_VISIBLE_COLUMNS = 'contactsVisibleColumns';
 const STORAGE_KEY_PAGE_SIZE = 'contactsPageSize';
@@ -29,6 +29,7 @@ const twoOrMoreSelectedButtons = [
 
 const oneOrMoreSelectedButtons = [
   { label: "Send to Account", variant: "info", icon: SendIcon },
+  { label: "Reassign", variant: "info", icon: UserPlusIcon },
   { label: "Release", variant: "warning", icon: RotateCcwIcon },
   { label: "Delete", variant: "destructive", icon: TrashIcon },
 ];
