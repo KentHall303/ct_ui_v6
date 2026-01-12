@@ -29,8 +29,6 @@ export function useResizableColumns(
     columnId: string;
     startX: number;
     startWidth: number;
-    nextColumnId: string | null;
-    nextStartWidth: number;
   } | null>(null);
 
   const getInitialWidths = useCallback((): ColumnWidths => {
@@ -63,21 +61,16 @@ export function useResizableColumns(
     (columnId: string, event: React.MouseEvent) => {
       event.preventDefault();
 
-      const columnIndex = columns.findIndex(col => col.id === columnId);
-      const nextColumn = columnIndex < columns.length - 1 ? columns[columnIndex + 1] : null;
-
       resizeData.current = {
         columnId,
         startX: event.clientX,
         startWidth: columnWidths[columnId],
-        nextColumnId: nextColumn ? nextColumn.id : null,
-        nextStartWidth: nextColumn ? columnWidths[nextColumn.id] : 0,
       };
 
       setIsResizing(true);
       setResizingColumn(columnId);
     },
-    [columns, columnWidths]
+    [columnWidths]
   );
 
   useEffect(() => {
@@ -86,27 +79,14 @@ export function useResizableColumns(
     const handleMouseMove = (event: MouseEvent) => {
       if (!resizeData.current) return;
 
-      const { columnId, startX, startWidth, nextColumnId, nextStartWidth } = resizeData.current;
+      const { columnId, startX, startWidth } = resizeData.current;
       const diff = event.clientX - startX;
 
       const column = columns.find(col => col.id === columnId);
-      const nextColumn = nextColumnId ? columns.find(col => col.id === nextColumnId) : null;
-
       if (!column) return;
 
       const newWidth = Math.max(column.minWidth, startWidth + diff);
-      const actualDiff = newWidth - startWidth;
-
-      const updates: ColumnWidths = {
-        [columnId]: newWidth,
-      };
-
-      if (nextColumnId && nextColumn) {
-        const nextNewWidth = Math.max(nextColumn.minWidth, nextStartWidth - actualDiff);
-        updates[nextColumnId] = nextNewWidth;
-      }
-
-      setColumnWidths(prev => ({ ...prev, ...updates }));
+      setColumnWidths(prev => ({ ...prev, [columnId]: newWidth }));
     };
 
     const handleMouseUp = () => {

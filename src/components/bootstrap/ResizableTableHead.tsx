@@ -71,7 +71,8 @@ export const ResizableTableHead: React.FC<ResizableTableHeadProps> = ({
               style={{
                 width: `${columnWidths[column.id]}px`,
                 minWidth: `${column.minWidth}px`,
-                position: isSticky ? 'sticky' : 'relative',
+                position: 'sticky',
+                top: 0,
                 left: isSticky ? `${stickyConfig.left}px` : undefined,
                 zIndex: isSticky ? 40 : 10,
                 backgroundColor: '#ffffff',
