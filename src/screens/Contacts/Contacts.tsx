@@ -804,8 +804,7 @@ export const Contacts = (): JSX.Element => {
                 onSort={handleSort}
                 getSortIcon={getSortIcon}
                 stickyColumns={[
-                  { columnId: 'checkbox', left: 0 },
-                  { columnId: 'name', left: columnWidths.checkbox }
+                  { columnId: 'checkbox', left: 0 }
                 ]}
                 renderCustomHeader={(column) => {
                   if (column.id === 'checkbox') {
@@ -849,8 +848,7 @@ export const Contacts = (): JSX.Element => {
                     </TableCell>
 
                     <TableCell
-                      className="position-sticky"
-                      style={{ left: `${columnWidths.checkbox}px`, width: `${columnWidths.name}px`, zIndex: 30 }}
+                      style={{ width: `${columnWidths.name}px` }}
                       role="gridcell"
                     >
                       <div className="d-flex flex-column">
