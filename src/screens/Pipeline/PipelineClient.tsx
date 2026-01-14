@@ -3,8 +3,8 @@ import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 import { PipelineHeader, SortOption } from "./components/PipelineHeader";
 import { PipelineFilterModal, PipelineFilterConfig } from "./components/PipelineFilterModal";
-import { PipelineSettingsModal, DisplayByOption } from "./components/PipelineSettingsModal";
-import { pipelinePreferencesService } from "../../services/pipelinePreferencesService";
+import { PipelineSettingsModal } from "./components/PipelineSettingsModal";
+import { AddClientModal } from "./components/AddClientModal";
 import {
   DndContext,
   DragEndEvent,
@@ -82,8 +82,8 @@ export const PipelineClient: React.FC = () => {
 
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showAddClientModal, setShowAddClientModal] = useState(false);
   const [filters, setFilters] = useState<PipelineFilterConfig>({});
-  const [displayBy, setDisplayBy] = useState<DisplayByOption>('contact_name');
   const [currentSort, setCurrentSort] = useState<SortOption | null>(null);
 
   const sensors = useSensors(
@@ -96,18 +96,7 @@ export const PipelineClient: React.FC = () => {
 
   useEffect(() => {
     loadPipelineData();
-    loadDisplayPreference();
   }, []);
-
-  const loadDisplayPreference = async () => {
-    const preference = await pipelinePreferencesService.getDisplayBy();
-    setDisplayBy(preference);
-  };
-
-  const handleDisplayByChange = async (value: DisplayByOption) => {
-    setDisplayBy(value);
-    await pipelinePreferencesService.setDisplayBy(value);
-  };
 
   const loadPipelineData = async () => {
     try {
@@ -527,13 +516,8 @@ export const PipelineClient: React.FC = () => {
       return priorityColors[opportunity.priority] || '#0d6efd';
     };
 
-    const displayName = displayBy === 'company_name' && opportunity.company_name
-      ? opportunity.company_name
-      : opportunity.contact_name;
-
-    const secondaryName = displayBy === 'company_name'
-      ? opportunity.contact_name
-      : opportunity.company_name;
+    const displayName = opportunity.contact_name;
+    const secondaryName = opportunity.company_name;
 
     return (
       <div
@@ -694,6 +678,7 @@ export const PipelineClient: React.FC = () => {
           onOpenSettingsModal={() => setShowSettingsModal(true)}
           onSortChange={handleSortChange}
           currentSort={currentSort}
+          onAddClient={() => setShowAddClientModal(true)}
         />
       </div>
 
@@ -865,13 +850,8 @@ export const PipelineClient: React.FC = () => {
               const opp = opportunities.find(o => o.id === activeId);
               if (!opp) return null;
 
-              const overlayDisplayName = displayBy === 'company_name' && opp.company_name
-                ? opp.company_name
-                : opp.contact_name;
-
-              const overlaySecondaryName = displayBy === 'company_name'
-                ? opp.contact_name
-                : opp.company_name;
+              const overlayDisplayName = opp.contact_name;
+              const overlaySecondaryName = opp.company_name;
 
               return (
                 <div className="card-body p-2" style={{
@@ -929,8 +909,11 @@ export const PipelineClient: React.FC = () => {
       <PipelineSettingsModal
         show={showSettingsModal}
         onHide={() => setShowSettingsModal(false)}
-        displayBy={displayBy}
-        onDisplayByChange={handleDisplayByChange}
+      />
+
+      <AddClientModal
+        show={showAddClientModal}
+        onHide={() => setShowAddClientModal(false)}
       />
     </DndContext>
   );

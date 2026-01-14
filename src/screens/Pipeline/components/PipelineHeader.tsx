@@ -21,6 +21,7 @@ interface PipelineHeaderProps {
   onOpenSettingsModal: () => void;
   onSortChange: (sortKey: string, direction: 'asc' | 'desc') => void;
   currentSort: SortOption | null;
+  onAddClient: () => void;
 }
 
 export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
@@ -37,6 +38,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
   onOpenSettingsModal,
   onSortChange,
   currentSort,
+  onAddClient,
 }) => {
   const isSortActive = (key: string, direction: 'asc' | 'desc') => {
     return currentSort?.key === key && currentSort?.direction === direction;
@@ -86,6 +88,7 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                   padding: '0.375rem 0.75rem'
                 }}
                 title="Add new client"
+                onClick={onAddClient}
               >
                 Add Client
               </Button>
