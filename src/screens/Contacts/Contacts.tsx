@@ -803,9 +803,7 @@ export const Contacts = (): JSX.Element => {
                 sortConfig={sortConfig}
                 onSort={handleSort}
                 getSortIcon={getSortIcon}
-                stickyColumns={[
-                  { columnId: 'checkbox', left: 0 }
-                ]}
+                stickyColumns={[]}
                 renderCustomHeader={(column) => {
                   if (column.id === 'checkbox') {
                     return (
@@ -829,10 +827,8 @@ export const Contacts = (): JSX.Element => {
                     aria-rowindex={index + 2}
                   >
                     <TableCell
-                      className="position-sticky start-0"
                       style={{
                         width: `${columnWidths.checkbox}px`,
-                        zIndex: 30,
                         borderLeft: `3px solid ${getStatusBorderColor(contact.status_color)}`
                       }}
                       role="gridcell"
