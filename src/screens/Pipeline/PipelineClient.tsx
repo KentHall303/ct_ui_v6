@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { supabase } from "../../lib/supabase";
-import { PipelineHeader } from "./components/PipelineHeader";
+import { PipelineHeader, SortOption } from "./components/PipelineHeader";
+import { PipelineFilterModal, PipelineFilterConfig } from "./components/PipelineFilterModal";
+import { PipelineSettingsModal, DisplayByOption } from "./components/PipelineSettingsModal";
+import { pipelinePreferencesService } from "../../services/pipelinePreferencesService";
 import {
   DndContext,
   DragEndEvent,
@@ -77,6 +80,12 @@ export const PipelineClient: React.FC = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const boardRef = useRef<HTMLDivElement | null>(null);
 
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [filters, setFilters] = useState<PipelineFilterConfig>({});
+  const [displayBy, setDisplayBy] = useState<DisplayByOption>('contact_name');
+  const [currentSort, setCurrentSort] = useState<SortOption | null>(null);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -87,7 +96,18 @@ export const PipelineClient: React.FC = () => {
 
   useEffect(() => {
     loadPipelineData();
+    loadDisplayPreference();
   }, []);
+
+  const loadDisplayPreference = async () => {
+    const preference = await pipelinePreferencesService.getDisplayBy();
+    setDisplayBy(preference);
+  };
+
+  const handleDisplayByChange = async (value: DisplayByOption) => {
+    setDisplayBy(value);
+    await pipelinePreferencesService.setDisplayBy(value);
+  };
 
   const loadPipelineData = async () => {
     try {
@@ -125,6 +145,22 @@ export const PipelineClient: React.FC = () => {
     });
   };
 
+  const handleSortChange = (sortKey: string, direction: 'asc' | 'desc') => {
+    if (currentSort?.key === sortKey && currentSort?.direction === direction) {
+      setCurrentSort(null);
+    } else {
+      setCurrentSort({ key: sortKey, direction });
+    }
+  };
+
+  const handleApplyFilters = (newFilters: PipelineFilterConfig) => {
+    setFilters(newFilters);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({});
+  };
+
   const getOpportunitiesForCycle = (cycleId: string): Opportunity[] => {
     let filtered = opportunities.filter(opp => opp.sales_cycle_id === cycleId);
 
@@ -145,19 +181,43 @@ export const PipelineClient: React.FC = () => {
     // Sort by order_position first
     filtered = filtered.sort((a, b) => a.order_position - b.order_position);
 
-    // Apply priority sorting if active
     if (activePrioritySort) {
       filtered = filtered.sort((a, b) => {
-        // If 'a' matches the selected priority, it comes first
         if (a.priority === activePrioritySort && b.priority !== activePrioritySort) {
           return -1;
         }
-        // If 'b' matches the selected priority, it comes first
         if (b.priority === activePrioritySort && a.priority !== activePrioritySort) {
           return 1;
         }
-        // Otherwise maintain order_position order
         return a.order_position - b.order_position;
+      });
+    }
+
+    if (currentSort) {
+      filtered = [...filtered].sort((a, b) => {
+        let comparison = 0;
+        switch (currentSort.key) {
+          case 'value':
+            comparison = a.estimated_value - b.estimated_value;
+            break;
+          case 'company':
+            comparison = (a.company_name || '').localeCompare(b.company_name || '');
+            break;
+          case 'first_name':
+            comparison = a.contact_name.split(' ')[0].localeCompare(b.contact_name.split(' ')[0]);
+            break;
+          case 'last_name':
+            const aLast = a.contact_name.split(' ').slice(-1)[0] || '';
+            const bLast = b.contact_name.split(' ').slice(-1)[0] || '';
+            comparison = aLast.localeCompare(bLast);
+            break;
+          case 'close_date':
+            comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+            break;
+          default:
+            comparison = 0;
+        }
+        return currentSort.direction === 'asc' ? comparison : -comparison;
       });
     }
 
@@ -467,6 +527,14 @@ export const PipelineClient: React.FC = () => {
       return priorityColors[opportunity.priority] || '#0d6efd';
     };
 
+    const displayName = displayBy === 'company_name' && opportunity.company_name
+      ? opportunity.company_name
+      : opportunity.contact_name;
+
+    const secondaryName = displayBy === 'company_name'
+      ? opportunity.contact_name
+      : opportunity.company_name;
+
     return (
       <div
         ref={setNodeRef}
@@ -499,17 +567,17 @@ export const PipelineClient: React.FC = () => {
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
               fontSize: '0.85rem'
-            }}>{opportunity.contact_name}</div>
+            }}>{displayName}</div>
           </div>
 
-          {opportunity.company_name && (
+          {secondaryName && (
             <div className="mb-2" style={{
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
               fontSize: '0.75rem',
               color: '#8e8e93'
-            }}>{opportunity.company_name}</div>
+            }}>{secondaryName}</div>
           )}
 
           <div className="d-flex align-items-center gap-1 mb-2">
@@ -622,6 +690,10 @@ export const PipelineClient: React.FC = () => {
           onSearchChange={setSearchTerm}
           activePrioritySort={activePrioritySort}
           onPrioritySortChange={handlePrioritySortChange}
+          onOpenFilterModal={() => setShowFilterModal(true)}
+          onOpenSettingsModal={() => setShowSettingsModal(true)}
+          onSortChange={handleSortChange}
+          currentSort={currentSort}
         />
       </div>
 
@@ -793,6 +865,14 @@ export const PipelineClient: React.FC = () => {
               const opp = opportunities.find(o => o.id === activeId);
               if (!opp) return null;
 
+              const overlayDisplayName = displayBy === 'company_name' && opp.company_name
+                ? opp.company_name
+                : opp.contact_name;
+
+              const overlaySecondaryName = displayBy === 'company_name'
+                ? opp.contact_name
+                : opp.company_name;
+
               return (
                 <div className="card-body p-2" style={{
                   borderLeft: `3px solid ${priorityColors[opp.priority] || '#0d6efd'}`
@@ -803,17 +883,17 @@ export const PipelineClient: React.FC = () => {
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
                       fontSize: '0.85rem'
-                    }}>{opp.contact_name}</div>
+                    }}>{overlayDisplayName}</div>
                   </div>
 
-                  {opp.company_name && (
+                  {overlaySecondaryName && (
                     <div className="mb-2" style={{
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
                       fontSize: '0.75rem',
                       color: '#8e8e93'
-                    }}>{opp.company_name}</div>
+                    }}>{overlaySecondaryName}</div>
                   )}
 
                   <div className="d-flex align-items-center gap-1 mb-2">
@@ -837,6 +917,21 @@ export const PipelineClient: React.FC = () => {
           </div>
         ) : null}
       </DragOverlay>
+
+      <PipelineFilterModal
+        show={showFilterModal}
+        onHide={() => setShowFilterModal(false)}
+        onApply={handleApplyFilters}
+        onClear={handleClearFilters}
+        initialFilters={filters}
+      />
+
+      <PipelineSettingsModal
+        show={showSettingsModal}
+        onHide={() => setShowSettingsModal(false)}
+        displayBy={displayBy}
+        onDisplayByChange={handleDisplayByChange}
+      />
     </DndContext>
   );
 };

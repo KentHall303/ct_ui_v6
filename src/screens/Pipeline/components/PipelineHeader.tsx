@@ -2,6 +2,11 @@ import React from "react";
 import { Form, InputGroup, Dropdown, Badge, Button } from "react-bootstrap";
 import { Search, Settings, Circle } from "lucide-react";
 
+export interface SortOption {
+  key: string;
+  direction: 'asc' | 'desc';
+}
+
 interface PipelineHeaderProps {
   totalCount: number;
   pipelineType: string;
@@ -12,6 +17,10 @@ interface PipelineHeaderProps {
   onSearchChange: (value: string) => void;
   activePrioritySort: string | null;
   onPrioritySortChange: (priority: string) => void;
+  onOpenFilterModal: () => void;
+  onOpenSettingsModal: () => void;
+  onSortChange: (sortKey: string, direction: 'asc' | 'desc') => void;
+  currentSort: SortOption | null;
 }
 
 export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
@@ -24,7 +33,15 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
   onSearchChange,
   activePrioritySort,
   onPrioritySortChange,
+  onOpenFilterModal,
+  onOpenSettingsModal,
+  onSortChange,
+  currentSort,
 }) => {
+  const isSortActive = (key: string, direction: 'asc' | 'desc') => {
+    return currentSort?.key === key && currentSort?.direction === direction;
+  };
+
   return (
     <div className="px-3 pt-3">
       <div className="bg-white rounded-3 pt-3 pb-3 px-4 border shadow-sm">
@@ -176,31 +193,21 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                 </Badge>
               </div>
 
-              <Dropdown align="end">
-                <Dropdown.Toggle variant="outline-secondary" size="sm" className="d-flex align-items-center gap-1">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M3 6h18M7 12h10M11 18h2" />
-                  </svg>
-                </Dropdown.Toggle>
-                <Dropdown.Menu>
-                  <Dropdown.Item>Days in Column ↑</Dropdown.Item>
-                  <Dropdown.Item>Days in Column ↓</Dropdown.Item>
-                  <Dropdown.Item>Odds ↑</Dropdown.Item>
-                  <Dropdown.Item>Odds ↓</Dropdown.Item>
-                  <Dropdown.Item>$ Value ↑</Dropdown.Item>
-                  <Dropdown.Item>$ Value ↓</Dropdown.Item>
-                  <Dropdown.Item>Company ↑</Dropdown.Item>
-                  <Dropdown.Item>Company ↓</Dropdown.Item>
-                  <Dropdown.Item active>First Name ↑</Dropdown.Item>
-                  <Dropdown.Item>First Name ↓</Dropdown.Item>
-                  <Dropdown.Item>Last Name ↑</Dropdown.Item>
-                  <Dropdown.Item>Last Name ↓</Dropdown.Item>
-                  <Dropdown.Item>Close Date ↑</Dropdown.Item>
-                  <Dropdown.Item>Close Date ↓</Dropdown.Item>
-                </Dropdown.Menu>
-              </Dropdown>
+              <button
+                className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
+                onClick={onOpenFilterModal}
+                title="Open Filters"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M3 6h18M7 12h10M11 18h2" />
+                </svg>
+              </button>
 
-              <button className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+              <button
+                className="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1"
+                onClick={onOpenSettingsModal}
+                title="Page Settings"
+              >
                 <Settings size={16} />
               </button>
 
@@ -213,9 +220,90 @@ export const PipelineHeader: React.FC<PipelineHeaderProps> = ({
                   </svg>
                 </Dropdown.Toggle>
                 <Dropdown.Menu>
-                  <Dropdown.Item>Export</Dropdown.Item>
-                  <Dropdown.Item>Refresh</Dropdown.Item>
-                  <Dropdown.Item>Settings</Dropdown.Item>
+                  <Dropdown.Item
+                    active={isSortActive('days_in_column', 'asc')}
+                    onClick={() => onSortChange('days_in_column', 'asc')}
+                  >
+                    Days in Column ↑
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    active={isSortActive('days_in_column', 'desc')}
+                    onClick={() => onSortChange('days_in_column', 'desc')}
+                  >
+                    Days in Column ↓
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    active={isSortActive('odds', 'asc')}
+                    onClick={() => onSortChange('odds', 'asc')}
+                  >
+                    Odds ↑
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    active={isSortActive('odds', 'desc')}
+                    onClick={() => onSortChange('odds', 'desc')}
+                  >
+                    Odds ↓
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    active={isSortActive('value', 'asc')}
+                    onClick={() => onSortChange('value', 'asc')}
+                  >
+                    $ Value ↑
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    active={isSortActive('value', 'desc')}
+                    onClick={() => onSortChange('value', 'desc')}
+                  >
+                    $ Value ↓
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    active={isSortActive('company', 'asc')}
+                    onClick={() => onSortChange('company', 'asc')}
+                  >
+                    Company ↑
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    active={isSortActive('company', 'desc')}
+                    onClick={() => onSortChange('company', 'desc')}
+                  >
+                    Company ↓
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    active={isSortActive('first_name', 'asc')}
+                    onClick={() => onSortChange('first_name', 'asc')}
+                  >
+                    First Name ↑
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    active={isSortActive('first_name', 'desc')}
+                    onClick={() => onSortChange('first_name', 'desc')}
+                  >
+                    First Name ↓
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    active={isSortActive('last_name', 'asc')}
+                    onClick={() => onSortChange('last_name', 'asc')}
+                  >
+                    Last Name ↑
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    active={isSortActive('last_name', 'desc')}
+                    onClick={() => onSortChange('last_name', 'desc')}
+                  >
+                    Last Name ↓
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    active={isSortActive('close_date', 'asc')}
+                    onClick={() => onSortChange('close_date', 'asc')}
+                  >
+                    Close Date ↑
+                  </Dropdown.Item>
+                  <Dropdown.Item
+                    active={isSortActive('close_date', 'desc')}
+                    onClick={() => onSortChange('close_date', 'desc')}
+                  >
+                    Close Date ↓
+                  </Dropdown.Item>
                 </Dropdown.Menu>
               </Dropdown>
             </div>
