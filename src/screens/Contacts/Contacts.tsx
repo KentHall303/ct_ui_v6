@@ -8,6 +8,7 @@ import { contactService } from "../../services/contactService";
 import { Contact } from "../../lib/supabase";
 import { PageSettingsModal, ColumnOption } from "./PageSettingsModal";
 import { ContactProfileFSModal3 } from "../../components/modals/ContactProfileFSModal3";
+import { NewClientModal } from "../../components/modals/NewClientModal";
 import { RefreshCw as RefreshCwIcon, Settings as SettingsIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronsLeft as ChevronsLeftIcon, ChevronsRight as ChevronsRightIcon, Phone as PhoneIcon, Star as StarIcon, Mail as MailIcon, MessageSquare as MessageSquareIcon, Merge as MergeIcon, Bitcoin as EditIcon, Users as UsersIcon, SeparatorHorizontal as SeparatorHorizontalIcon, Send as SendIcon, Link as LinkIcon, Upload as UploadIcon, Download as DownloadIcon, Pin as PushPinIcon, RotateCcw as RotateCcwIcon, Trash as TrashIcon, ChevronUp, ChevronDown, Search, Circle, UserPlus as UserPlusIcon, Filter as FilterIcon, X as XIcon } from "lucide-react";
 import { ContactsFiltersModal } from "./ContactsFiltersModal";
 import { FilterConfig } from "../../services/savedFiltersService";
@@ -441,6 +442,8 @@ export const Contacts = (): JSX.Element => {
   const [contactModalMode, setContactModalMode] = React.useState<'create' | 'edit'>('create');
   const [selectedContact, setSelectedContact] = React.useState<Contact | null>(null);
 
+  const [showNewClientModal, setShowNewClientModal] = React.useState(false);
+
   const [showFiltersModal, setShowFiltersModal] = React.useState(false);
   const [appliedFilters, setAppliedFilters] = React.useState<FilterConfig>({});
 
@@ -605,8 +608,14 @@ export const Contacts = (): JSX.Element => {
   };
 
   const handleNewClient = () => {
-    setSelectedContact(null);
-    setContactModalMode('create');
+    setShowNewClientModal(true);
+  };
+
+  const handleClientCreated = (contact: Contact) => {
+    loadContacts();
+    setShowNewClientModal(false);
+    setSelectedContact(contact);
+    setContactModalMode('edit');
     setShowContactModal(true);
   };
 
@@ -914,6 +923,12 @@ export const Contacts = (): JSX.Element => {
         mode={contactModalMode}
         initialData={selectedContact}
         onSave={handleContactSaved}
+      />
+
+      <NewClientModal
+        show={showNewClientModal}
+        onHide={() => setShowNewClientModal(false)}
+        onClientCreated={handleClientCreated}
       />
     </div>
   );
