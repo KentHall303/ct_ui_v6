@@ -162,7 +162,7 @@ export const routes: RouteObject[] = [
     element: <ContactsVendorPage />
   },
   {
-    path: '/contacts/other',
+    path: '/contacts/new-other',
     element: <ContactsOtherPage />
   },
   {
