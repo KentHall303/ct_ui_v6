@@ -265,6 +265,7 @@ export const contactService = {
       assignedUser?: string;
       salesCycleId?: string;
       actionPlanId?: string;
+      contactType?: ContactType;
     }
   ): Promise<{ contact: Contact; opportunity?: Opportunity }> {
     const existingContact = await this.getById(contactId);
@@ -301,6 +302,7 @@ export const contactService = {
         lead_source: contactData.leadSource ?? existingContact.lead_source,
         assigned_user: contactData.assignedUser ?? existingContact.assigned_user,
         sales_cycle: salesCycleName,
+        contact_type: contactData.contactType ?? existingContact.contact_type,
         updated_at: new Date().toISOString(),
       })
       .eq('id', contactId)
@@ -327,6 +329,7 @@ export const contactService = {
             phone: contactData.cellPhone ?? existingContact.cell_phone,
             sales_cycle_id: salesCycle.id,
             lead_source: contactData.leadSource ?? existingContact.lead_source,
+            contact_type: contactData.contactType ?? existingContact.contact_type ?? 'Client',
             updated_at: new Date().toISOString(),
           })
           .eq('id', existingContact.opportunity_id)

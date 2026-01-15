@@ -110,6 +110,7 @@ export const ContactProfileFSModal3: React.FC<ContactProfileFSModal3Props> = ({
     setPostalCode(contact.postal_code || '');
     setLeadSource(contact.lead_source || '');
     setAssignedUser(contact.assigned_user || '');
+    setContactType(contact.contact_type || '');
   };
 
   const resetForm = () => {
@@ -168,6 +169,7 @@ export const ContactProfileFSModal3: React.FC<ContactProfileFSModal3Props> = ({
           assignedUser: assignedUser || undefined,
           salesCycleId: salesCycleId || undefined,
           actionPlanId: actionPlan || undefined,
+          contactType: contactType as any || undefined,
         });
       } else if (mode === 'edit' && initialData) {
         await contactService.updateWithOpportunity(initialData.id, {
@@ -183,6 +185,7 @@ export const ContactProfileFSModal3: React.FC<ContactProfileFSModal3Props> = ({
           assignedUser: assignedUser || undefined,
           salesCycleId: salesCycleId || undefined,
           actionPlanId: actionPlan || undefined,
+          contactType: contactType as any || undefined,
         });
       }
 
