@@ -8,11 +8,11 @@ interface ContactTypeBadgeProps {
 }
 
 const typeConfig: Record<ContactType, { abbrev: string; bgColor: string; textColor: string }> = {
-  Client: { abbrev: 'CI', bgColor: '#0d6efd', textColor: '#ffffff' },
+  Client: { abbrev: 'CL', bgColor: '#0d6efd', textColor: '#ffffff' },
   Employee: { abbrev: 'EM', bgColor: '#198754', textColor: '#ffffff' },
   Partner: { abbrev: 'PA', bgColor: '#6f42c1', textColor: '#ffffff' },
   Vendor: { abbrev: 'VE', bgColor: '#fd7e14', textColor: '#ffffff' },
-  Other: { abbrev: 'OT', bgColor: '#6c757d', textColor: '#ffffff' },
+  Other: { abbrev: 'NO', bgColor: '#6c757d', textColor: '#ffffff' },
 };
 
 export function ContactTypeBadge({ type, size = 'sm', className = '' }: ContactTypeBadgeProps) {

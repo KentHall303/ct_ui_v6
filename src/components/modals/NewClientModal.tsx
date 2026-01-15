@@ -7,29 +7,33 @@ import { FloatingInput, FloatingSelect, FloatingSelectOption } from "../bootstra
 import { AddressAutocomplete } from "../bootstrap/AddressAutocomplete";
 import { ChipCheck } from "../bootstrap/ChipCheck";
 import { AddressSuggestion } from "../../data/mockAddressData";
-import { Contact } from "../../lib/supabase";
+import { Contact, ContactType } from "../../lib/supabase";
 import { contactService } from "../../services/contactService";
 import { userService, User } from "../../services/userService";
 import { salesCycleService, SalesCycle } from "../../services/salesCycleService";
 import { stateProvinceData } from "../../data/stateProvinceData";
 import { leadSourceData } from "../../data/leadSourceData";
 
+const contactTypeOptions: ContactType[] = ['Client', 'Employee', 'Partner', 'Vendor', 'Other'];
+
 interface NewClientModalProps {
   show: boolean;
   onHide: () => void;
   onClientCreated: (contact: Contact) => void;
+  defaultContactType?: ContactType;
 }
 
 export const NewClientModal: React.FC<NewClientModalProps> = ({
   show,
   onHide,
   onClientCreated,
+  defaultContactType,
 }) => {
   const [users, setUsers] = useState<User[]>([]);
   const [salesCycles, setSalesCycles] = useState<SalesCycle[]>([]);
   const [loadingData, setLoadingData] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [errors, setErrors] = useState<{ firstName?: string; lastName?: string }>({});
+  const [errors, setErrors] = useState<{ firstName?: string; lastName?: string; contactType?: string }>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [assignedUser, setAssignedUser] = useState("");
@@ -95,7 +99,7 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
     setPostalCode('');
     setLeadSource('');
     setAssignedUser('');
-    setContactType('');
+    setContactType(defaultContactType || '');
     setDealSize('');
     setOdds('');
     setCloseDate('');
@@ -121,12 +125,15 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
   };
 
   const validateForm = (): boolean => {
-    const newErrors: { firstName?: string; lastName?: string } = {};
+    const newErrors: { firstName?: string; lastName?: string; contactType?: string } = {};
     if (!firstName.trim()) {
       newErrors.firstName = 'First name is required';
     }
     if (!lastName.trim()) {
       newErrors.lastName = 'Last name is required';
+    }
+    if (!contactType) {
+      newErrors.contactType = 'Contact type is required';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -150,6 +157,7 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
         leadSource: leadSource || undefined,
         assignedUser: assignedUser || undefined,
         salesCycleId: salesCycleId || undefined,
+        contactType: contactType as ContactType,
       });
 
       onClientCreated(result.contact);
@@ -316,16 +324,23 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
                   </div>
                 </div>
 
-                <FloatingSelect
-                  label="Contact Type"
-                  value={contactType}
-                  onChange={(e) => setContactType(e.target.value)}
-                >
-                  <FloatingSelectOption value="">Select Type</FloatingSelectOption>
-                  <FloatingSelectOption value="Lead">Lead</FloatingSelectOption>
-                  <FloatingSelectOption value="Customer">Customer</FloatingSelectOption>
-                  <FloatingSelectOption value="Partner">Partner</FloatingSelectOption>
-                </FloatingSelect>
+                <div>
+                  <FloatingSelect
+                    label="Contact Type *"
+                    value={contactType}
+                    onChange={(e) => {
+                      setContactType(e.target.value);
+                      if (errors.contactType) setErrors(prev => ({ ...prev, contactType: undefined }));
+                    }}
+                    className={errors.contactType ? 'is-invalid' : ''}
+                  >
+                    <FloatingSelectOption value="">Select Type</FloatingSelectOption>
+                    {contactTypeOptions.map((type) => (
+                      <FloatingSelectOption key={type} value={type}>{type}</FloatingSelectOption>
+                    ))}
+                  </FloatingSelect>
+                  {errors.contactType && <div className="text-danger small mt-1">{errors.contactType}</div>}
+                </div>
               </div>
             </ContactInfoCard>
           </Col>

@@ -765,6 +765,7 @@ export const ContactsByType: React.FC<ContactsByTypeProps> = ({ contactType, tit
         show={showNewClientModal}
         onHide={() => setShowNewClientModal(false)}
         onClientCreated={handleClientCreated}
+        defaultContactType={contactType}
       />
     </div>
   );
