@@ -138,7 +138,7 @@ const ContactsHeader: React.FC<ContactsHeaderProps> = ({
   return (
     <div className="px-3 pt-3">
       <div className="bg-white rounded-3 pt-3 pb-3 px-4 border shadow-sm">
-        <h2 className="h4 fw-bold text-dark mb-2">Contacts - Client</h2>
+        <h2 className="h4 fw-bold text-dark mb-2">Contacts - Clients</h2>
         <div className="d-flex align-items-center justify-content-between">
           <p className="text-secondary mb-0" style={{ fontSize: '0.875rem' }}>
             {totalRecords} Records in Clients List
@@ -512,6 +512,7 @@ export const Contacts = (): JSX.Element => {
         search: searchTerm,
         sortBy: sortConfig?.key || 'name',
         sortDirection: sortConfig?.direction || 'asc',
+        contactType: 'Client',
       });
       setContacts(response.contacts);
       setTotalRecords(response.total);
@@ -929,6 +930,7 @@ export const Contacts = (): JSX.Element => {
         show={showNewClientModal}
         onHide={() => setShowNewClientModal(false)}
         onClientCreated={handleClientCreated}
+        defaultContactType="Client"
       />
     </div>
   );

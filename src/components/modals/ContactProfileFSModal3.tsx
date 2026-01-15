@@ -930,10 +930,12 @@ export const ContactProfileFSModal3: React.FC<ContactProfileFSModal3Props> = ({
                     value={contactType}
                     onChange={(e) => setContactType(e.target.value)}
                   >
-                    <FloatingSelectOption value="Select Type">Select Type</FloatingSelectOption>
-                    <FloatingSelectOption value="Lead">Lead</FloatingSelectOption>
-                    <FloatingSelectOption value="Customer">Customer</FloatingSelectOption>
+                    <FloatingSelectOption value="">Select Type</FloatingSelectOption>
+                    <FloatingSelectOption value="Client">Client</FloatingSelectOption>
+                    <FloatingSelectOption value="Employee">Employee</FloatingSelectOption>
                     <FloatingSelectOption value="Partner">Partner</FloatingSelectOption>
+                    <FloatingSelectOption value="Vendor">Vendor</FloatingSelectOption>
+                    <FloatingSelectOption value="Other">Other</FloatingSelectOption>
                   </FloatingSelect>
                 </div>
               </ContactInfoCard>
