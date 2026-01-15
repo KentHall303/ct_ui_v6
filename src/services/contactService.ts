@@ -227,7 +227,9 @@ export const contactService = {
       .eq('id', contact.id);
 
     if (linkError) {
-      console.error('Failed to link contact to opportunity:', linkError);
+      await supabase.from('opportunities').delete().eq('id', opportunity.id);
+      await supabase.from('contacts').delete().eq('id', contact.id);
+      throw new Error(`Failed to link contact to opportunity: ${linkError.message}`);
     }
 
     if (contact && contact.name) {

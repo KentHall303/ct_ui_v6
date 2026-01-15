@@ -28,6 +28,7 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
   const [loadingData, setLoadingData] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<{ firstName?: string; lastName?: string }>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const [assignedUser, setAssignedUser] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -103,6 +104,7 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
       cmpl: false,
     });
     setErrors({});
+    setSubmitError(null);
   };
 
   const toggleMilestone = (key: keyof typeof milestones) => {
@@ -125,6 +127,7 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
     if (!validateForm()) return;
 
     setSaving(true);
+    setSubmitError(null);
     try {
       const result = await contactService.createWithOpportunity({
         firstName: firstName.trim(),
@@ -143,7 +146,8 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
       onClientCreated(result.contact);
       onHide();
     } catch (err) {
-      console.error('Error creating client:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Failed to create client. Please try again.';
+      setSubmitError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -175,7 +179,7 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
             variant="success"
             size="sm"
             onClick={handleCreateClient}
-            disabled={saving || loadingData}
+            disabled={saving || loadingData || (salesCycles.length === 0 && !loadingData)}
             style={{ minWidth: '120px' }}
           >
             {saving ? 'Creating...' : 'Create Client'}
@@ -193,6 +197,18 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
       </Modal.Header>
 
       <Modal.Body style={{ backgroundColor: '#f8f9fa', maxHeight: '80vh', overflowY: 'auto' }}>
+        {submitError && (
+          <div className="alert alert-danger d-flex align-items-center mb-3" role="alert">
+            <X size={16} className="me-2 flex-shrink-0" />
+            <div>{submitError}</div>
+          </div>
+        )}
+        {salesCycles.length === 0 && !loadingData && (
+          <div className="alert alert-warning d-flex align-items-center mb-3" role="alert">
+            <Info size={16} className="me-2 flex-shrink-0" />
+            <div>No sales cycles available. Please configure pipeline stages first.</div>
+          </div>
+        )}
         <Row className="g-3">
           <Col xs={12} lg={5}>
             <ContactInfoCard

@@ -611,8 +611,8 @@ export const Contacts = (): JSX.Element => {
     setShowNewClientModal(true);
   };
 
-  const handleClientCreated = (contact: Contact) => {
-    loadContacts();
+  const handleClientCreated = async (contact: Contact) => {
+    await loadContacts();
     setShowNewClientModal(false);
     setSelectedContact(contact);
     setContactModalMode('edit');
