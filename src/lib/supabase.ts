@@ -233,6 +233,8 @@ export interface ConnectionPlanWithActions extends ConnectionPlan {
   actions: ConnectionPlanAction[];
 }
 
+export type ContactType = 'Client' | 'Employee' | 'Partner' | 'Vendor' | 'Other';
+
 export interface Contact {
   id: string;
   name: string;
@@ -255,6 +257,7 @@ export interface Contact {
   next_date?: string;
   favorite_color?: string;
   opportunity_id?: string;
+  contact_type?: ContactType;
   created_at: string;
   updated_at: string;
 }

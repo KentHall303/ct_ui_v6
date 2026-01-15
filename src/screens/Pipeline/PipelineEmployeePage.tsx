@@ -1,15 +1,14 @@
 import React from "react";
 import { BodyPageLayout } from "../../components/layout/BodyPageLayout/BodyPageLayout";
-import { ContactsByType } from "./ContactsByType";
+import { PipelineByType } from "./PipelineByType";
 
-export const ContactsEmployeePage = (): JSX.Element => {
+export default function PipelineEmployeePage() {
   return (
     <BodyPageLayout>
-      <ContactsByType
+      <PipelineByType
         contactType="Employee"
-        title="Contacts - Employee"
-        newButtonLabel="New Employee"
+        title="Pipeline - Employee"
       />
     </BodyPageLayout>
   );
-};
+}

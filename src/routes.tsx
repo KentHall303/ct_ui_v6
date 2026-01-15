@@ -3,8 +3,16 @@ import { RouteObject } from 'react-router-dom';
 
 const AccountsPage = React.lazy(() => import('./screens/Accounts/AccountsPage').then(m => ({ default: m.AccountsPage })));
 const PipelineClientPage = React.lazy(() => import('./screens/Pipeline/PipelineClientPage').then(m => ({ default: m.PipelineClientPage })));
+const PipelineEmployeePage = React.lazy(() => import('./screens/Pipeline/PipelineEmployeePage'));
+const PipelinePartnerPage = React.lazy(() => import('./screens/Pipeline/PipelinePartnerPage'));
+const PipelineVendorPage = React.lazy(() => import('./screens/Pipeline/PipelineVendorPage'));
+const PipelineOtherPage = React.lazy(() => import('./screens/Pipeline/PipelineOtherPage'));
 const ContactsPage = React.lazy(() => import('./screens/Contacts/ContactsPage').then(m => ({ default: m.ContactsPage })));
 const ContactsEmployeePage = React.lazy(() => import('./screens/Contacts/ContactsEmployeePage').then(m => ({ default: m.ContactsEmployeePage })));
+const ContactsAllPage = React.lazy(() => import('./screens/Contacts/ContactsAllPage'));
+const ContactsPartnerPage = React.lazy(() => import('./screens/Contacts/ContactsPartnerPage'));
+const ContactsVendorPage = React.lazy(() => import('./screens/Contacts/ContactsVendorPage'));
+const ContactsOtherPage = React.lazy(() => import('./screens/Contacts/ContactsOtherPage'));
 const Jobs = React.lazy(() => import('./screens/Jobs/Jobs').then(m => ({ default: m.Jobs })));
 const CalendarPage = React.lazy(() => import('./screens/Calendar/CalendarPage').then(m => ({ default: m.CalendarPage })));
 const MessageCenterPage = React.lazy(() => import('./screens/MessageCenter/MessageCenterPage').then(m => ({ default: m.MessageCenterPage })));
@@ -115,15 +123,19 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/pipeline/employee',
-    element: <PlaceholderPage title="Pipeline - Employee" description="Pipeline employee content will be implemented here." />
+    element: <PipelineEmployeePage />
   },
   {
     path: '/pipeline/partner',
-    element: <PlaceholderPage title="Pipeline - Partner" description="Pipeline partner content will be implemented here." />
+    element: <PipelinePartnerPage />
   },
   {
     path: '/pipeline/vendor',
-    element: <PlaceholderPage title="Pipeline - Vendor" description="Pipeline vendor content will be implemented here." />
+    element: <PipelineVendorPage />
+  },
+  {
+    path: '/pipeline/other',
+    element: <PipelineOtherPage />
   },
   {
     path: '/pipeline/new-order',
@@ -143,19 +155,19 @@ export const routes: RouteObject[] = [
   },
   {
     path: '/contacts/partner',
-    element: <PlaceholderPage title="Contacts - Partner" description="Partner contacts will be implemented here." />
+    element: <ContactsPartnerPage />
   },
   {
     path: '/contacts/vendor',
-    element: <PlaceholderPage title="Contacts - Vendor" description="Vendor contacts will be implemented here." />
+    element: <ContactsVendorPage />
   },
   {
-    path: '/contacts/new-other',
-    element: <PlaceholderPage title="Contacts - New Other" description="New other contacts will be implemented here." />
+    path: '/contacts/other',
+    element: <ContactsOtherPage />
   },
   {
     path: '/contacts/all',
-    element: <PlaceholderPage title="All Contacts" description="All contacts will be implemented here." />
+    element: <ContactsAllPage />
   },
   {
     path: '/contacts/archived',

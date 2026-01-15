@@ -2,14 +2,14 @@ import React from "react";
 import { BodyPageLayout } from "../../components/layout/BodyPageLayout/BodyPageLayout";
 import { ContactsByType } from "./ContactsByType";
 
-export const ContactsEmployeePage = (): JSX.Element => {
+export default function ContactsPartnerPage() {
   return (
     <BodyPageLayout>
       <ContactsByType
-        contactType="Employee"
-        title="Contacts - Employee"
-        newButtonLabel="New Employee"
+        contactType="Partner"
+        title="Contacts - Partner"
+        newButtonLabel="New Partner"
       />
     </BodyPageLayout>
   );
-};
+}

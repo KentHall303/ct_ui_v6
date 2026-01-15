@@ -1,4 +1,4 @@
-import { supabase, Contact, Opportunity } from '../lib/supabase';
+import { supabase, Contact, Opportunity, ContactType } from '../lib/supabase';
 import { createCalendarForContact, updateCalendarName, deleteCalendarForContact } from './calendarService';
 import { salesCycleService, SalesCycle } from './salesCycleService';
 
@@ -8,6 +8,7 @@ export interface ContactsQueryParams {
   search?: string;
   sortBy?: string;
   sortDirection?: 'asc' | 'desc';
+  contactType?: ContactType;
 }
 
 export interface ContactsResponse {
@@ -25,10 +26,10 @@ export const contactService = {
       pageSize = 40,
       search = '',
       sortBy = 'name',
-      sortDirection = 'asc'
+      sortDirection = 'asc',
+      contactType
     } = params;
 
-    // Build query with LEFT JOIN to opportunities and sales_cycles
     let query = supabase
       .from('contacts')
       .select(`
@@ -42,8 +43,11 @@ export const contactService = {
         )
       `, { count: 'exact' });
 
-    // Filter to only show contacts that are in the pipeline (have an opportunity)
     query = query.not('opportunity_id', 'is', null);
+
+    if (contactType) {
+      query = query.eq('contact_type', contactType);
+    }
 
     if (search) {
       query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,cell_phone.ilike.%${search}%`);
@@ -61,13 +65,12 @@ export const contactService = {
       throw new Error(`Failed to fetch contacts: ${error.message}`);
     }
 
-    // Map the sales_cycle name from the joined sales_cycles table
     const contacts = (data || []).map((contact: any) => {
       const salesCycleName = contact.opportunities?.sales_cycles?.name || contact.sales_cycle;
       return {
         ...contact,
         sales_cycle: salesCycleName,
-        opportunities: undefined // Remove the nested object from the result
+        opportunities: undefined
       };
     });
 
@@ -81,6 +84,10 @@ export const contactService = {
       pageSize,
       totalPages
     };
+  },
+
+  async getByType(contactType: ContactType, params: Omit<ContactsQueryParams, 'contactType'> = {}): Promise<ContactsResponse> {
+    return this.getAll({ ...params, contactType });
   },
 
   async getById(id: string): Promise<Contact | null> {
@@ -161,6 +168,7 @@ export const contactService = {
     assignedUser?: string;
     salesCycleId?: string;
     actionPlanId?: string;
+    contactType?: ContactType;
   }): Promise<{ contact: Contact; opportunity: Opportunity }> {
     let salesCycle: SalesCycle | null = null;
 
@@ -177,6 +185,8 @@ export const contactService = {
 
     const fullName = `${contactData.firstName} ${contactData.lastName}`.trim();
 
+    const contactTypeValue = contactData.contactType || 'Client';
+
     const { data: contact, error: contactError } = await supabase
       .from('contacts')
       .insert({
@@ -192,6 +202,7 @@ export const contactService = {
         sales_cycle: salesCycle.name,
         created_date: new Date().toISOString().split('T')[0],
         status_color: 'bg-success',
+        contact_type: contactTypeValue,
       })
       .select()
       .single();
@@ -210,7 +221,7 @@ export const contactService = {
         sales_cycle_id: salesCycle.id,
         priority: 'new_lead',
         lead_source: contactData.leadSource || null,
-        contact_type: 'residential',
+        contact_type: contactTypeValue,
         order_position: 0,
       })
       .select()
@@ -329,5 +340,86 @@ export const contactService = {
     }
 
     return { contact, opportunity };
+  },
+
+  async updateContactType(contactId: string, newType: ContactType): Promise<{ contact: Contact; opportunity?: Opportunity }> {
+    const existingContact = await this.getById(contactId);
+    if (!existingContact) {
+      throw new Error('Contact not found');
+    }
+
+    const { data: contact, error: contactError } = await supabase
+      .from('contacts')
+      .update({
+        contact_type: newType,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', contactId)
+      .select()
+      .single();
+
+    if (contactError) {
+      throw new Error(`Failed to update contact type: ${contactError.message}`);
+    }
+
+    let opportunity: Opportunity | undefined;
+    if (existingContact.opportunity_id) {
+      const { data: updatedOpp, error: oppError } = await supabase
+        .from('opportunities')
+        .update({
+          contact_type: newType,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingContact.opportunity_id)
+        .select()
+        .single();
+
+      if (!oppError && updatedOpp) {
+        opportunity = updatedOpp;
+      }
+    }
+
+    return { contact, opportunity };
+  },
+
+  async updateInline(contactId: string, updates: Partial<Contact>): Promise<Contact> {
+    const { contact_type, ...otherUpdates } = updates;
+
+    const updatePayload: Record<string, any> = {
+      ...otherUpdates,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (contact_type) {
+      updatePayload.contact_type = contact_type;
+    }
+
+    const { data: contact, error: contactError } = await supabase
+      .from('contacts')
+      .update(updatePayload)
+      .eq('id', contactId)
+      .select()
+      .single();
+
+    if (contactError) {
+      throw new Error(`Failed to update contact: ${contactError.message}`);
+    }
+
+    const existingContact = await this.getById(contactId);
+    if (existingContact?.opportunity_id && contact_type) {
+      await supabase
+        .from('opportunities')
+        .update({
+          contact_type: contact_type,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', existingContact.opportunity_id);
+    }
+
+    if (updates.name && existingContact) {
+      await updateCalendarName(contact.id, updates.name);
+    }
+
+    return contact;
   },
 };
