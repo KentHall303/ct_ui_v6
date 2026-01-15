@@ -4,7 +4,9 @@ import { X, Star, Info, Paperclip, Tag, Users } from "lucide-react";
 import { Button } from "../bootstrap/Button";
 import { ContactInfoCard } from "../ContactInfoCard";
 import { FloatingInput, FloatingSelect, FloatingSelectOption } from "../bootstrap/FormControls";
+import { AddressAutocomplete } from "../bootstrap/AddressAutocomplete";
 import { ChipCheck } from "../bootstrap/ChipCheck";
+import { AddressSuggestion } from "../../data/mockAddressData";
 import { Contact } from "../../lib/supabase";
 import { contactService } from "../../services/contactService";
 import { userService, User } from "../../services/userService";
@@ -109,6 +111,13 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
 
   const toggleMilestone = (key: keyof typeof milestones) => {
     setMilestones(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const handleAddressSelect = (selectedAddress: AddressSuggestion) => {
+    setAddress(selectedAddress.streetAddress);
+    setCity(selectedAddress.city);
+    setState(selectedAddress.state);
+    setPostalCode(selectedAddress.postalCode);
   };
 
   const validateForm = (): boolean => {
@@ -270,10 +279,11 @@ export const NewClientModal: React.FC<NewClientModalProps> = ({
                   onChange={(e) => setCellPhone(e.target.value)}
                 />
 
-                <FloatingInput
+                <AddressAutocomplete
                   label="Address"
                   value={address}
-                  onChange={(e) => setAddress(e.target.value)}
+                  onChange={setAddress}
+                  onAddressSelect={handleAddressSelect}
                 />
 
                 <FloatingInput
