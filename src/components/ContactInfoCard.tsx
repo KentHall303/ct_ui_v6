@@ -144,9 +144,11 @@ export const ContactInfoCard = ({
         </div>
       </Card.Header>
       <Collapse in={isExpanded}>
-        <Card.Body className={fixedHeight ? '' : 'flex-grow-1'} style={fixedHeight ? { overflowY: 'auto' } : undefined}>
-          {children}
-        </Card.Body>
+        <div>
+          <Card.Body className={fixedHeight ? '' : 'flex-grow-1'} style={fixedHeight ? { overflowY: 'auto' } : undefined}>
+            {children}
+          </Card.Body>
+        </div>
       </Collapse>
     </Card>
   );
