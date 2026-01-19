@@ -2,7 +2,7 @@ import React from "react";
 import { Button } from "../../components/bootstrap/Button";
 import { FloatingInput, FloatingSelect, FloatingSelectOption } from "../../components/bootstrap/FormControls";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/bootstrap/Table";
-import { Badge, Card, Container, Row, Col, ButtonGroup, Button as BSButton, Form } from "react-bootstrap";
+import { Badge, Card, Container, Row, Col, Form } from "react-bootstrap";
 import { Search as SearchIcon, RefreshCw as RefreshCwIcon, Settings as SettingsIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronsLeft as ChevronsLeftIcon, ChevronsRight as ChevronsRightIcon, ChevronDown, ChevronUp, Plus as PlusIcon, Minus as MinusIcon, Mail as MailIcon, MessageSquare as MessageSquareIcon, FileText as FileTextIcon, Printer as PrinterIcon, Download as DownloadIcon, CreditCard as EditIcon, Trash as TrashIcon, User as UserIcon, DollarSign as DollarSignIcon, Calendar as CalendarIcon, TrendingUp as TrendingUpIcon, List as ListIcon, Calendar as CalendarIconView, Receipt as ReceiptIcon, Eye as EyeIcon, PanelLeftClose as PanelLeftCloseIcon, PanelLeftOpen as PanelLeftOpenIcon } from "lucide-react";
 import { AddCOGSModal } from "../../components/modals/AddCOGSModal";
 import { GrossMarginModal } from "../../components/modals/GrossMarginModal";
@@ -299,85 +299,121 @@ const JobsHeader = ({
             {/* Milestones Group - Segmented Control */}
             <div className="d-flex align-items-center gap-2">
               <span className="small fw-semibold text-dark">Milestones:</span>
-              <ButtonGroup size="sm">
-                <BSButton
-                  variant={milestones?.complete ? "primary" : "outline-secondary"}
-                  onClick={() => toggleMilestone?.('complete')}
-                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
-                >
-                  Complete
-                </BSButton>
-                <BSButton
-                  variant={milestones?.quoted ? "primary" : "outline-secondary"}
-                  onClick={() => toggleMilestone?.('quoted')}
-                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
-                >
-                  Quoted
-                </BSButton>
-                <BSButton
-                  variant={milestones?.closed ? "primary" : "outline-secondary"}
-                  onClick={() => toggleMilestone?.('closed')}
-                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
-                >
-                  Closed
-                </BSButton>
-              </ButtonGroup>
+              <div style={{
+                border: '1px solid #f8f9fa',
+                borderRadius: '6px',
+                padding: '2px'
+              }}>
+                <div className="btn-group" role="group">
+                  <Button
+                    variant={milestones?.complete ? 'primary' : 'link'}
+                    size="sm"
+                    className={milestones?.complete ? 'px-3' : 'px-3 text-secondary text-decoration-none'}
+                    onClick={() => toggleMilestone?.('complete')}
+                    style={milestones?.complete ? undefined : { backgroundColor: '#e9ecef' }}
+                  >
+                    Complete
+                  </Button>
+                  <Button
+                    variant={milestones?.quoted ? 'primary' : 'link'}
+                    size="sm"
+                    className={milestones?.quoted ? 'px-3' : 'px-3 text-secondary text-decoration-none'}
+                    onClick={() => toggleMilestone?.('quoted')}
+                    style={milestones?.quoted ? undefined : { backgroundColor: '#e9ecef' }}
+                  >
+                    Quoted
+                  </Button>
+                  <Button
+                    variant={milestones?.closed ? 'primary' : 'link'}
+                    size="sm"
+                    className={milestones?.closed ? 'px-3' : 'px-3 text-secondary text-decoration-none'}
+                    onClick={() => toggleMilestone?.('closed')}
+                    style={milestones?.closed ? undefined : { backgroundColor: '#e9ecef' }}
+                  >
+                    Closed
+                  </Button>
+                </div>
+              </div>
             </div>
 
             {/* Scheduling Group - Segmented Control */}
             <div className="d-flex align-items-center gap-2">
               <span className="small fw-semibold text-dark">Scheduling:</span>
-              <ButtonGroup size="sm">
-                <BSButton
-                  variant={scheduling === 'all' ? "primary" : "outline-secondary"}
-                  onClick={() => setScheduling?.('all')}
-                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
-                >
-                  All
-                </BSButton>
-                <BSButton
-                  variant={scheduling === 'scheduled' ? "primary" : "outline-secondary"}
-                  onClick={() => setScheduling?.('scheduled')}
-                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
-                >
-                  Scheduled
-                </BSButton>
-                <BSButton
-                  variant={scheduling === 'unscheduled' ? "primary" : "outline-secondary"}
-                  onClick={() => setScheduling?.('unscheduled')}
-                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
-                >
-                  Unscheduled
-                </BSButton>
-              </ButtonGroup>
+              <div style={{
+                border: '1px solid #f8f9fa',
+                borderRadius: '6px',
+                padding: '2px'
+              }}>
+                <div className="btn-group" role="group">
+                  <Button
+                    variant={scheduling === 'all' ? 'primary' : 'link'}
+                    size="sm"
+                    className={scheduling === 'all' ? 'px-3' : 'px-3 text-secondary text-decoration-none'}
+                    onClick={() => setScheduling?.('all')}
+                    style={scheduling === 'all' ? undefined : { backgroundColor: '#e9ecef' }}
+                  >
+                    All
+                  </Button>
+                  <Button
+                    variant={scheduling === 'scheduled' ? 'primary' : 'link'}
+                    size="sm"
+                    className={scheduling === 'scheduled' ? 'px-3' : 'px-3 text-secondary text-decoration-none'}
+                    onClick={() => setScheduling?.('scheduled')}
+                    style={scheduling === 'scheduled' ? undefined : { backgroundColor: '#e9ecef' }}
+                  >
+                    Scheduled
+                  </Button>
+                  <Button
+                    variant={scheduling === 'unscheduled' ? 'primary' : 'link'}
+                    size="sm"
+                    className={scheduling === 'unscheduled' ? 'px-3' : 'px-3 text-secondary text-decoration-none'}
+                    onClick={() => setScheduling?.('unscheduled')}
+                    style={scheduling === 'unscheduled' ? undefined : { backgroundColor: '#e9ecef' }}
+                  >
+                    Unscheduled
+                  </Button>
+                </div>
+              </div>
             </div>
 
             {/* Payments Group - Segmented Control */}
             <div className="d-flex align-items-center gap-2">
               <span className="small fw-semibold text-dark">Payments:</span>
-              <ButtonGroup size="sm">
-                <BSButton
-                  variant={payments === 'all' ? "primary" : "outline-secondary"}
-                  onClick={() => setPayments?.('all')}
-                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
-                >
-                  All
-                </BSButton>
-                <BSButton
-                  variant={payments === 'unpaid' ? "primary" : "outline-secondary"}
-                  onClick={() => setPayments?.('unpaid')}
-                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
-                >
-                  Unpaid
-                </BSButton>
-                <BSButton
-                  variant={payments === 'paid' ? "primary" : "outline-secondary"}
-                  onClick={() => setPayments?.('paid')}
-                  style={{ fontSize: '0.75rem', padding: '0.2rem 0.4rem' }}
-                >
-                  Paid
-                </BSButton>
-              </ButtonGroup>
+              <div style={{
+                border: '1px solid #f8f9fa',
+                borderRadius: '6px',
+                padding: '2px'
+              }}>
+                <div className="btn-group" role="group">
+                  <Button
+                    variant={payments === 'all' ? 'primary' : 'link'}
+                    size="sm"
+                    className={payments === 'all' ? 'px-3' : 'px-3 text-secondary text-decoration-none'}
+                    onClick={() => setPayments?.('all')}
+                    style={payments === 'all' ? undefined : { backgroundColor: '#e9ecef' }}
+                  >
+                    All
+                  </Button>
+                  <Button
+                    variant={payments === 'unpaid' ? 'primary' : 'link'}
+                    size="sm"
+                    className={payments === 'unpaid' ? 'px-3' : 'px-3 text-secondary text-decoration-none'}
+                    onClick={() => setPayments?.('unpaid')}
+                    style={payments === 'unpaid' ? undefined : { backgroundColor: '#e9ecef' }}
+                  >
+                    Unpaid
+                  </Button>
+                  <Button
+                    variant={payments === 'paid' ? 'primary' : 'link'}
+                    size="sm"
+                    className={payments === 'paid' ? 'px-3' : 'px-3 text-secondary text-decoration-none'}
+                    onClick={() => setPayments?.('paid')}
+                    style={payments === 'paid' ? undefined : { backgroundColor: '#e9ecef' }}
+                  >
+                    Paid
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -982,23 +1018,31 @@ const DispatchingView = () => {
               </Button>
               <h5 className="mb-0 fw-bold">{formatDate(selectedDate)}</h5>
             </div>
-            <div className="btn-group" role="group">
-              <button
-                type="button"
-                className={`btn btn-sm ${viewMode === 'timeline' ? 'btn-primary' : 'btn-outline-primary'}`}
-                onClick={() => setViewMode('timeline')}
-                style={{ fontSize: '0.8rem' }}
-              >
-                Timeline View
-              </button>
-              <button
-                type="button"
-                className={`btn btn-sm ${viewMode === 'map' ? 'btn-primary' : 'btn-outline-primary'}`}
-                onClick={() => setViewMode('map')}
-                style={{ fontSize: '0.8rem' }}
-              >
-                Map View
-              </button>
+            <div style={{
+              border: '1px solid #f8f9fa',
+              borderRadius: '6px',
+              padding: '2px'
+            }}>
+              <div className="btn-group" role="group">
+                <Button
+                  variant={viewMode === 'timeline' ? 'primary' : 'link'}
+                  size="sm"
+                  className={viewMode === 'timeline' ? 'px-3' : 'px-3 text-secondary text-decoration-none'}
+                  onClick={() => setViewMode('timeline')}
+                  style={viewMode === 'timeline' ? undefined : { backgroundColor: '#e9ecef' }}
+                >
+                  Timeline View
+                </Button>
+                <Button
+                  variant={viewMode === 'map' ? 'primary' : 'link'}
+                  size="sm"
+                  className={viewMode === 'map' ? 'px-3' : 'px-3 text-secondary text-decoration-none'}
+                  onClick={() => setViewMode('map')}
+                  style={viewMode === 'map' ? undefined : { backgroundColor: '#e9ecef' }}
+                >
+                  Map View
+                </Button>
+              </div>
             </div>
           </div>
 
