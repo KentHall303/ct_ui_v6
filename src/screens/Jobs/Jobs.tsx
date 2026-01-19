@@ -2072,7 +2072,7 @@ const CalendarView = () => {
     computeHeight();
     window.addEventListener("resize", computeHeight);
     return () => window.removeEventListener("resize", computeHeight);
-  }, []);
+  }, [sidebarCollapsed]);
 
   const toggleSubcontractor = (subcontractorId: string) => {
     const isSelected = selectedSubcontractorIds.includes(subcontractorId);
@@ -2354,94 +2354,105 @@ const CalendarView = () => {
           {view === 'week' ? (
             <JobsWeekView currentDate={currentDate} events={events} getColorForEvent={getColorForEvent} />
           ) : (
-            <div className="flex-fill p-3" style={{ overflow: 'auto', minWidth: 0 }}>
-              <div className="d-grid mb-2" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', minWidth: 0 }}>
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                  <div key={day} className="text-center py-2 small fw-semibold text-secondary bg-light rounded">
-                    {day}
-                  </div>
-                ))}
+            <div className="d-flex flex-column flex-fill" style={{ height: '100%', overflow: 'hidden' }}>
+              <div className="px-3 pt-3 pb-2" style={{ flexShrink: 0 }}>
+                <div className="d-grid mb-0" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+                  {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((day) => (
+                    <div key={day} className="text-center py-2 small fw-semibold text-secondary bg-light rounded">
+                      {day}
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              <div className="d-grid" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', minWidth: 0 }}>
-                {calendarDays.map((day, i) => (
-                  <div
-                    key={i}
-                    className={`rounded p-2 ${
-                      day.isCurrentMonth ? 'bg-white' : 'bg-light'
-                    }`}
-                    style={{
-                      minHeight: '110px',
-                      cursor: day.isCurrentMonth ? 'pointer' : 'default',
-                      transition: 'all 0.15s ease',
-                      position: 'relative',
-                      border: day.isToday ? '2px solid #0d6efd' : '1px solid #dee2e6',
-                      boxShadow: day.isToday ? '0 2px 8px rgba(13, 110, 253, 0.15)' : undefined
-                    }}
-                    onMouseEnter={(e) => {
-                      if (day.isCurrentMonth) {
-                        e.currentTarget.style.backgroundColor = '#f8f9fa';
-                        e.currentTarget.style.transform = 'translateY(-1px)';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (day.isCurrentMonth) {
-                        e.currentTarget.style.backgroundColor = 'white';
-                        e.currentTarget.style.transform = 'translateY(0)';
-                      }
-                    }}
-                  >
-                    {day.dayNumber && (
-                      <>
-                        <div className={`mb-2 ${day.isToday ? 'fw-bold text-primary' : 'text-secondary'}`} style={{ fontSize: '1.25rem' }}>
-                          {day.dayNumber}
-                        </div>
-                        {day.events.length > 0 && (
-                          <div className="d-flex flex-column gap-1">
-                            {day.events.slice(0, 2).map((event) => {
-                              const eventColor = getColorForEvent(event);
-                              return (
-                                <div
-                                  key={event.id}
-                                  className="px-2 py-1"
-                                  style={{
-                                    fontSize: '0.7rem',
-                                    cursor: 'pointer',
-                                    transition: 'all 0.15s ease',
-                                    backgroundColor: hexToRgba(eventColor, 0.15),
-                                    borderLeft: `3px solid ${eventColor}`,
-                                    borderRadius: '4px',
-                                    color: '#333'
-                                  }}
-                                  title={`${event.title}\n${event.contact_name || ''}\n${event.estimator?.name || ''}`}
-                                  onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = hexToRgba(eventColor, 0.25);
-                                    e.currentTarget.style.transform = 'scale(1.02)';
-                                  }}
-                                  onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = hexToRgba(eventColor, 0.15);
-                                    e.currentTarget.style.transform = 'scale(1)';
-                                  }}
-                                >
-                                  <div className="fw-semibold text-truncate">{event.title}</div>
-                                  {event.contact_name && <div className="text-truncate text-muted">{event.contact_name}</div>}
-                                </div>
-                              );
-                            })}
-                            {day.events.length > 2 && (
-                              <div
-                                className="small text-primary fw-semibold text-center"
-                                style={{ fontSize: '0.65rem', cursor: 'pointer' }}
-                              >
-                                +{day.events.length - 2} more
-                              </div>
-                            )}
+              <div className="flex-fill px-3 pb-3" style={{ overflow: 'hidden' }}>
+                <div
+                  className="d-grid h-100"
+                  style={{
+                    gridTemplateColumns: 'repeat(7, 1fr)',
+                    gridTemplateRows: 'repeat(5, 1fr)',
+                    gap: '4px'
+                  }}
+                >
+                  {calendarDays.map((day, i) => (
+                    <div
+                      key={i}
+                      className={`rounded p-2 d-flex flex-column ${
+                        day.isCurrentMonth ? 'bg-white' : 'bg-light'
+                      }`}
+                      style={{
+                        height: '100%',
+                        minHeight: '100px',
+                        cursor: day.isCurrentMonth ? 'pointer' : 'default',
+                        transition: 'all 0.15s ease',
+                        position: 'relative',
+                        border: day.isToday ? '2px solid #0d6efd' : '1px solid #dee2e6',
+                        boxShadow: day.isToday ? '0 2px 8px rgba(13, 110, 253, 0.15)' : undefined,
+                        overflow: 'hidden',
+                        opacity: day.isCurrentMonth ? 1 : 0.5
+                      }}
+                      onMouseEnter={(e) => {
+                        if (day.isCurrentMonth) {
+                          e.currentTarget.style.backgroundColor = '#f8f9fa';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (day.isCurrentMonth) {
+                          e.currentTarget.style.backgroundColor = 'white';
+                        }
+                      }}
+                    >
+                      {day.dayNumber && (
+                        <>
+                          <div className={`mb-1 ${day.isToday ? 'fw-bold text-primary' : 'text-secondary'}`} style={{ fontSize: '0.75rem', flexShrink: 0 }}>
+                            {day.dayNumber}
                           </div>
-                        )}
-                      </>
-                    )}
-                  </div>
-                ))}
+                          {day.events.length > 0 && (
+                            <div className="d-flex flex-column gap-1" style={{ flex: 1, overflow: 'hidden' }}>
+                              {day.events.slice(0, 2).map((event) => {
+                                const eventColor = getColorForEvent(event);
+                                return (
+                                  <div
+                                    key={event.id}
+                                    className="px-2 py-1"
+                                    style={{
+                                      fontSize: '0.7rem',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.15s ease',
+                                      backgroundColor: hexToRgba(eventColor, 0.15),
+                                      borderLeft: `3px solid ${eventColor}`,
+                                      borderRadius: '4px',
+                                      color: '#333',
+                                      flexShrink: 0
+                                    }}
+                                    title={`${event.title}\n${event.contact_name || ''}\n${event.estimator?.name || ''}`}
+                                    onMouseEnter={(e) => {
+                                      e.currentTarget.style.backgroundColor = hexToRgba(eventColor, 0.25);
+                                    }}
+                                    onMouseLeave={(e) => {
+                                      e.currentTarget.style.backgroundColor = hexToRgba(eventColor, 0.15);
+                                    }}
+                                  >
+                                    <div className="fw-semibold text-truncate">{event.title}</div>
+                                    {event.contact_name && <div className="text-truncate text-muted">{event.contact_name}</div>}
+                                  </div>
+                                );
+                              })}
+                              {day.events.length > 2 && (
+                                <div
+                                  className="small text-primary fw-semibold text-center"
+                                  style={{ fontSize: '0.65rem', cursor: 'pointer', flexShrink: 0 }}
+                                >
+                                  +{day.events.length - 2} more
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}
