@@ -12,11 +12,7 @@ interface DraggableEventProps {
   };
   topOffset: number;
   height: number;
-  colors: {
-    bg: string;
-    border: string;
-    text: string;
-  };
+  userColor: string;
   isDragging: boolean;
   onClick: () => void;
 }
@@ -26,7 +22,7 @@ export const DraggableEvent: React.FC<DraggableEventProps> = ({
   position,
   topOffset,
   height,
-  colors,
+  userColor,
   isDragging,
   onClick
 }) => {
@@ -54,8 +50,8 @@ export const DraggableEvent: React.FC<DraggableEventProps> = ({
     width: `${position.width}%`,
     top: `${topOffset}px`,
     height: `${height}px`,
-    backgroundColor: colors.bg,
-    border: position.isMultiDay ? `2px dashed ${colors.border}` : `2px solid ${colors.border}`,
+    backgroundColor: `${userColor}20`,
+    border: position.isMultiDay ? `2px dashed ${userColor}` : `2px solid ${userColor}`,
     borderRadius,
     padding: '4px 6px',
     cursor: isDragging ? 'grabbing' : 'grab',
@@ -105,7 +101,7 @@ export const DraggableEvent: React.FC<DraggableEventProps> = ({
         <div style={{
           fontSize: '0.7rem',
           fontWeight: '700',
-          color: colors.text,
+          color: userColor,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',
@@ -117,7 +113,7 @@ export const DraggableEvent: React.FC<DraggableEventProps> = ({
       </div>
       <div style={{
         fontSize: '0.65rem',
-        color: colors.text,
+        color: userColor,
         overflow: 'hidden',
         textOverflow: 'ellipsis',
         whiteSpace: 'nowrap',
@@ -130,7 +126,7 @@ export const DraggableEvent: React.FC<DraggableEventProps> = ({
         <div style={{
           fontSize: '0.65rem',
           fontWeight: '600',
-          color: colors.text,
+          color: userColor,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
           whiteSpace: 'nowrap',

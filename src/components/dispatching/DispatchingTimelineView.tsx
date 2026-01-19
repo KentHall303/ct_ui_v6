@@ -8,7 +8,7 @@ import {
   DragStartEvent,
   DragEndEvent,
   DragOverEvent,
-  closestCenter
+  CollisionDetection
 } from '@dnd-kit/core';
 import { CalendarEventWithCalendar, updateCalendarEvent } from '../../services/calendarService';
 import { DraggableEvent } from './DraggableEvent';
@@ -35,25 +35,41 @@ const TOTAL_HOURS = GRID_END - GRID_START;
 const STANDARD_EVENT_HEIGHT = 40;
 const EVENT_SPACING = 6;
 
+const leftEdgeCollision: CollisionDetection = ({ droppableRects, droppableContainers, active }) => {
+  if (!active || !active.rect.current.translated) {
+    return [];
+  }
+
+  const leftEdge = active.rect.current.translated.left;
+  const verticalCenter = active.rect.current.translated.top + active.rect.current.translated.height / 2;
+
+  const collisions: { id: string; data: { droppableContainer: typeof droppableContainers[0]; value: number } }[] = [];
+
+  for (const droppableContainer of droppableContainers) {
+    const { id } = droppableContainer;
+    const rect = droppableRects.get(id);
+
+    if (rect) {
+      const isWithinHorizontal = leftEdge >= rect.left && leftEdge < rect.right;
+      const isWithinVertical = verticalCenter >= rect.top && verticalCenter <= rect.bottom;
+
+      if (isWithinHorizontal && isWithinVertical) {
+        const distanceFromLeft = leftEdge - rect.left;
+        collisions.push({
+          id: id as string,
+          data: { droppableContainer, value: distanceFromLeft }
+        });
+      }
+    }
+  }
+
+  return collisions.sort((a, b) => a.data.value - b.data.value);
+};
+
 const hours = Array.from({ length: 14 }, (_, i) => {
   const hour = i + 7;
   return hour <= 12 ? `${hour} am` : `${hour - 12} pm`;
 });
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'active':
-      return { bg: '#d1f4e0', border: '#10b981', text: '#059669' };
-    case 'pending':
-      return { bg: '#fef3c7', border: '#f59e0b', text: '#d97706' };
-    case 'overdue':
-      return { bg: '#fee2e2', border: '#ef4444', text: '#dc2626' };
-    case 'completed':
-      return { bg: '#dbeafe', border: '#3b82f6', text: '#2563eb' };
-    default:
-      return { bg: '#f3f4f6', border: '#9ca3af', text: '#6b7280' };
-  }
-};
 
 const isMultiDayEvent = (startDate: string, endDate: string): boolean => {
   const start = new Date(startDate);
@@ -280,7 +296,7 @@ export const DispatchingTimelineView: React.FC<DispatchingTimelineViewProps> = (
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCenter}
+      collisionDetection={leftEdgeCollision}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
@@ -361,7 +377,8 @@ export const DispatchingTimelineView: React.FC<DispatchingTimelineViewProps> = (
 
                     const layer = eventLayersMap.get(event.id) || 0;
                     const topOffset = 8 + (layer * (STANDARD_EVENT_HEIGHT + EVENT_SPACING));
-                    const colors = getStatusColor(event.status);
+                    const assignedUser = subcontractorsWithColors.find(s => s.name === event.estimator?.name);
+                    const userColor = assignedUser?.color || '#9ca3af';
                     const isDragging = activeId === event.id;
 
                     return (
@@ -371,7 +388,7 @@ export const DispatchingTimelineView: React.FC<DispatchingTimelineViewProps> = (
                         position={position}
                         topOffset={topOffset}
                         height={STANDARD_EVENT_HEIGHT}
-                        colors={colors}
+                        userColor={userColor}
                         isDragging={isDragging}
                         onClick={() => onEventClick(event)}
                       />
@@ -388,51 +405,55 @@ export const DispatchingTimelineView: React.FC<DispatchingTimelineViewProps> = (
         duration: 200,
         easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)'
       }}>
-        {activeEvent ? (
-          <div
-            style={{
-              width: '200px',
-              height: `${STANDARD_EVENT_HEIGHT}px`,
-              backgroundColor: getStatusColor(activeEvent.status).bg,
-              border: `2px solid ${getStatusColor(activeEvent.status).border}`,
-              borderRadius: '4px',
-              padding: '4px 6px',
-              cursor: 'grabbing',
-              boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-              transform: 'scale(1.02)',
-              opacity: 0.95
-            }}
-          >
-            <div className="d-flex align-items-center gap-1" style={{ marginBottom: '2px' }}>
-              <span style={{ fontSize: '0.6rem', opacity: 0.8 }}>
-                {activeEvent.event_type === 'quote' ? '💰' : activeEvent.event_type === 'installation' ? '🔧' : activeEvent.event_type === 'inspection' ? '✓' : '📋'}
-              </span>
+        {activeEvent ? (() => {
+          const activeUser = subcontractorsWithColors.find(s => s.name === activeEvent.estimator?.name);
+          const activeUserColor = activeUser?.color || '#9ca3af';
+          return (
+            <div
+              style={{
+                width: '200px',
+                height: `${STANDARD_EVENT_HEIGHT}px`,
+                backgroundColor: `${activeUserColor}20`,
+                border: `2px solid ${activeUserColor}`,
+                borderRadius: '4px',
+                padding: '4px 6px',
+                cursor: 'grabbing',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+                transform: 'scale(1.02)',
+                opacity: 0.95
+              }}
+            >
+              <div className="d-flex align-items-center gap-1" style={{ marginBottom: '2px' }}>
+                <span style={{ fontSize: '0.6rem', opacity: 0.8 }}>
+                  {activeEvent.event_type === 'quote' ? '💰' : activeEvent.event_type === 'installation' ? '🔧' : activeEvent.event_type === 'inspection' ? '✓' : '📋'}
+                </span>
+                <div style={{
+                  fontSize: '0.7rem',
+                  fontWeight: '700',
+                  color: activeUserColor,
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  lineHeight: '1.2',
+                  flex: 1
+                }}>
+                  {activeEvent.quote_number || activeEvent.title}
+                </div>
+              </div>
               <div style={{
-                fontSize: '0.7rem',
-                fontWeight: '700',
-                color: getStatusColor(activeEvent.status).text,
+                fontSize: '0.65rem',
+                color: activeUserColor,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
-                lineHeight: '1.2',
-                flex: 1
+                lineHeight: '1.1',
+                opacity: 0.9
               }}>
-                {activeEvent.quote_number || activeEvent.title}
+                {activeEvent.contact_name}
               </div>
             </div>
-            <div style={{
-              fontSize: '0.65rem',
-              color: getStatusColor(activeEvent.status).text,
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap',
-              lineHeight: '1.1',
-              opacity: 0.9
-            }}>
-              {activeEvent.contact_name}
-            </div>
-          </div>
-        ) : null}
+          );
+        })() : null}
       </DragOverlay>
     </DndContext>
   );

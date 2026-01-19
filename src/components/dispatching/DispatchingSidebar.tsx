@@ -131,19 +131,12 @@ export const DispatchingSidebar: React.FC<DispatchingSidebarProps> = ({
                       </svg>
                     )}
                   </div>
-                  <div className="d-flex flex-column flex-fill" style={{ minWidth: 0 }}>
-                    <span
-                      className={`text-dark ${isSelected ? 'fw-bold' : ''}`}
-                      style={{ fontSize: '0.95rem' }}
-                    >
-                      {subcontractor.name}
-                    </span>
-                    {(subcontractor.email || subcontractor.phone) && (
-                      <span className="text-muted" style={{ fontSize: '0.7rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {subcontractor.email || subcontractor.phone}
-                      </span>
-                    )}
-                  </div>
+                  <span
+                    className={`text-dark flex-fill ${isSelected ? 'fw-bold' : ''}`}
+                    style={{ fontSize: '0.95rem', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                  >
+                    {subcontractor.name}
+                  </span>
                   {eventCount > 0 && (
                     <span
                       className="d-flex align-items-center justify-content-center"
