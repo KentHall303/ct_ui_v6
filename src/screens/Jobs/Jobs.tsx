@@ -581,7 +581,7 @@ const TableView = () => {
               <TableHead>Payments</TableHead>
               <TableHead>Total COGS</TableHead>
               <TableHead>Gross Margin</TableHead>
-              <TableHead>Actions</TableHead>
+              <TableHead style={{ minWidth: '120px' }}>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -660,18 +660,18 @@ const TableView = () => {
                       <div className="small fw-medium text-success">{quote.gross_margin?.toFixed(2)}%</div>
                     </TableCell>
                     <TableCell>
-                      <div className="d-flex align-items-center justify-content-center gap-1">
-                        <Button variant="outline-secondary" size="sm" className="rounded-circle p-1" title="View contact">
-                          <UserIcon size={12} />
+                      <div className="d-flex align-items-center gap-2">
+                        <Button variant="link" size="sm" className="p-1 text-secondary" title="View contact">
+                          <UserIcon size={14} />
                         </Button>
-                        <Button variant="outline-secondary" size="sm" className="rounded-circle p-1" title="View">
-                          <EyeIcon size={12} />
+                        <Button variant="link" size="sm" className="p-1 text-secondary" title="View">
+                          <EyeIcon size={14} />
                         </Button>
-                        <Button variant="outline-secondary" size="sm" className="rounded-circle p-1" title="Edit quote">
-                          <EditIcon size={12} />
+                        <Button variant="link" size="sm" className="p-1 text-secondary" title="Edit quote">
+                          <EditIcon size={14} />
                         </Button>
-                        <Button variant="outline-secondary" size="sm" className="rounded-circle p-1" title="Print">
-                          <PrinterIcon size={12} />
+                        <Button variant="link" size="sm" className="p-1 text-secondary" title="Print">
+                          <PrinterIcon size={14} />
                         </Button>
                       </div>
                     </TableCell>
@@ -704,12 +704,12 @@ const TableView = () => {
                                   />
                                 </td>
                                 <td>
-                                  <div className="d-flex align-items-center gap-1">
-                                    <Button variant="outline-secondary" size="sm" className="rounded-circle p-1" title="View">
-                                      <EyeIcon size={12} />
+                                  <div className="d-flex align-items-center gap-2">
+                                    <Button variant="link" size="sm" className="p-1 text-secondary" title="View">
+                                      <EyeIcon size={14} />
                                     </Button>
-                                    <Button variant="outline-secondary" size="sm" className="rounded-circle p-1" title="Edit">
-                                      <EditIcon size={12} />
+                                    <Button variant="link" size="sm" className="p-1 text-secondary" title="Edit">
+                                      <EditIcon size={14} />
                                     </Button>
                                   </div>
                                 </td>
