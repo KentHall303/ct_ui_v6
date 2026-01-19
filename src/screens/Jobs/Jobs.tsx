@@ -6,7 +6,6 @@ import { Badge, Card, Container, Row, Col, Form } from "react-bootstrap";
 import { Search as SearchIcon, RefreshCw as RefreshCwIcon, Settings as SettingsIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronsLeft as ChevronsLeftIcon, ChevronsRight as ChevronsRightIcon, ChevronDown, ChevronUp, Plus as PlusIcon, Minus as MinusIcon, Mail as MailIcon, MessageSquare as MessageSquareIcon, FileText as FileTextIcon, Printer as PrinterIcon, Download as DownloadIcon, CreditCard as EditIcon, Trash as TrashIcon, User as UserIcon, DollarSign as DollarSignIcon, Calendar as CalendarIcon, TrendingUp as TrendingUpIcon, List as ListIcon, Calendar as CalendarIconView, Receipt as ReceiptIcon, Eye as EyeIcon, PanelLeftClose as PanelLeftCloseIcon, PanelLeftOpen as PanelLeftOpenIcon } from "lucide-react";
 import { AddCOGSModal } from "../../components/modals/AddCOGSModal";
 import { GrossMarginModal } from "../../components/modals/GrossMarginModal";
-import { JobsReportsFSModal } from "../../components/modals/JobsReportsFSModal";
 import { EditAppointmentModal } from "../../components/modals/EditAppointmentModal";
 import { supabase } from "../../lib/supabase";
 import { sampleCalendarEvents, CalendarEvent, isEventStart, isEventEnd, isEventMiddle } from "../../data/sampleCalendarData";
@@ -211,7 +210,7 @@ const getStatusBadge = (status: string) => {
 const JobsHeader = ({
   currentView,
   onViewChange,
-  onReportsClick,
+  quotesCount,
   milestones,
   toggleMilestone,
   scheduling,
@@ -221,7 +220,7 @@ const JobsHeader = ({
 }: {
   currentView: 'table' | 'calendar' | 'dispatching',
   onViewChange: (view: 'table' | 'calendar' | 'dispatching') => void,
-  onReportsClick: () => void,
+  quotesCount: number,
   milestones?: { complete: boolean; quoted: boolean; closed: boolean },
   toggleMilestone?: (milestone: 'complete' | 'quoted' | 'closed') => void,
   scheduling?: 'all' | 'scheduled' | 'unscheduled',
@@ -239,10 +238,22 @@ const JobsHeader = ({
           Jobs
         </h2>
         <p className="small text-secondary">
-          {currentView === 'table' ? '94 Quotes Listed' : 'September 2025'}
+          {quotesCount} Quotes Listed
         </p>
       </div>
-      <a href="#" onClick={(e) => { e.preventDefault(); onReportsClick(); }} className="small text-primary text-decoration-none fw-medium">Reports</a>
+      <div className="position-relative" style={{ width: '280px', minWidth: '0' }}>
+        <SearchIcon
+          size={16}
+          className="position-absolute text-secondary"
+          style={{ left: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', zIndex: 1 }}
+        />
+        <input
+          type="text"
+          className="form-control form-control-sm"
+          placeholder="Search Contact/Quote/Subcontractor..."
+          style={{ paddingLeft: '36px', fontSize: '0.875rem' }}
+        />
+      </div>
     </div>
 
     {/* View Toggle Buttons */}
@@ -416,21 +427,6 @@ const JobsHeader = ({
               </div>
             </div>
           </div>
-
-          {/* Section 3: Search Bar */}
-          <div className="position-relative" style={{ width: '240px', minWidth: '0' }}>
-            <SearchIcon
-              size={16}
-              className="position-absolute text-secondary"
-              style={{ left: '12px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', zIndex: 1 }}
-            />
-            <input
-              type="text"
-              className="form-control form-control-sm"
-              placeholder="Search Contact/Quote/Subcontractor..."
-              style={{ paddingLeft: '36px', fontSize: '0.875rem' }}
-            />
-          </div>
         </div>
 
         {/* Pagination and Action Controls */}
@@ -508,25 +504,14 @@ const JobStatusDropdown = ({ status, onStatusChange }: { status: string; onStatu
   );
 };
 
-const TableView = () => {
+const TableView = ({ quotes, setQuotes }: { quotes: QuoteWithJobs[], setQuotes: React.Dispatch<React.SetStateAction<QuoteWithJobs[]>> }) => {
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
   const [showCOGSModal, setShowCOGSModal] = React.useState(false);
   const [showGMModal, setShowGMModal] = React.useState(false);
   const [selectedQuoteId, setSelectedQuoteId] = React.useState<string>('');
-  const [quotes, setQuotes] = React.useState<QuoteWithJobs[]>([]);
   const [expandedQuotes, setExpandedQuotes] = React.useState<Set<string>>(new Set());
-  const [loading, setLoading] = React.useState(true);
-
-  React.useEffect(() => {
-    const loadQuotes = async () => {
-      setLoading(true);
-      const data = await fetchQuotesWithJobs();
-      setQuotes(data);
-      setLoading(false);
-    };
-    loadQuotes();
-  }, []);
+  const [loading, setLoading] = React.useState(false);
 
   const toggleExpand = (quoteId: string) => {
     setExpandedQuotes(prev => {
@@ -1878,7 +1863,6 @@ const CalendarView = () => {
 
 export const Jobs = (): JSX.Element => {
   const [currentView, setCurrentView] = React.useState<'table' | 'calendar' | 'dispatching'>('table');
-  const [showReportsModal, setShowReportsModal] = React.useState(false);
   const [milestones, setMilestones] = React.useState({
     complete: true,
     quoted: false,
@@ -1886,6 +1870,7 @@ export const Jobs = (): JSX.Element => {
   });
   const [scheduling, setScheduling] = React.useState<'all' | 'scheduled' | 'unscheduled'>('all');
   const [payments, setPayments] = React.useState<'all' | 'unpaid' | 'paid'>('all');
+  const [quotes, setQuotes] = React.useState<QuoteWithJobs[]>([]);
 
   const toggleMilestone = (milestone: 'complete' | 'quoted' | 'closed') => {
     setMilestones(prev => ({
@@ -1894,37 +1879,39 @@ export const Jobs = (): JSX.Element => {
     }));
   };
 
-  return (
-    <>
-      <div className="d-flex flex-column w-100 h-100 overflow-hidden">
-        <div className="flex-shrink-0">
-          <JobsHeader
-            currentView={currentView}
-            onViewChange={setCurrentView}
-            onReportsClick={() => setShowReportsModal(true)}
-            milestones={milestones}
-            toggleMilestone={toggleMilestone}
-            scheduling={scheduling}
-            setScheduling={setScheduling}
-            payments={payments}
-            setPayments={setPayments}
-          />
-        </div>
-        <div className="px-3 pt-2 pb-1 d-flex flex-column flex-grow-1" style={{ minHeight: 0 }}>
-          {currentView === 'table' ? (
-            <TableView />
-          ) : currentView === 'calendar' ? (
-            <CalendarView />
-          ) : (
-            <DispatchingView />
-          )}
-        </div>
-      </div>
+  // Load quotes when component mounts
+  React.useEffect(() => {
+    const loadQuotes = async () => {
+      const data = await fetchQuotesWithJobs();
+      setQuotes(data);
+    };
+    loadQuotes();
+  }, []);
 
-      <JobsReportsFSModal
-        show={showReportsModal}
-        onHide={() => setShowReportsModal(false)}
-      />
-    </>
+  return (
+    <div className="d-flex flex-column w-100 h-100 overflow-hidden">
+      <div className="flex-shrink-0">
+        <JobsHeader
+          currentView={currentView}
+          onViewChange={setCurrentView}
+          quotesCount={quotes.length}
+          milestones={milestones}
+          toggleMilestone={toggleMilestone}
+          scheduling={scheduling}
+          setScheduling={setScheduling}
+          payments={payments}
+          setPayments={setPayments}
+        />
+      </div>
+      <div className="px-3 pt-2 pb-1 d-flex flex-column flex-grow-1" style={{ minHeight: 0 }}>
+        {currentView === 'table' ? (
+          <TableView quotes={quotes} setQuotes={setQuotes} />
+        ) : currentView === 'calendar' ? (
+          <CalendarView />
+        ) : (
+          <DispatchingView />
+        )}
+      </div>
+    </div>
   );
 };
