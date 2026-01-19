@@ -32,7 +32,7 @@ interface DispatchingTimelineViewProps {
 const GRID_START = 7;
 const GRID_END = 21;
 const TOTAL_HOURS = GRID_END - GRID_START;
-const STANDARD_EVENT_HEIGHT = 40;
+const STANDARD_EVENT_HEIGHT = 55;
 const EVENT_SPACING = 6;
 
 const leftEdgeCollision: CollisionDetection = ({ droppableRects, droppableContainers, active }) => {
@@ -293,6 +293,30 @@ export const DispatchingTimelineView: React.FC<DispatchingTimelineViewProps> = (
     }
   };
 
+  const handleResize = async (eventId: string, newEndDate: string) => {
+    const event = localEvents.find(e => e.id === eventId);
+    if (!event) return;
+
+    const updatedEvent = {
+      ...event,
+      end_date: newEndDate
+    };
+
+    setLocalEvents(prev =>
+      prev.map(e => e.id === eventId ? updatedEvent : e)
+    );
+
+    try {
+      await updateCalendarEvent(eventId, {
+        end_date: newEndDate
+      });
+      onEventsChange();
+    } catch (error) {
+      console.error('Error resizing event:', error);
+      setLocalEvents(events);
+    }
+  };
+
   return (
     <DndContext
       sensors={sensors}
@@ -391,6 +415,10 @@ export const DispatchingTimelineView: React.FC<DispatchingTimelineViewProps> = (
                         userColor={userColor}
                         isDragging={isDragging}
                         onClick={() => onEventClick(event)}
+                        onResize={handleResize}
+                        totalHours={TOTAL_HOURS}
+                        gridStart={GRID_START}
+                        selectedDate={selectedDate}
                       />
                     );
                   })}
@@ -408,49 +436,75 @@ export const DispatchingTimelineView: React.FC<DispatchingTimelineViewProps> = (
         {activeEvent ? (() => {
           const activeUser = subcontractorsWithColors.find(s => s.name === activeEvent.estimator?.name);
           const activeUserColor = activeUser?.color || '#9ca3af';
+
+          const hexToRgb = (hex: string) => {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+              r: parseInt(result[1], 16),
+              g: parseInt(result[2], 16),
+              b: parseInt(result[3], 16)
+            } : { r: 156, g: 163, b: 175 };
+          };
+
+          const rgb = hexToRgb(activeUserColor);
+          const backgroundColor = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.85)`;
+
           return (
             <div
               style={{
                 width: '200px',
                 height: `${STANDARD_EVENT_HEIGHT}px`,
-                backgroundColor: `${activeUserColor}20`,
-                border: `2px solid ${activeUserColor}`,
+                backgroundColor,
                 borderRadius: '4px',
-                padding: '4px 6px',
+                padding: '6px 8px',
                 cursor: 'grabbing',
                 boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
                 transform: 'scale(1.02)',
                 opacity: 0.95
               }}
             >
-              <div className="d-flex align-items-center gap-1" style={{ marginBottom: '2px' }}>
-                <span style={{ fontSize: '0.6rem', opacity: 0.8 }}>
+              <div className="d-flex align-items-center gap-1" style={{ marginBottom: '3px' }}>
+                <span style={{ fontSize: '0.65rem', opacity: 0.9 }}>
                   {activeEvent.event_type === 'quote' ? '💰' : activeEvent.event_type === 'installation' ? '🔧' : activeEvent.event_type === 'inspection' ? '✓' : '📋'}
                 </span>
                 <div style={{
-                  fontSize: '0.7rem',
+                  fontSize: '0.75rem',
                   fontWeight: '700',
-                  color: activeUserColor,
+                  color: '#fff',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
-                  lineHeight: '1.2',
+                  lineHeight: '1.3',
                   flex: 1
                 }}>
                   {activeEvent.quote_number || activeEvent.title}
                 </div>
               </div>
               <div style={{
-                fontSize: '0.65rem',
-                color: activeUserColor,
+                fontSize: '0.7rem',
+                color: '#fff',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
-                lineHeight: '1.1',
-                opacity: 0.9
+                lineHeight: '1.2',
+                opacity: 0.95
               }}>
                 {activeEvent.contact_name}
               </div>
+              {activeEvent.amount && (
+                <div style={{
+                  fontSize: '0.7rem',
+                  fontWeight: '600',
+                  color: '#fff',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  lineHeight: '1.2',
+                  marginTop: '2px'
+                }}>
+                  ${activeEvent.amount.toLocaleString()}
+                </div>
+              )}
             </div>
           );
         })() : null}
