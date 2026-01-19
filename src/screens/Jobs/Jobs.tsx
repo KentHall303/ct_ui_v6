@@ -12,7 +12,8 @@ import { supabase } from "../../lib/supabase";
 import { sampleCalendarEvents, CalendarEvent, isEventStart, isEventEnd, isEventMiddle } from "../../data/sampleCalendarData";
 import { fetchCalendarEventsWithCalendar, fetchCalendars, CalendarEventWithCalendar, updateCalendarEvent, Calendar, fetchEstimators, Estimator } from "../../services/calendarService";
 import { DispatchingMapView } from "../../components/dispatching/DispatchingMapView";
-import { fetchJobsCalendarsGroupedByCategory, fetchJobsCalendarEvents, updateJobsCalendarVisibility, JobsCalendarWithContact, JobsCalendarEventWithCalendar, ContactsByCategory } from "../../services/jobsCalendarService";
+import { fetchAllJobsCalendars, fetchJobsCalendarEvents, updateJobsCalendarVisibility, JobsCalendarWithContact, JobsCalendarEventWithCalendar } from "../../services/jobsCalendarService";
+import { getWeekDays, isToday, isSameDay, isEventOnDate, formatWeekHeader, formatCompactTimeRange } from "../../utils/dateUtils";
 import { fetchQuotesWithJobs, updateQuoteJob, QuoteWithJobs, QuoteJob } from "../../services/quoteService";
 
 const actionButtons = [
@@ -1667,22 +1668,348 @@ const DispatchingView = () => {
   );
 };
 
+const HOUR_HEIGHT = 60;
+const TIME_COLUMN_WIDTH = 60;
+const HOURS = Array.from({ length: 24 }, (_, i) => i);
+const WEEK_DAYS_LABELS = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+
+function hexToRgba(hex: string, alpha: number): string {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  if (result) {
+    const r = parseInt(result[1], 16);
+    const g = parseInt(result[2], 16);
+    const b = parseInt(result[3], 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  }
+  return hex;
+}
+
+function formatHourLabel(hour: number): string {
+  if (hour === 0) return '12 AM';
+  if (hour === 12) return '12 PM';
+  if (hour < 12) return `${hour} AM`;
+  return `${hour - 12} PM`;
+}
+
+interface PositionedJobEvent {
+  event: JobsCalendarEventWithCalendar;
+  top: number;
+  height: number;
+  left: number;
+  width: number;
+}
+
+function calculateJobEventPositions(
+  events: JobsCalendarEventWithCalendar[],
+  date: Date
+): PositionedJobEvent[] {
+  const dayEvents = events
+    .filter(event => isEventOnDate(event.start_date, event.end_date, date))
+    .map(event => {
+      const eventStart = new Date(event.start_date);
+      const eventEnd = new Date(event.end_date);
+      const dayStart = new Date(date);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(date);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      const effectiveStart = eventStart < dayStart ? dayStart : eventStart;
+      const effectiveEnd = eventEnd > dayEnd ? dayEnd : eventEnd;
+
+      const startHour = effectiveStart.getHours();
+      const startMinute = effectiveStart.getMinutes();
+      const top = (startHour * 60 + startMinute) * (HOUR_HEIGHT / 60);
+
+      const durationMinutes = (effectiveEnd.getTime() - effectiveStart.getTime()) / (1000 * 60);
+      const height = Math.max(30, durationMinutes * (HOUR_HEIGHT / 60));
+
+      return {
+        event,
+        top,
+        height,
+        startMinutes: startHour * 60 + startMinute,
+        endMinutes: startHour * 60 + startMinute + durationMinutes
+      };
+    })
+    .sort((a, b) => a.startMinutes - b.startMinutes);
+
+  const positioned: PositionedJobEvent[] = [];
+  const columns: { endMinutes: number }[] = [];
+
+  for (const evt of dayEvents) {
+    let columnIndex = columns.findIndex(col => col.endMinutes <= evt.startMinutes);
+    if (columnIndex === -1) {
+      columnIndex = columns.length;
+      columns.push({ endMinutes: evt.endMinutes });
+    } else {
+      columns[columnIndex].endMinutes = evt.endMinutes;
+    }
+
+    positioned.push({
+      event: evt.event,
+      top: evt.top,
+      height: evt.height,
+      left: 0,
+      width: 100
+    });
+  }
+
+  const groups: { events: typeof dayEvents; maxColumns: number }[] = [];
+  let currentGroup: typeof dayEvents = [];
+  let groupEnd = 0;
+
+  for (const evt of dayEvents) {
+    if (currentGroup.length === 0 || evt.startMinutes < groupEnd) {
+      currentGroup.push(evt);
+      groupEnd = Math.max(groupEnd, evt.endMinutes);
+    } else {
+      if (currentGroup.length > 0) {
+        groups.push({ events: [...currentGroup], maxColumns: 0 });
+      }
+      currentGroup = [evt];
+      groupEnd = evt.endMinutes;
+    }
+  }
+  if (currentGroup.length > 0) {
+    groups.push({ events: currentGroup, maxColumns: 0 });
+  }
+
+  let posIndex = 0;
+  for (const group of groups) {
+    const cols: { endMinutes: number }[] = [];
+    const assignments: number[] = [];
+
+    for (const evt of group.events) {
+      let col = cols.findIndex(c => c.endMinutes <= evt.startMinutes);
+      if (col === -1) {
+        col = cols.length;
+        cols.push({ endMinutes: evt.endMinutes });
+      } else {
+        cols[col].endMinutes = evt.endMinutes;
+      }
+      assignments.push(col);
+    }
+
+    const numCols = cols.length;
+    for (let i = 0; i < group.events.length; i++) {
+      positioned[posIndex + i].left = (assignments[i] / numCols) * 100;
+      positioned[posIndex + i].width = (1 / numCols) * 100 - 1;
+    }
+    posIndex += group.events.length;
+  }
+
+  return positioned;
+}
+
+const JobsWeekView: React.FC<{
+  currentDate: Date;
+  events: JobsCalendarEventWithCalendar[];
+}> = ({ currentDate, events }) => {
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const weekDays = React.useMemo(() => getWeekDays(currentDate), [currentDate]);
+
+  React.useEffect(() => {
+    if (scrollRef.current) {
+      const scrollTo = 9 * HOUR_HEIGHT;
+      scrollRef.current.scrollTop = scrollTo;
+    }
+  }, [currentDate]);
+
+  return (
+    <div className="d-flex flex-column h-100 position-relative">
+      <div className="flex-shrink-0 bg-white border-bottom">
+        <div className="d-flex">
+          <div style={{ width: TIME_COLUMN_WIDTH, flexShrink: 0 }} />
+          <div className="flex-fill d-flex position-relative">
+            {weekDays.map((day, index) => {
+              const today = isToday(day);
+
+              return (
+                <div
+                  key={index}
+                  className="flex-fill text-center py-2 bg-light"
+                  style={{
+                    borderRight: index < 6 ? '1px solid #e9ecef' : undefined
+                  }}
+                >
+                  <div
+                    className="small fw-semibold text-secondary"
+                    style={{ fontSize: '0.7rem' }}
+                  >
+                    {WEEK_DAYS_LABELS[index]}
+                  </div>
+                  <div
+                    className={`fw-bold ${today ? 'text-primary' : 'text-secondary'}`}
+                    style={{ fontSize: '1.25rem' }}
+                  >
+                    {day.getDate()}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      <div
+        ref={scrollRef}
+        className="flex-fill"
+        style={{ overflowY: 'auto', overflowX: 'hidden' }}
+      >
+        <div className="d-flex" style={{ height: HOUR_HEIGHT * 24 }}>
+          <div
+            style={{
+              width: TIME_COLUMN_WIDTH,
+              flexShrink: 0,
+              position: 'relative'
+            }}
+          >
+            {HOURS.map(hour => (
+              <div
+                key={hour}
+                className="text-end pe-2 text-secondary"
+                style={{
+                  position: 'absolute',
+                  top: hour * HOUR_HEIGHT - 8,
+                  right: 0,
+                  fontSize: '0.7rem',
+                  lineHeight: 1
+                }}
+              >
+                {hour === 0 ? '' : formatHourLabel(hour)}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex-fill d-flex position-relative">
+            {HOURS.map(hour => (
+              <div
+                key={hour}
+                style={{
+                  position: 'absolute',
+                  top: hour * HOUR_HEIGHT,
+                  left: 0,
+                  right: 0,
+                  height: HOUR_HEIGHT,
+                  borderTop: '1px solid #e9ecef'
+                }}
+              />
+            ))}
+
+            {weekDays.map((day, dayIndex) => {
+              const today = isToday(day);
+              const positionedEvents = calculateJobEventPositions(events, day);
+
+              return (
+                <div
+                  key={dayIndex}
+                  className="flex-fill position-relative"
+                  style={{
+                    backgroundColor: today ? 'rgba(13, 110, 253, 0.02)' : undefined,
+                    borderRight: dayIndex < 6 ? '1px solid #e9ecef' : undefined
+                  }}
+                >
+                  {positionedEvents.map((pos, eventIndex) => {
+                    const calendarColor = pos.event.calendar?.color || '#6b7280';
+                    const isMultiDay = !isSameDay(pos.event.start_date, pos.event.end_date);
+                    const startsToday = isSameDay(pos.event.start_date, day);
+
+                    return (
+                      <div
+                        key={`${pos.event.id}-${eventIndex}`}
+                        className="position-absolute"
+                        style={{
+                          top: pos.top,
+                          left: `${pos.left}%`,
+                          width: `${pos.width}%`,
+                          height: pos.height,
+                          padding: '0 2px',
+                          zIndex: 1
+                        }}
+                      >
+                        <div
+                          className="h-100"
+                          style={{
+                            backgroundColor: hexToRgba(calendarColor, 0.15),
+                            borderLeft: `3px solid ${calendarColor}`,
+                            borderRadius: '4px',
+                            padding: '4px 6px',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                            overflow: 'hidden',
+                            display: 'flex',
+                            flexDirection: 'column'
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = hexToRgba(calendarColor, 0.25);
+                            e.currentTarget.style.transform = 'scale(1.02)';
+                            e.currentTarget.style.zIndex = '10';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = hexToRgba(calendarColor, 0.15);
+                            e.currentTarget.style.transform = 'scale(1)';
+                            e.currentTarget.style.zIndex = '1';
+                          }}
+                          title={`${pos.event.title}\n${formatCompactTimeRange(pos.event.start_date, pos.event.end_date)}`}
+                        >
+                          {startsToday && (
+                            <div
+                              style={{
+                                fontSize: '0.65rem',
+                                color: '#666',
+                                lineHeight: 1.2,
+                                marginBottom: '2px',
+                                flexShrink: 0,
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {formatCompactTimeRange(pos.event.start_date, pos.event.end_date)}
+                            </div>
+                          )}
+                          <div
+                            className="fw-bold"
+                            style={{
+                              fontSize: '0.7rem',
+                              color: '#333',
+                              lineHeight: 1.3,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap'
+                            }}
+                          >
+                            {pos.event.title}
+                            {isMultiDay && !startsToday && ' (cont.)'}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const CalendarView = () => {
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
-  const [calendars, setCalendars] = React.useState<ContactsByCategory>({ estimators: [], fieldManagers: [], subcontractors: [] });
+  const [calendars, setCalendars] = React.useState<JobsCalendarWithContact[]>([]);
   const [selectedCalendarIds, setSelectedCalendarIds] = React.useState<string[]>([]);
   const [events, setEvents] = React.useState<JobsCalendarEventWithCalendar[]>([]);
-  const [currentDate, setCurrentDate] = React.useState(new Date(2025, 8, 15));
-  const [collapsedCategories, setCollapsedCategories] = React.useState<Set<string>>(new Set());
+  const [currentDate, setCurrentDate] = React.useState(new Date());
+  const [view, setView] = React.useState<'month' | 'week'>('month');
 
   React.useEffect(() => {
     const loadCalendars = async () => {
-      const data = await fetchJobsCalendarsGroupedByCategory();
+      const data = await fetchAllJobsCalendars();
       setCalendars(data);
-      const visibleIds = [...data.estimators, ...data.fieldManagers, ...data.subcontractors]
-        .filter(c => c.is_visible)
-        .map(c => c.id);
+      const visibleIds = data.filter(c => c.is_visible).map(c => c.id);
       setSelectedCalendarIds(visibleIds);
     };
     loadCalendars();
@@ -1694,13 +2021,23 @@ const CalendarView = () => {
         setEvents([]);
         return;
       }
-      const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-      const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59);
-      const data = await fetchJobsCalendarEvents(startOfMonth, endOfMonth, selectedCalendarIds);
+      let startDate: Date;
+      let endDate: Date;
+      if (view === 'week') {
+        const weekDays = getWeekDays(currentDate);
+        startDate = weekDays[0];
+        startDate.setHours(0, 0, 0, 0);
+        endDate = weekDays[6];
+        endDate.setHours(23, 59, 59, 999);
+      } else {
+        startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59);
+      }
+      const data = await fetchJobsCalendarEvents(startDate, endDate, selectedCalendarIds);
       setEvents(data);
     };
     loadEvents();
-  }, [selectedCalendarIds, currentDate]);
+  }, [selectedCalendarIds, currentDate, view]);
 
   React.useLayoutEffect(() => {
     function computeHeight() {
@@ -1722,11 +2059,21 @@ const CalendarView = () => {
     } else {
       setSelectedCalendarIds(prev => prev.filter(id => id !== calendar.id));
     }
-    try {
-      await updateJobsCalendarVisibility(calendar.id, newVisible);
-    } catch (e) {
-      console.error('Failed to update visibility:', e);
+    if (!calendar.is_user_based) {
+      try {
+        await updateJobsCalendarVisibility(calendar.id, newVisible);
+      } catch (e) {
+        console.error('Failed to update visibility:', e);
+      }
     }
+  };
+
+  const selectAllCalendars = () => {
+    setSelectedCalendarIds(calendars.map(c => c.id));
+  };
+
+  const clearAllCalendars = () => {
+    setSelectedCalendarIds([]);
   };
 
   const getEventsByDate = (date: string): JobsCalendarEventWithCalendar[] => {
@@ -1736,19 +2083,8 @@ const CalendarView = () => {
     });
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return { bg: 'bg-success', text: 'text-success', border: 'border-success' };
-      case 'pending':
-        return { bg: 'bg-warning', text: 'text-warning', border: 'border-warning' };
-      case 'overdue':
-        return { bg: 'bg-danger', text: 'text-danger', border: 'border-danger' };
-      case 'completed':
-        return { bg: 'bg-info', text: 'text-info', border: 'border-info' };
-      default:
-        return { bg: 'bg-secondary', text: 'text-secondary', border: 'border-secondary' };
-    }
+  const getEventCountForCalendar = (calendarId: string): number => {
+    return events.filter(e => e.jobs_calendar_id === calendarId).length;
   };
 
   const generateCalendarDays = () => {
@@ -1765,14 +2101,14 @@ const CalendarView = () => {
       const dayNumber = i - startDayOfWeek + 1;
       const isCurrentMonth = dayNumber > 0 && dayNumber <= daysInMonth;
       const dateString = isCurrentMonth ? `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNumber).padStart(2, '0')}` : '';
-      const isToday = isCurrentMonth && dayNumber === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+      const isTodayDate = isCurrentMonth && dayNumber === today.getDate() && month === today.getMonth() && year === today.getFullYear();
       const dayEvents = isCurrentMonth ? getEventsByDate(dateString) : [];
 
       days.push({
         dayNumber: isCurrentMonth ? dayNumber : null,
         dateString,
         isCurrentMonth,
-        isToday,
+        isToday: isTodayDate,
         events: dayEvents
       });
     }
@@ -1780,74 +2116,32 @@ const CalendarView = () => {
   };
 
   const calendarDays = generateCalendarDays();
-  const monthName = currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-  const navigateMonth = (direction: number) => {
-    setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + direction, 1));
+  const getHeaderText = () => {
+    if (view === 'week') {
+      return formatWeekHeader(currentDate);
+    }
+    return currentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  };
+
+  const navigate = (direction: number) => {
+    if (view === 'week') {
+      setCurrentDate(prev => {
+        const newDate = new Date(prev);
+        newDate.setDate(newDate.getDate() + direction * 7);
+        return newDate;
+      });
+    } else {
+      setCurrentDate(prev => new Date(prev.getFullYear(), prev.getMonth() + direction, 1));
+    }
   };
 
   const goToToday = () => {
     setCurrentDate(new Date());
   };
 
-  const toggleCategory = (categoryName: string) => {
-    setCollapsedCategories(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(categoryName)) {
-        newSet.delete(categoryName);
-      } else {
-        newSet.add(categoryName);
-      }
-      return newSet;
-    });
-  };
-
-  const renderCategorySection = (title: string, items: JobsCalendarWithContact[]) => {
-    const isCollapsed = collapsedCategories.has(title);
-
-    return (
-      <div className="mb-3">
-        <div
-          className="d-flex align-items-center justify-content-between mb-2 py-1 px-2 rounded"
-          style={{ cursor: 'pointer', transition: 'background-color 0.15s' }}
-          onClick={() => toggleCategory(title)}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-        >
-          <h6 className="fw-semibold text-dark mb-0" style={{ fontSize: '0.8rem' }}>{title}</h6>
-          {isCollapsed ? (
-            <ChevronDown size={14} className="text-secondary" />
-          ) : (
-            <ChevronUp size={14} className="text-secondary" />
-          )}
-        </div>
-        {!isCollapsed && (
-          <div className="d-flex flex-column gap-1">
-            {items.map((calendar) => (
-              <label
-                key={calendar.id}
-                className="d-flex align-items-center gap-2 py-1 px-2 rounded"
-                style={{ cursor: 'pointer', transition: 'background-color 0.15s' }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-              >
-                <input
-                  type="checkbox"
-                  checked={selectedCalendarIds.includes(calendar.id)}
-                  onChange={() => toggleCalendar(calendar)}
-                  className="form-check-input mt-0"
-                  style={{ cursor: 'pointer', accentColor: calendar.color }}
-                />
-                <span className={`small ${selectedCalendarIds.includes(calendar.id) ? 'fw-medium text-dark' : 'text-secondary'}`}>
-                  {calendar.name}
-                </span>
-              </label>
-            ))}
-          </div>
-        )}
-      </div>
-    );
-  };
+  const allSelected = selectedCalendarIds.length === calendars.length;
+  const noneSelected = selectedCalendarIds.length === 0;
 
   return (
     <div
@@ -1856,131 +2150,269 @@ const CalendarView = () => {
       style={{ maxHeight: maxHeight ?? undefined, display: 'flex', flexDirection: 'column', minHeight: 0 }}
     >
       <div className="d-flex flex-fill" style={{ minHeight: 0 }}>
-        <div className="border-end bg-light p-3" style={{ width: '240px', flexShrink: 0, overflowY: 'auto' }}>
-          <h6 className="fw-bold text-dark mb-3">Jobs Calendars</h6>
+        <div className="border-end bg-light" style={{ width: '300px', flexShrink: 0, overflowY: 'auto', maxHeight: '100%' }}>
+          <div className="p-3">
+            <div className="d-flex align-items-center justify-content-between mb-3">
+              <h6 className="fw-bold text-dark mb-0">Jobs Calendars</h6>
+            </div>
 
-          {renderCategorySection('Estimators', calendars.estimators)}
-          <hr className="my-2" />
-          {renderCategorySection('Field Manager', calendars.fieldManagers)}
-          <hr className="my-2" />
-          {renderCategorySection('Subcontractors', calendars.subcontractors)}
-
-          <hr className="my-3" />
-          <div>
-            <h6 className="fw-semibold text-dark mb-2" style={{ fontSize: '0.8rem' }}>Quick Filters</h6>
-            <div className="d-flex flex-column gap-2">
-              <Button variant="outline-primary" size="sm" className="w-100 text-start small" onClick={goToToday}>
-                Today
+            <div className="d-flex gap-2 mb-3">
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                className="flex-fill small"
+                onClick={selectAllCalendars}
+                disabled={allSelected}
+              >
+                Select All
               </Button>
-              <Button variant="outline-primary" size="sm" className="w-100 text-start small" onClick={() => {
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                setCurrentDate(tomorrow);
-              }}>
-                Tomorrow
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                className="flex-fill small"
+                onClick={clearAllCalendars}
+                disabled={noneSelected}
+              >
+                Clear All
               </Button>
             </div>
+
+            <div className="bg-white rounded-3 shadow-sm p-3">
+              <div className="d-flex flex-column gap-3">
+                {calendars.map((calendar) => {
+                  const isSelected = selectedCalendarIds.includes(calendar.id);
+                  const eventCount = getEventCountForCalendar(calendar.id);
+                  return (
+                    <label
+                      key={calendar.id}
+                      className="d-flex align-items-center gap-3"
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={() => toggleCalendar(calendar)}
+                        className="d-none"
+                      />
+                      <div
+                        className="rounded d-flex align-items-center justify-content-center"
+                        style={{
+                          width: '24px',
+                          height: '24px',
+                          backgroundColor: isSelected ? calendar.color : 'transparent',
+                          border: `2px solid ${calendar.color}`,
+                          transition: 'all 0.15s ease',
+                          flexShrink: 0
+                        }}
+                      >
+                        {isSelected && (
+                          <svg
+                            width="14"
+                            height="14"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="white"
+                            strokeWidth="3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        )}
+                      </div>
+                      <span
+                        className={`text-dark ${isSelected ? 'fw-bold' : ''}`}
+                        style={{ fontSize: '0.95rem', flex: 1 }}
+                      >
+                        {calendar.name}
+                      </span>
+                      {eventCount > 0 && (
+                        <span
+                          className="d-flex align-items-center justify-content-center"
+                          style={{
+                            backgroundColor: calendar.color,
+                            color: 'white',
+                            fontSize: '0.7rem',
+                            fontWeight: 600,
+                            minWidth: '20px',
+                            height: '20px',
+                            borderRadius: '10px',
+                            padding: '0 6px',
+                            flexShrink: 0
+                          }}
+                        >
+                          {eventCount}
+                        </span>
+                      )}
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {calendars.length === 0 && (
+              <div className="text-center text-secondary small py-4">
+                No calendars available
+              </div>
+            )}
           </div>
         </div>
 
         <div className="flex-fill d-flex flex-column" style={{ minHeight: 0 }}>
           <div className="d-flex align-items-center justify-content-between px-4 py-3 border-bottom bg-white">
-            <div className="d-flex align-items-center gap-3">
-              <Button variant="outline-secondary" size="sm" className="px-2 py-1" onClick={() => navigateMonth(-1)}>
-                <ChevronLeftIcon size={16} />
-              </Button>
-              <h5 className="mb-0 fw-bold">{monthName}</h5>
-              <Button variant="outline-secondary" size="sm" className="px-2 py-1" onClick={() => navigateMonth(1)}>
-                <ChevronRightIcon size={16} />
-              </Button>
+            <div className="d-flex align-items-center gap-2">
+              <div style={{
+                border: '1px solid #f8f9fa',
+                borderRadius: '6px',
+                padding: '2px'
+              }}>
+                <div className="btn-group" role="group">
+                  <Button
+                    variant={view === 'month' ? 'primary' : 'link'}
+                    size="sm"
+                    className={view === 'month' ? 'px-3' : 'px-3 text-secondary text-decoration-none'}
+                    onClick={() => setView('month')}
+                    style={view === 'month' ? undefined : { backgroundColor: '#e9ecef' }}
+                  >
+                    Month
+                  </Button>
+                  <Button
+                    variant={view === 'week' ? 'primary' : 'link'}
+                    size="sm"
+                    className={view === 'week' ? 'px-3' : 'px-3 text-secondary text-decoration-none'}
+                    onClick={() => setView('week')}
+                    style={view === 'week' ? undefined : { backgroundColor: '#e9ecef' }}
+                  >
+                    Week
+                  </Button>
+                </div>
+              </div>
+              <span className="text-secondary ms-2">{getHeaderText()}</span>
             </div>
             <div className="d-flex align-items-center gap-2">
-              <Button variant="primary" size="sm" className="px-3">Month</Button>
-              <Button variant="outline-secondary" size="sm" className="px-3">Week</Button>
-              <Button variant="outline-secondary" size="sm" className="px-3">Day</Button>
+              <Button
+                variant="link"
+                size="sm"
+                className="p-1 text-secondary text-decoration-none"
+                onClick={() => navigate(-1)}
+                title={view === 'month' ? 'Previous month' : 'Previous week'}
+              >
+                <ChevronLeftIcon size={20} />
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                className="px-4"
+                onClick={goToToday}
+              >
+                Today
+              </Button>
+              <Button
+                variant="link"
+                size="sm"
+                className="p-1 text-secondary text-decoration-none"
+                onClick={() => navigate(1)}
+                title={view === 'month' ? 'Next month' : 'Next week'}
+              >
+                <ChevronRightIcon size={20} />
+              </Button>
             </div>
           </div>
 
-          <div className="flex-fill p-3" style={{ overflowY: 'auto' }}>
-            <div className="d-grid mb-2" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
-              {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                <div key={day} className="text-center py-2 small fw-semibold text-secondary bg-light rounded">
-                  {day}
-                </div>
-              ))}
-            </div>
+          {view === 'week' ? (
+            <JobsWeekView currentDate={currentDate} events={events} />
+          ) : (
+            <div className="flex-fill p-3" style={{ overflowY: 'auto' }}>
+              <div className="d-grid mb-2" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
+                  <div key={day} className="text-center py-2 small fw-semibold text-secondary bg-light rounded">
+                    {day}
+                  </div>
+                ))}
+              </div>
 
-            <div className="d-grid" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
-              {calendarDays.map((day, i) => (
-                <div
-                  key={i}
-                  className={`border rounded p-2 ${
-                    day.isCurrentMonth ? 'bg-white' : 'bg-light'
-                  } ${day.isToday ? 'border-primary border-2 shadow-sm' : 'border-1'}`}
-                  style={{
-                    minHeight: '110px',
-                    cursor: day.isCurrentMonth ? 'pointer' : 'default',
-                    transition: 'all 0.15s ease',
-                    position: 'relative'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (day.isCurrentMonth) {
-                      e.currentTarget.style.backgroundColor = '#f8f9fa';
-                      e.currentTarget.style.transform = 'translateY(-1px)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (day.isCurrentMonth) {
-                      e.currentTarget.style.backgroundColor = 'white';
-                      e.currentTarget.style.transform = 'translateY(0)';
-                    }
-                  }}
-                >
-                  {day.dayNumber && (
-                    <>
-                      <div className={`small mb-2 ${day.isToday ? 'fw-bold text-primary' : 'text-secondary'}`} style={{ fontSize: '0.75rem' }}>
-                        {day.dayNumber}
-                      </div>
-                      {day.events.length > 0 && (
-                        <div className="d-flex flex-column gap-1">
-                          {day.events.slice(0, 2).map((event) => {
-                            const colors = getStatusColor(event.status);
-                            const calColor = event.calendar?.color || '#3b82f6';
-                            return (
-                              <div
-                                key={event.id}
-                                className="px-2 py-1 rounded"
-                                style={{
-                                  fontSize: '0.65rem',
-                                  cursor: 'pointer',
-                                  transition: 'all 0.15s ease',
-                                  backgroundColor: `${calColor}20`,
-                                  borderLeft: `3px solid ${calColor}`,
-                                  color: '#333'
-                                }}
-                                title={`${event.title}\n${event.contact_name || ''}\n${event.amount ? `$${event.amount}` : ''}`}
-                              >
-                                <div className="fw-semibold text-truncate">{event.title}</div>
-                                {event.contact_name && <div className="text-truncate text-muted">{event.contact_name}</div>}
-                              </div>
-                            );
-                          })}
-                          {day.events.length > 2 && (
-                            <div
-                              className="small text-primary fw-semibold text-center"
-                              style={{ fontSize: '0.65rem', cursor: 'pointer' }}
-                            >
-                              +{day.events.length - 2} more
-                            </div>
-                          )}
+              <div className="d-grid" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+                {calendarDays.map((day, i) => (
+                  <div
+                    key={i}
+                    className={`rounded p-2 ${
+                      day.isCurrentMonth ? 'bg-white' : 'bg-light'
+                    }`}
+                    style={{
+                      minHeight: '110px',
+                      cursor: day.isCurrentMonth ? 'pointer' : 'default',
+                      transition: 'all 0.15s ease',
+                      position: 'relative',
+                      border: day.isToday ? '2px solid #0d6efd' : '1px solid #dee2e6',
+                      boxShadow: day.isToday ? '0 2px 8px rgba(13, 110, 253, 0.15)' : undefined
+                    }}
+                    onMouseEnter={(e) => {
+                      if (day.isCurrentMonth) {
+                        e.currentTarget.style.backgroundColor = '#f8f9fa';
+                        e.currentTarget.style.transform = 'translateY(-1px)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (day.isCurrentMonth) {
+                        e.currentTarget.style.backgroundColor = 'white';
+                        e.currentTarget.style.transform = 'translateY(0)';
+                      }
+                    }}
+                  >
+                    {day.dayNumber && (
+                      <>
+                        <div className={`mb-2 ${day.isToday ? 'fw-bold text-primary' : 'text-secondary'}`} style={{ fontSize: '1.25rem' }}>
+                          {day.dayNumber}
                         </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              ))}
+                        {day.events.length > 0 && (
+                          <div className="d-flex flex-column gap-1">
+                            {day.events.slice(0, 2).map((event) => {
+                              const calColor = event.calendar?.color || '#3b82f6';
+                              return (
+                                <div
+                                  key={event.id}
+                                  className="px-2 py-1"
+                                  style={{
+                                    fontSize: '0.7rem',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.15s ease',
+                                    backgroundColor: hexToRgba(calColor, 0.15),
+                                    borderLeft: `3px solid ${calColor}`,
+                                    borderRadius: '4px',
+                                    color: '#333'
+                                  }}
+                                  title={`${event.title}\n${event.contact_name || ''}`}
+                                  onMouseEnter={(e) => {
+                                    e.currentTarget.style.backgroundColor = hexToRgba(calColor, 0.25);
+                                    e.currentTarget.style.transform = 'scale(1.02)';
+                                  }}
+                                  onMouseLeave={(e) => {
+                                    e.currentTarget.style.backgroundColor = hexToRgba(calColor, 0.15);
+                                    e.currentTarget.style.transform = 'scale(1)';
+                                  }}
+                                >
+                                  <div className="fw-semibold text-truncate">{event.title}</div>
+                                  {event.contact_name && <div className="text-truncate text-muted">{event.contact_name}</div>}
+                                </div>
+                              );
+                            })}
+                            {day.events.length > 2 && (
+                              <div
+                                className="small text-primary fw-semibold text-center"
+                                style={{ fontSize: '0.65rem', cursor: 'pointer' }}
+                              >
+                                +{day.events.length - 2} more
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
     </div>

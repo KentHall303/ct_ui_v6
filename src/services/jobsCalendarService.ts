@@ -92,6 +92,51 @@ export async function fetchJobsCalendarsGroupedByCategory(): Promise<ContactsByC
   };
 }
 
+export async function fetchAllJobsCalendars(): Promise<JobsCalendarWithContact[]> {
+  const [calendarsResult, usersResult] = await Promise.all([
+    supabase
+      .from('jobs_calendars')
+      .select(`
+        *,
+        contacts!contact_id (
+          contact_category
+        )
+      `)
+      .order('name', { ascending: true }),
+    supabase
+      .from('users')
+      .select('*')
+      .eq('user_type', 'subcontractor')
+      .eq('is_active', true)
+      .order('first_name', { ascending: true })
+  ]);
+
+  if (calendarsResult.error) {
+    console.error('Error fetching jobs calendars:', calendarsResult.error);
+    return [];
+  }
+
+  const calendars = (calendarsResult.data || []).map((item: any) => ({
+    ...item,
+    contact_category: item.contacts?.contact_category || 'Estimator',
+    contacts: undefined
+  })) as JobsCalendarWithContact[];
+
+  const subcontractorUsers = (usersResult.data || []).map((user: any) => ({
+    id: `user_${user.id}`,
+    contact_id: user.id,
+    name: `${user.first_name} ${user.last_name}`,
+    color: '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0'),
+    is_visible: true,
+    created_at: user.created_at,
+    updated_at: user.updated_at,
+    contact_category: 'Subcontractor',
+    is_user_based: true
+  })) as JobsCalendarWithContact[];
+
+  return [...calendars, ...subcontractorUsers].sort((a, b) => a.name.localeCompare(b.name));
+}
+
 export async function fetchJobsCalendars(): Promise<JobsCalendar[]> {
   const { data, error } = await supabase
     .from('jobs_calendars')
