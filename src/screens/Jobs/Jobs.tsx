@@ -12,7 +12,6 @@ import { supabase } from "../../lib/supabase";
 import { sampleCalendarEvents, CalendarEvent, isEventStart, isEventEnd, isEventMiddle } from "../../data/sampleCalendarData";
 import { fetchCalendarEventsWithCalendar, fetchCalendars, CalendarEventWithCalendar, updateCalendarEvent, Calendar, fetchEstimators, Estimator } from "../../services/calendarService";
 import { DispatchingMapView } from "../../components/dispatching/DispatchingMapView";
-import { fetchAllJobsCalendars, fetchJobsCalendarEvents, updateJobsCalendarVisibility, JobsCalendarWithContact, JobsCalendarEventWithCalendar } from "../../services/jobsCalendarService";
 import { getWeekDays, isToday, isSameDay, isEventOnDate, formatWeekHeader, formatCompactTimeRange } from "../../utils/dateUtils";
 import { fetchQuotesWithJobs, updateQuoteJob, QuoteWithJobs, QuoteJob } from "../../services/quoteService";
 
@@ -1692,7 +1691,7 @@ function formatHourLabel(hour: number): string {
 }
 
 interface PositionedJobEvent {
-  event: JobsCalendarEventWithCalendar;
+  event: CalendarEventWithCalendar;
   top: number;
   height: number;
   left: number;
@@ -1700,7 +1699,7 @@ interface PositionedJobEvent {
 }
 
 function calculateJobEventPositions(
-  events: JobsCalendarEventWithCalendar[],
+  events: CalendarEventWithCalendar[],
   date: Date
 ): PositionedJobEvent[] {
   const dayEvents = events
@@ -1803,8 +1802,9 @@ function calculateJobEventPositions(
 
 const JobsWeekView: React.FC<{
   currentDate: Date;
-  events: JobsCalendarEventWithCalendar[];
-}> = ({ currentDate, events }) => {
+  events: CalendarEventWithCalendar[];
+  getColorForEvent: (event: CalendarEventWithCalendar) => string;
+}> = ({ currentDate, events, getColorForEvent }) => {
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const weekDays = React.useMemo(() => getWeekDays(currentDate), [currentDate]);
 
@@ -1910,7 +1910,7 @@ const JobsWeekView: React.FC<{
                   }}
                 >
                   {positionedEvents.map((pos, eventIndex) => {
-                    const calendarColor = pos.event.calendar?.color || '#6b7280';
+                    const eventColor = getColorForEvent(pos.event);
                     const isMultiDay = !isSameDay(pos.event.start_date, pos.event.end_date);
                     const startsToday = isSameDay(pos.event.start_date, day);
 
@@ -1930,8 +1930,8 @@ const JobsWeekView: React.FC<{
                         <div
                           className="h-100"
                           style={{
-                            backgroundColor: hexToRgba(calendarColor, 0.15),
-                            borderLeft: `3px solid ${calendarColor}`,
+                            backgroundColor: hexToRgba(eventColor, 0.15),
+                            borderLeft: `3px solid ${eventColor}`,
                             borderRadius: '4px',
                             padding: '4px 6px',
                             cursor: 'pointer',
@@ -1941,16 +1941,16 @@ const JobsWeekView: React.FC<{
                             flexDirection: 'column'
                           }}
                           onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = hexToRgba(calendarColor, 0.25);
+                            e.currentTarget.style.backgroundColor = hexToRgba(eventColor, 0.25);
                             e.currentTarget.style.transform = 'scale(1.02)';
                             e.currentTarget.style.zIndex = '10';
                           }}
                           onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = hexToRgba(calendarColor, 0.15);
+                            e.currentTarget.style.backgroundColor = hexToRgba(eventColor, 0.15);
                             e.currentTarget.style.transform = 'scale(1)';
                             e.currentTarget.style.zIndex = '1';
                           }}
-                          title={`${pos.event.title}\n${formatCompactTimeRange(pos.event.start_date, pos.event.end_date)}`}
+                          title={`${pos.event.title}\n${formatCompactTimeRange(pos.event.start_date, pos.event.end_date)}\n${pos.event.estimator?.name || ''}`}
                         >
                           {startsToday && (
                             <div
@@ -1996,28 +1996,37 @@ const JobsWeekView: React.FC<{
   );
 };
 
+interface SubcontractorWithColor extends Estimator {
+  color: string;
+}
+
 const CalendarView = () => {
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
-  const [calendars, setCalendars] = React.useState<JobsCalendarWithContact[]>([]);
-  const [selectedCalendarIds, setSelectedCalendarIds] = React.useState<string[]>([]);
-  const [events, setEvents] = React.useState<JobsCalendarEventWithCalendar[]>([]);
+  const [subcontractors, setSubcontractors] = React.useState<SubcontractorWithColor[]>([]);
+  const [selectedSubcontractorIds, setSelectedSubcontractorIds] = React.useState<string[]>([]);
+  const [events, setEvents] = React.useState<CalendarEventWithCalendar[]>([]);
   const [currentDate, setCurrentDate] = React.useState(new Date());
   const [view, setView] = React.useState<'month' | 'week'>('month');
 
+  const colors = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#06b6d4', '#84cc16', '#ef4444', '#14b8a6', '#f97316', '#a855f7', '#22c55e', '#eab308'];
+
   React.useEffect(() => {
-    const loadCalendars = async () => {
-      const data = await fetchAllJobsCalendars();
-      setCalendars(data);
-      const visibleIds = data.filter(c => c.is_visible).map(c => c.id);
-      setSelectedCalendarIds(visibleIds);
+    const loadSubcontractors = async () => {
+      const data = await fetchEstimators();
+      const withColors = data.map((sub, idx) => ({
+        ...sub,
+        color: colors[idx % colors.length]
+      }));
+      setSubcontractors(withColors);
+      setSelectedSubcontractorIds(data.map(s => s.id));
     };
-    loadCalendars();
+    loadSubcontractors();
   }, []);
 
   React.useEffect(() => {
     const loadEvents = async () => {
-      if (selectedCalendarIds.length === 0) {
+      if (selectedSubcontractorIds.length === 0) {
         setEvents([]);
         return;
       }
@@ -2033,11 +2042,14 @@ const CalendarView = () => {
         startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
         endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0, 23, 59, 59);
       }
-      const data = await fetchJobsCalendarEvents(startDate, endDate, selectedCalendarIds);
-      setEvents(data);
+      const allEvents = await fetchCalendarEventsWithCalendar(startDate, endDate);
+      const filteredEvents = allEvents.filter(event =>
+        event.user_id && selectedSubcontractorIds.includes(event.user_id)
+      );
+      setEvents(filteredEvents);
     };
     loadEvents();
-  }, [selectedCalendarIds, currentDate, view]);
+  }, [selectedSubcontractorIds, currentDate, view]);
 
   React.useLayoutEffect(() => {
     function computeHeight() {
@@ -2052,39 +2064,38 @@ const CalendarView = () => {
     return () => window.removeEventListener("resize", computeHeight);
   }, []);
 
-  const toggleCalendar = async (calendar: JobsCalendarWithContact) => {
-    const newVisible = !selectedCalendarIds.includes(calendar.id);
-    if (newVisible) {
-      setSelectedCalendarIds(prev => [...prev, calendar.id]);
+  const toggleSubcontractor = (subcontractorId: string) => {
+    const isSelected = selectedSubcontractorIds.includes(subcontractorId);
+    if (isSelected) {
+      setSelectedSubcontractorIds(prev => prev.filter(id => id !== subcontractorId));
     } else {
-      setSelectedCalendarIds(prev => prev.filter(id => id !== calendar.id));
-    }
-    if (!calendar.is_user_based) {
-      try {
-        await updateJobsCalendarVisibility(calendar.id, newVisible);
-      } catch (e) {
-        console.error('Failed to update visibility:', e);
-      }
+      setSelectedSubcontractorIds(prev => [...prev, subcontractorId]);
     }
   };
 
-  const selectAllCalendars = () => {
-    setSelectedCalendarIds(calendars.map(c => c.id));
+  const selectAllSubcontractors = () => {
+    setSelectedSubcontractorIds(subcontractors.map(s => s.id));
   };
 
-  const clearAllCalendars = () => {
-    setSelectedCalendarIds([]);
+  const clearAllSubcontractors = () => {
+    setSelectedSubcontractorIds([]);
   };
 
-  const getEventsByDate = (date: string): JobsCalendarEventWithCalendar[] => {
+  const getEventsByDate = (date: string): CalendarEventWithCalendar[] => {
     return events.filter(event => {
       const eventDate = new Date(event.start_date).toISOString().split('T')[0];
       return eventDate === date;
     });
   };
 
-  const getEventCountForCalendar = (calendarId: string): number => {
-    return events.filter(e => e.jobs_calendar_id === calendarId).length;
+  const getEventCountForSubcontractor = (subcontractorId: string): number => {
+    return events.filter(e => e.user_id === subcontractorId).length;
+  };
+
+  const getColorForEvent = (event: CalendarEventWithCalendar): string => {
+    if (!event.user_id) return '#9ca3af';
+    const sub = subcontractors.find(s => s.id === event.user_id);
+    return sub?.color || '#9ca3af';
   };
 
   const generateCalendarDays = () => {
@@ -2140,8 +2151,8 @@ const CalendarView = () => {
     setCurrentDate(new Date());
   };
 
-  const allSelected = selectedCalendarIds.length === calendars.length;
-  const noneSelected = selectedCalendarIds.length === 0;
+  const allSelected = selectedSubcontractorIds.length === subcontractors.length && subcontractors.length > 0;
+  const noneSelected = selectedSubcontractorIds.length === 0;
 
   return (
     <div
@@ -2153,7 +2164,7 @@ const CalendarView = () => {
         <div className="border-end bg-light" style={{ width: '300px', flexShrink: 0, overflowY: 'auto', maxHeight: '100%' }}>
           <div className="p-3">
             <div className="d-flex align-items-center justify-content-between mb-3">
-              <h6 className="fw-bold text-dark mb-0">Jobs Calendars</h6>
+              <h6 className="fw-bold text-dark mb-0">Subcontractors</h6>
             </div>
 
             <div className="d-flex gap-2 mb-3">
@@ -2161,7 +2172,7 @@ const CalendarView = () => {
                 variant="outline-secondary"
                 size="sm"
                 className="flex-fill small"
-                onClick={selectAllCalendars}
+                onClick={selectAllSubcontractors}
                 disabled={allSelected}
               >
                 Select All
@@ -2170,7 +2181,7 @@ const CalendarView = () => {
                 variant="outline-secondary"
                 size="sm"
                 className="flex-fill small"
-                onClick={clearAllCalendars}
+                onClick={clearAllSubcontractors}
                 disabled={noneSelected}
               >
                 Clear All
@@ -2179,19 +2190,19 @@ const CalendarView = () => {
 
             <div className="bg-white rounded-3 shadow-sm p-3">
               <div className="d-flex flex-column gap-3">
-                {calendars.map((calendar) => {
-                  const isSelected = selectedCalendarIds.includes(calendar.id);
-                  const eventCount = getEventCountForCalendar(calendar.id);
+                {subcontractors.map((subcontractor) => {
+                  const isSelected = selectedSubcontractorIds.includes(subcontractor.id);
+                  const eventCount = getEventCountForSubcontractor(subcontractor.id);
                   return (
                     <label
-                      key={calendar.id}
+                      key={subcontractor.id}
                       className="d-flex align-items-center gap-3"
                       style={{ cursor: 'pointer' }}
                     >
                       <input
                         type="checkbox"
                         checked={isSelected}
-                        onChange={() => toggleCalendar(calendar)}
+                        onChange={() => toggleSubcontractor(subcontractor.id)}
                         className="d-none"
                       />
                       <div
@@ -2199,8 +2210,8 @@ const CalendarView = () => {
                         style={{
                           width: '24px',
                           height: '24px',
-                          backgroundColor: isSelected ? calendar.color : 'transparent',
-                          border: `2px solid ${calendar.color}`,
+                          backgroundColor: isSelected ? subcontractor.color : 'transparent',
+                          border: `2px solid ${subcontractor.color}`,
                           transition: 'all 0.15s ease',
                           flexShrink: 0
                         }}
@@ -2224,13 +2235,13 @@ const CalendarView = () => {
                         className={`text-dark ${isSelected ? 'fw-bold' : ''}`}
                         style={{ fontSize: '0.95rem', flex: 1 }}
                       >
-                        {calendar.name}
+                        {subcontractor.name}
                       </span>
                       {eventCount > 0 && (
                         <span
                           className="d-flex align-items-center justify-content-center"
                           style={{
-                            backgroundColor: calendar.color,
+                            backgroundColor: subcontractor.color,
                             color: 'white',
                             fontSize: '0.7rem',
                             fontWeight: 600,
@@ -2250,9 +2261,9 @@ const CalendarView = () => {
               </div>
             </div>
 
-            {calendars.length === 0 && (
+            {subcontractors.length === 0 && (
               <div className="text-center text-secondary small py-4">
-                No calendars available
+                No subcontractors available
               </div>
             )}
           </div>
@@ -2320,7 +2331,7 @@ const CalendarView = () => {
           </div>
 
           {view === 'week' ? (
-            <JobsWeekView currentDate={currentDate} events={events} />
+            <JobsWeekView currentDate={currentDate} events={events} getColorForEvent={getColorForEvent} />
           ) : (
             <div className="flex-fill p-3" style={{ overflowY: 'auto' }}>
               <div className="d-grid mb-2" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
@@ -2367,7 +2378,7 @@ const CalendarView = () => {
                         {day.events.length > 0 && (
                           <div className="d-flex flex-column gap-1">
                             {day.events.slice(0, 2).map((event) => {
-                              const calColor = event.calendar?.color || '#3b82f6';
+                              const eventColor = getColorForEvent(event);
                               return (
                                 <div
                                   key={event.id}
@@ -2376,18 +2387,18 @@ const CalendarView = () => {
                                     fontSize: '0.7rem',
                                     cursor: 'pointer',
                                     transition: 'all 0.15s ease',
-                                    backgroundColor: hexToRgba(calColor, 0.15),
-                                    borderLeft: `3px solid ${calColor}`,
+                                    backgroundColor: hexToRgba(eventColor, 0.15),
+                                    borderLeft: `3px solid ${eventColor}`,
                                     borderRadius: '4px',
                                     color: '#333'
                                   }}
-                                  title={`${event.title}\n${event.contact_name || ''}`}
+                                  title={`${event.title}\n${event.contact_name || ''}\n${event.estimator?.name || ''}`}
                                   onMouseEnter={(e) => {
-                                    e.currentTarget.style.backgroundColor = hexToRgba(calColor, 0.25);
+                                    e.currentTarget.style.backgroundColor = hexToRgba(eventColor, 0.25);
                                     e.currentTarget.style.transform = 'scale(1.02)';
                                   }}
                                   onMouseLeave={(e) => {
-                                    e.currentTarget.style.backgroundColor = hexToRgba(calColor, 0.15);
+                                    e.currentTarget.style.backgroundColor = hexToRgba(eventColor, 0.15);
                                     e.currentTarget.style.transform = 'scale(1)';
                                   }}
                                 >
