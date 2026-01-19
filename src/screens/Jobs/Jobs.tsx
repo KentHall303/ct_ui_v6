@@ -12,6 +12,8 @@ import { supabase } from "../../lib/supabase";
 import { sampleCalendarEvents, CalendarEvent, isEventStart, isEventEnd, isEventMiddle } from "../../data/sampleCalendarData";
 import { fetchCalendarEventsWithCalendar, fetchCalendars, CalendarEventWithCalendar, updateCalendarEvent, Calendar, fetchEstimators, Estimator } from "../../services/calendarService";
 import { DispatchingMapView } from "../../components/dispatching/DispatchingMapView";
+import { DispatchingSidebar } from "../../components/dispatching/DispatchingSidebar";
+import { DispatchingTimelineView } from "../../components/dispatching/DispatchingTimelineView";
 import { getWeekDays, isToday, isSameDay, isEventOnDate, formatWeekHeader, formatCompactTimeRange } from "../../utils/dateUtils";
 import { fetchQuotesWithJobs, updateQuoteJob, QuoteWithJobs, QuoteJob } from "../../services/quoteService";
 
@@ -753,6 +755,8 @@ const TableView = () => {
   );
 };
 
+const DISPATCHING_SIDEBAR_COLLAPSED_KEY = 'dispatching-sidebar-collapsed';
+
 const DispatchingView = () => {
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
@@ -760,14 +764,20 @@ const DispatchingView = () => {
   const [selectedSubcontractors, setSelectedSubcontractors] = React.useState<string[]>([]);
   const [subcontractors, setSubcontractors] = React.useState<Estimator[]>([]);
   const [events, setEvents] = React.useState<CalendarEventWithCalendar[]>([]);
-  const [draggedEvent, setDraggedEvent] = React.useState<CalendarEventWithCalendar | null>(null);
   const [viewMode, setViewMode] = React.useState<'timeline' | 'map'>('timeline');
   const [showEditModal, setShowEditModal] = React.useState(false);
   const [selectedEvent, setSelectedEvent] = React.useState<CalendarEventWithCalendar | null>(null);
   const [dbEstimators, setDbEstimators] = React.useState<any[]>([]);
   const [allDbEstimators, setAllDbEstimators] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [resizingEvent, setResizingEvent] = React.useState<{ event: CalendarEventWithCalendar; startX: number; originalWidth: number } | null>(null);
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState<boolean>(() => {
+    const stored = localStorage.getItem(DISPATCHING_SIDEBAR_COLLAPSED_KEY);
+    return stored === 'true';
+  });
+
+  React.useEffect(() => {
+    localStorage.setItem(DISPATCHING_SIDEBAR_COLLAPSED_KEY, String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
 
   React.useLayoutEffect(() => {
     function computeHeight() {
@@ -780,7 +790,7 @@ const DispatchingView = () => {
     computeHeight();
     window.addEventListener("resize", computeHeight);
     return () => window.removeEventListener("resize", computeHeight);
-  }, []);
+  }, [sidebarCollapsed]);
 
   const colors = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#06b6d4', '#84cc16', '#ef4444', '#8b5cf6', '#14b8a6', '#f97316', '#a855f7', '#22c55e', '#eab308', '#06b6d4'];
   const subcontractorsWithColors = subcontractors.map((sub, idx) => ({
@@ -870,6 +880,14 @@ const DispatchingView = () => {
     );
   };
 
+  const selectAllSubcontractors = () => {
+    setSelectedSubcontractors(subcontractors.map(s => s.name));
+  };
+
+  const clearAllSubcontractors = () => {
+    setSelectedSubcontractors([]);
+  };
+
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   };
@@ -890,184 +908,6 @@ const DispatchingView = () => {
     setSelectedDate(newDate);
   };
 
-  // Generate hours from 7 AM to 8 PM
-  const hours = Array.from({ length: 14 }, (_, i) => {
-    const hour = i + 7;
-    return hour <= 12 ? `${hour} am` : `${hour - 12} pm`;
-  });
-
-  // Get events for selected date and estimator
-  const getEventsForEstimator = (subcontractorName: string) => {
-    return events.filter(event => event.estimator?.name === subcontractorName);
-  };
-
-  const parseTime = (timeStr: string): number => {
-    const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
-    if (!match) return 7;
-    let hours = parseInt(match[1]);
-    const minutes = parseInt(match[2]);
-    const period = match[3].toUpperCase();
-
-    if (period === 'PM' && hours !== 12) hours += 12;
-    if (period === 'AM' && hours === 12) hours = 0;
-
-    return hours + minutes / 60;
-  };
-
-  const formatTimeFromDecimal = (decimal: number): string => {
-    const totalMinutes = Math.round(decimal * 60);
-    let hours = Math.floor(totalMinutes / 60);
-    const minutes = totalMinutes % 60;
-
-    const period = hours >= 12 ? 'PM' : 'AM';
-    if (hours > 12) hours -= 12;
-    if (hours === 0) hours = 12;
-
-    return `${hours}:${String(minutes).padStart(2, '0')} ${period}`;
-  };
-
-  const isMultiDayEvent = (startDate: string, endDate: string): boolean => {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const startOnly = new Date(Date.UTC(start.getFullYear(), start.getMonth(), start.getDate()));
-    const endOnly = new Date(Date.UTC(end.getFullYear(), end.getMonth(), end.getDate()));
-    return endOnly.getTime() > startOnly.getTime();
-  };
-
-  const getEventDayType = (event: CalendarEventWithCalendar, viewDate: Date): 'single' | 'start' | 'middle' | 'end' => {
-    const startDate = new Date(event.start_date);
-    const endDate = new Date(event.end_date);
-    const viewDateOnly = new Date(viewDate);
-
-    startDate.setHours(0, 0, 0, 0);
-    endDate.setHours(0, 0, 0, 0);
-    viewDateOnly.setHours(0, 0, 0, 0);
-
-    if (!isMultiDayEvent(event.start_date, event.end_date)) {
-      return 'single';
-    }
-
-    if (viewDateOnly.getTime() === startDate.getTime()) {
-      return 'start';
-    } else if (viewDateOnly.getTime() === endDate.getTime()) {
-      return 'end';
-    } else if (viewDateOnly.getTime() > startDate.getTime() && viewDateOnly.getTime() < endDate.getTime()) {
-      return 'middle';
-    }
-
-    return 'single';
-  };
-
-  const calculatePosition = (startDate: string, endDate: string, viewDate: Date): { left: string; width: string; visible: boolean; isMultiDay: boolean; dayType: 'single' | 'start' | 'middle' | 'end' } => {
-    const date = new Date(startDate);
-    const endDateTime = new Date(endDate);
-
-    // Use UTC for date-only comparisons to avoid timezone issues
-    const viewDateOnly = new Date(Date.UTC(viewDate.getFullYear(), viewDate.getMonth(), viewDate.getDate()));
-
-    const startDateOnly = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-
-    const endDateOnly = new Date(Date.UTC(endDateTime.getFullYear(), endDateTime.getMonth(), endDateTime.getDate()));
-
-    // Check if this event should be visible on this day
-    if (viewDateOnly.getTime() < startDateOnly.getTime() || viewDateOnly.getTime() > endDateOnly.getTime()) {
-      return { left: '0%', width: '0%', visible: false, isMultiDay: false, dayType: 'single' };
-    }
-
-    const isMultiDay = isMultiDayEvent(startDate, endDate);
-    let dayType: 'single' | 'start' | 'middle' | 'end' = 'single';
-
-    if (isMultiDay) {
-      if (viewDateOnly.getTime() === startDateOnly.getTime()) {
-        dayType = 'start';
-      } else if (viewDateOnly.getTime() === endDateOnly.getTime()) {
-        dayType = 'end';
-      } else {
-        dayType = 'middle';
-      }
-    }
-
-    const gridStart = 7;
-    const gridEnd = 21;
-    const totalHours = gridEnd - gridStart;
-
-    let startHour: number;
-    let durationHours: number;
-
-    if (dayType === 'middle') {
-      // Full day on intermediate days
-      startHour = gridStart;
-      durationHours = totalHours;
-    } else if (dayType === 'start') {
-      // From actual start time to end of day
-      startHour = date.getHours() + date.getMinutes() / 60;
-      if (startHour < gridStart) startHour = gridStart;
-      durationHours = gridEnd - startHour;
-    } else if (dayType === 'end') {
-      // From start of day to actual end time
-      startHour = gridStart;
-      const endHour = endDateTime.getHours() + endDateTime.getMinutes() / 60;
-      durationHours = Math.min(endHour, gridEnd) - gridStart;
-    } else {
-      // Single day event
-      startHour = date.getHours() + date.getMinutes() / 60;
-      if (startHour < gridStart || startHour >= gridEnd) {
-        return { left: '0%', width: '0%', visible: false, isMultiDay: false, dayType: 'single' };
-      }
-
-      const durationMs = endDateTime.getTime() - date.getTime();
-      durationHours = durationMs / (1000 * 60 * 60);
-    }
-
-    const left = ((startHour - gridStart) / totalHours) * 100;
-    const width = (durationHours / totalHours) * 100;
-
-    return {
-      left: `${left}%`,
-      width: `${Math.min(width, 100 - left)}%`,
-      visible: true,
-      isMultiDay,
-      dayType
-    };
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return { bg: '#d1f4e0', border: '#10b981', text: '#059669' };
-      case 'pending':
-        return { bg: '#fef3c7', border: '#f59e0b', text: '#d97706' };
-      case 'overdue':
-        return { bg: '#fee2e2', border: '#ef4444', text: '#dc2626' };
-      case 'completed':
-        return { bg: '#dbeafe', border: '#3b82f6', text: '#2563eb' };
-      default:
-        return { bg: '#f3f4f6', border: '#9ca3af', text: '#6b7280' };
-    }
-  };
-
-  const handleDragStart = (e: React.DragEvent, event: CalendarEventWithCalendar) => {
-    setDraggedEvent(event);
-    e.dataTransfer.effectAllowed = 'move';
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleDragEnd = () => {
-    setDraggedEvent(null);
-  };
-
-  const handleEventClick = (event: CalendarEventWithCalendar, e: React.MouseEvent) => {
-    // Only open modal if not dragging
-    if (!draggedEvent) {
-      setSelectedEvent(event);
-      setShowEditModal(true);
-    }
-  };
-
   const handleModalClose = () => {
     setShowEditModal(false);
     setSelectedEvent(null);
@@ -1077,109 +917,6 @@ const DispatchingView = () => {
     loadCalendarData();
     handleModalClose();
   };
-
-  const handleResizeStart = (e: React.MouseEvent, event: CalendarEventWithCalendar) => {
-    e.stopPropagation();
-    e.preventDefault();
-    const target = (e.currentTarget as HTMLElement).parentElement;
-    if (target) {
-      const rect = target.getBoundingClientRect();
-      setResizingEvent({
-        event,
-        startX: e.clientX,
-        originalWidth: rect.width
-      });
-    }
-  };
-
-  React.useEffect(() => {
-    if (!resizingEvent) return;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      if (!resizingEvent) return;
-
-      const deltaX = e.clientX - resizingEvent.startX;
-      const timelineContainer = document.querySelector('.timeline-container');
-      if (!timelineContainer) return;
-
-      const containerRect = timelineContainer.getBoundingClientRect();
-      const containerWidth = containerRect.width;
-      const totalHours = 14; // 7am to 9pm
-      const hourWidth = containerWidth / totalHours;
-
-      // Calculate new duration based on drag distance
-      const deltaHours = deltaX / hourWidth;
-      const originalDuration = (new Date(resizingEvent.event.end_date).getTime() - new Date(resizingEvent.event.start_date).getTime()) / (1000 * 60 * 60);
-      const newDuration = Math.max(0.5, originalDuration + deltaHours); // Minimum 30 minutes
-
-      // Round to nearest 30 minutes
-      const roundedDuration = Math.round(newDuration * 2) / 2;
-
-      // Update the event end time temporarily
-      const newEndDate = new Date(resizingEvent.event.start_date);
-      newEndDate.setHours(newEndDate.getHours() + Math.floor(roundedDuration));
-      newEndDate.setMinutes(newEndDate.getMinutes() + (roundedDuration % 1) * 60);
-
-      // Visual feedback - update the element width
-      const eventElement = document.querySelector(`[data-event-id="${resizingEvent.event.id}"]`) as HTMLElement;
-      if (eventElement) {
-        const widthPercent = (roundedDuration / totalHours) * 100;
-        const startHour = new Date(resizingEvent.event.start_date).getHours() + new Date(resizingEvent.event.start_date).getMinutes() / 60;
-        const gridStart = 7;
-        const leftPercent = ((startHour - gridStart) / totalHours) * 100;
-        const maxWidth = 100 - leftPercent;
-        eventElement.style.width = `${Math.min(widthPercent, maxWidth)}%`;
-      }
-    };
-
-    const handleMouseUp = async () => {
-      if (!resizingEvent) return;
-
-      const eventElement = document.querySelector(`[data-event-id="${resizingEvent.event.id}"]`) as HTMLElement;
-      if (!eventElement) {
-        setResizingEvent(null);
-        return;
-      }
-
-      const timelineContainer = document.querySelector('.timeline-container');
-      if (!timelineContainer) {
-        setResizingEvent(null);
-        return;
-      }
-
-      const containerRect = timelineContainer.getBoundingClientRect();
-      const containerWidth = containerRect.width;
-      const totalHours = 14;
-      const hourWidth = containerWidth / totalHours;
-
-      const eventRect = eventElement.getBoundingClientRect();
-      const newDurationHours = (eventRect.width / hourWidth);
-      const roundedDuration = Math.round(newDurationHours * 2) / 2; // Round to nearest 30 minutes
-
-      const newEndDate = new Date(resizingEvent.event.start_date);
-      newEndDate.setHours(newEndDate.getHours() + Math.floor(roundedDuration));
-      newEndDate.setMinutes(newEndDate.getMinutes() + (roundedDuration % 1) * 60);
-
-      try {
-        await updateCalendarEvent(resizingEvent.event.id, {
-          end_date: newEndDate.toISOString()
-        });
-        await loadCalendarData();
-      } catch (error) {
-        console.error('Error resizing event:', error);
-      }
-
-      setResizingEvent(null);
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [resizingEvent]);
 
   const handleEventDelete = (eventId: string) => {
     loadCalendarData();
@@ -1193,54 +930,32 @@ const DispatchingView = () => {
       style={{ maxHeight: maxHeight ?? undefined, display: 'flex', flexDirection: 'column', minHeight: 0 }}
     >
       <div className="d-flex flex-fill" style={{ minHeight: 0 }}>
-        {/* Left Sidebar */}
-        <div className="border-end bg-light p-3" style={{ width: '280px', flexShrink: 0, overflowY: 'auto' }}>
-          <div className="mb-4">
-            <h6 className="fw-bold text-dark mb-3">Subcontractors</h6>
-            <div className="d-flex flex-column gap-2">
-              {subcontractorsWithColors.map((subcontractor) => (
-                <label
-                  key={subcontractor.id}
-                  className="d-flex align-items-center gap-2 p-2 rounded"
-                  style={{ cursor: 'pointer', transition: 'background-color 0.15s' }}
-                  onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(0,0,0,0.05)'}
-                  onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                >
-                  <input
-                    type="checkbox"
-                    checked={selectedSubcontractors.includes(subcontractor.name)}
-                    onChange={() => toggleSubcontractor(subcontractor.name)}
-                    className="form-check-input mt-0"
-                    style={{ cursor: 'pointer' }}
-                  />
-                  <div
-                    className="rounded"
-                    style={{
-                      width: '12px',
-                      height: '12px',
-                      backgroundColor: subcontractor.color,
-                      flexShrink: 0
-                    }}
-                  />
-                  <div className="d-flex flex-column flex-fill">
-                    <span className={`small ${selectedSubcontractors.includes(subcontractor.name) ? 'fw-semibold text-dark' : 'text-secondary'}`}>
-                      {subcontractor.name}
-                    </span>
-                    <span className="text-muted" style={{ fontSize: '0.65rem' }}>
-                      {subcontractor.email || subcontractor.phone || ''}
-                    </span>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
-        </div>
+        <DispatchingSidebar
+          subcontractors={subcontractorsWithColors}
+          selectedSubcontractors={selectedSubcontractors}
+          onToggleSubcontractor={toggleSubcontractor}
+          onSelectAll={selectAllSubcontractors}
+          onClearAll={clearAllSubcontractors}
+          onRefresh={loadCalendarData}
+          collapsed={sidebarCollapsed}
+          isLoading={loading}
+          events={events}
+        />
 
         {/* Main Timeline Area */}
         <div className="flex-fill d-flex flex-column" style={{ minHeight: 0, overflow: 'hidden' }}>
           {/* Date Navigation Header */}
           <div className="d-flex align-items-center justify-content-between px-4 py-3 border-bottom bg-white">
             <div className="d-flex align-items-center gap-2">
+              <button
+                type="button"
+                className="btn p-1 text-secondary"
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                title={sidebarCollapsed ? 'Show filters' : 'Hide filters'}
+                style={{ border: 'none', background: 'transparent', flexShrink: 0 }}
+              >
+                {sidebarCollapsed ? <PanelLeftOpenIcon size={20} /> : <PanelLeftCloseIcon size={20} />}
+              </button>
               <Button
                 variant="link"
                 size="sm"
@@ -1289,362 +1004,17 @@ const DispatchingView = () => {
 
           {/* Timeline Grid */}
           {viewMode === 'timeline' ? (
-            <div className="flex-fill" style={{ overflowY: 'auto', overflowX: 'auto' }}>
-              <div style={{ minWidth: '1200px' }}>
-              {/* Hours Header */}
-              <div className="d-flex border-bottom bg-light sticky-top" style={{ top: 0, zIndex: 2 }}>
-                <div className="border-end bg-white" style={{ width: '180px', flexShrink: 0, padding: '12px 16px' }}>
-                  <span className="small fw-semibold text-secondary">Unassigned</span>
-                </div>
-                <div className="d-flex flex-fill">
-                  {hours.map((hour, i) => (
-                    <div
-                      key={i}
-                      className="text-center border-end"
-                      style={{ flex: 1, padding: '12px 8px', fontSize: '0.75rem', fontWeight: '600', color: '#6b7280' }}
-                    >
-                      {hour}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Subcontractor Rows */}
-              {selectedSubcontractors.map((subcontractorName, index) => {
-                const subcontractorEvents = getEventsForEstimator(subcontractorName);
-                const subcontractor = subcontractorsWithColors.find(e => e.name === subcontractorName);
-
-                // Calculate the maximum number of overlapping events for this estimator to determine row height
-                const visibleEventsForRow = subcontractorEvents
-                  .map(event => ({
-                    event,
-                    position: calculatePosition(event.start_date, event.end_date, selectedDate)
-                  }))
-                  .filter(({ position }) => position.visible);
-
-                // Build event layers to find max depth
-                const eventLayersMap = new Map<string, number>();
-                const sortedEvents = visibleEventsForRow.sort((a, b) => {
-                  const aLeft = parseFloat(a.position.left);
-                  const bLeft = parseFloat(b.position.left);
-                  if (aLeft !== bLeft) return aLeft - bLeft;
-                  const aWidth = parseFloat(a.position.width);
-                  const bWidth = parseFloat(b.position.width);
-                  return bWidth - aWidth;
-                });
-
-                for (const { event, position } of sortedEvents) {
-                  const eventStart = parseFloat(position.left);
-                  const eventEnd = eventStart + parseFloat(position.width);
-
-                  let layer = 0;
-                  let foundLayer = false;
-
-                  while (!foundLayer) {
-                    let hasConflict = false;
-
-                    for (const [otherId, otherLayer] of eventLayersMap.entries()) {
-                      if (otherLayer !== layer) continue;
-
-                      const otherData = sortedEvents.find(ve => ve.event.id === otherId);
-                      if (!otherData) continue;
-
-                      const otherStart = parseFloat(otherData.position.left);
-                      const otherEnd = otherStart + parseFloat(otherData.position.width);
-
-                      if (!(eventEnd <= otherStart || eventStart >= otherEnd)) {
-                        hasConflict = true;
-                        break;
-                      }
-                    }
-
-                    if (!hasConflict) {
-                      eventLayersMap.set(event.id, layer);
-                      foundLayer = true;
-                    } else {
-                      layer++;
-                    }
-                  }
-                }
-
-                const maxLayers = eventLayersMap.size > 0 ? Math.max(...Array.from(eventLayersMap.values())) + 1 : 1;
-                const standardEventHeight = 40;
-                const eventSpacing = 6;
-                const rowPadding = 16;
-                const calculatedRowHeight = rowPadding + (maxLayers * standardEventHeight) + ((maxLayers - 1) * eventSpacing);
-                const rowHeight = Math.max(60, calculatedRowHeight);
-
-                return (
-                  <div key={index} className="d-flex border-bottom" style={{ minHeight: `${rowHeight}px` }}>
-                    {/* Estimator Name */}
-                    <div className="border-end d-flex align-items-center" style={{ width: '180px', flexShrink: 0, padding: '6px 12px', backgroundColor: '#fff' }}>
-                      <div className="d-flex align-items-center gap-2">
-                        <div
-                          className="rounded-circle"
-                          style={{
-                            width: '6px',
-                            height: '6px',
-                            backgroundColor: subcontractor?.color || '#9ca3af',
-                            flexShrink: 0
-                          }}
-                        />
-                        <span style={{ fontSize: '0.8rem', fontWeight: '500' }} className="text-dark">{subcontractorName}</span>
-                      </div>
-                    </div>
-
-                    {/* Timeline */}
-                    <div
-                      className="position-relative flex-fill timeline-container"
-                      style={{ backgroundColor: '#fafafa', minHeight: `${rowHeight}px` }}
-                    >
-                      {/* Half-Hour Drop Zones */}
-                      <div className="d-flex h-100 position-absolute w-100">
-                        {hours.map((_, hourIndex) => {
-                          const hourValue = hourIndex + 7;
-                          return (
-                            <React.Fragment key={hourIndex}>
-                              {/* First half (on the hour) */}
-                              <div
-                                className="position-relative"
-                                style={{ flex: 1, height: '100%', borderRight: '1px dashed #d1d5db' }}
-                                onDragOver={handleDragOver}
-                                onDrop={async (e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-
-                                  if (draggedEvent) {
-                                    try {
-                                      const newStartDate = new Date(selectedDate);
-                                      newStartDate.setHours(hourValue, 0, 0, 0);
-
-                                      const duration = new Date(draggedEvent.end_date).getTime() - new Date(draggedEvent.start_date).getTime();
-                                      const newEndDate = new Date(newStartDate.getTime() + duration);
-
-                                      const subcontractor = subcontractorsWithColors.find(est => est.name === subcontractorName);
-
-                                      console.log('Updating event:', {
-                                        id: draggedEvent.id,
-                                        newTime: newStartDate.toISOString(),
-                                        subcontractor: subcontractor?.name
-                                      });
-
-                                      const result = await updateCalendarEvent(draggedEvent.id, {
-                                        start_date: newStartDate.toISOString(),
-                                        end_date: newEndDate.toISOString(),
-                                        user_id: subcontractor?.id || null
-                                      });
-
-                                      console.log('Update result:', result);
-
-                                      setDraggedEvent(null);
-                                      await loadCalendarData();
-                                    } catch (error) {
-                                      console.error('Error updating event:', error);
-                                      setDraggedEvent(null);
-                                    }
-                                  }
-                                }}
-                                onDragEnter={(e) => {
-                                  if (draggedEvent) {
-                                    e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
-                                  }
-                                }}
-                                onDragLeave={(e) => {
-                                  e.currentTarget.style.backgroundColor = 'transparent';
-                                }}
-                              >
-                                <div className="border-end h-100" style={{ position: 'absolute', left: 0, width: '1px' }} />
-                              </div>
-                              {/* Second half (half-hour) */}
-                              <div
-                                className="position-relative"
-                                style={{ flex: 1, height: '100%', borderRight: hourIndex === hours.length - 1 ? '1px solid #dee2e6' : '1px solid #dee2e6' }}
-                                onDragOver={handleDragOver}
-                                onDrop={async (e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-
-                                  if (draggedEvent) {
-                                    try {
-                                      const newStartDate = new Date(selectedDate);
-                                      newStartDate.setHours(hourValue, 30, 0, 0);
-
-                                      const duration = new Date(draggedEvent.end_date).getTime() - new Date(draggedEvent.start_date).getTime();
-                                      const newEndDate = new Date(newStartDate.getTime() + duration);
-
-                                      const subcontractor = subcontractorsWithColors.find(est => est.name === subcontractorName);
-
-                                      console.log('Updating event (half hour):', {
-                                        id: draggedEvent.id,
-                                        newTime: newStartDate.toISOString(),
-                                        subcontractor: subcontractor?.name
-                                      });
-
-                                      const result = await updateCalendarEvent(draggedEvent.id, {
-                                        start_date: newStartDate.toISOString(),
-                                        end_date: newEndDate.toISOString(),
-                                        user_id: subcontractor?.id || null
-                                      });
-
-                                      console.log('Update result:', result);
-
-                                      setDraggedEvent(null);
-                                      await loadCalendarData();
-                                    } catch (error) {
-                                      console.error('Error updating event:', error);
-                                      setDraggedEvent(null);
-                                    }
-                                  }
-                                }}
-                                onDragEnter={(e) => {
-                                  if (draggedEvent) {
-                                    e.currentTarget.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
-                                  }
-                                }}
-                                onDragLeave={(e) => {
-                                  e.currentTarget.style.backgroundColor = 'transparent';
-                                }}
-                              />
-                            </React.Fragment>
-                          );
-                        })}
-                      </div>
-
-                      {/* Events */}
-                      {(() => {
-                        // Use the same layer calculation that we already computed above for row height
-                        const standardEventHeight = 40;
-                        const eventSpacing = 6;
-
-                        return subcontractorEvents.map((event) => {
-                          const position = calculatePosition(event.start_date, event.end_date, selectedDate);
-
-                          if (!position.visible) {
-                            return null;
-                          }
-
-                          const layer = eventLayersMap.get(event.id) || 0;
-                          const topOffset = 8 + (layer * (standardEventHeight + eventSpacing));
-
-                          const colors = getStatusColor(event.status);
-                          const displayTitle = event.quote_number || event.title;
-                          const time = new Date(event.start_date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-
-                          let borderRadius = '4px';
-                          if (position.isMultiDay) {
-                            if (position.dayType === 'start') {
-                              borderRadius = '4px 0 0 4px';
-                            } else if (position.dayType === 'end') {
-                              borderRadius = '0 4px 4px 0';
-                            } else if (position.dayType === 'middle') {
-                              borderRadius = '0';
-                            }
-                          }
-
-                        return (
-                          <div
-                            key={event.id}
-                            data-event-id={event.id}
-                            draggable={!resizingEvent}
-                            onDragStart={(e) => {
-                              handleDragStart(e, event);
-                              // Hide the original element during drag to prevent interference
-                              setTimeout(() => {
-                                if (e.currentTarget instanceof HTMLElement) {
-                                  e.currentTarget.style.pointerEvents = 'none';
-                                }
-                              }, 0);
-                            }}
-                            onDragEnd={(e) => {
-                              handleDragEnd();
-                              // Restore pointer events
-                              if (e.currentTarget instanceof HTMLElement) {
-                                e.currentTarget.style.pointerEvents = 'auto';
-                              }
-                            }}
-                            onClick={(e) => {
-                              // Don't open modal if clicking on resize handle
-                              if ((e.target as HTMLElement).classList.contains('resize-handle')) {
-                                return;
-                              }
-                              handleEventClick(event, e);
-                            }}
-                            className="position-absolute"
-                            style={{
-                              left: position.left,
-                              width: position.width,
-                              top: `${topOffset}px`,
-                              height: `${standardEventHeight}px`,
-                              backgroundColor: colors.bg,
-                              border: position.isMultiDay ? `2px dashed ${colors.border}` : `2px solid ${colors.border}`,
-                              borderRadius,
-                              padding: '4px 6px',
-                              cursor: draggedEvent?.id === event.id ? 'grabbing' : 'grab',
-                              transition: resizingEvent?.event.id === event.id ? 'none' : 'all 0.15s ease',
-                              zIndex: 1,
-                              opacity: draggedEvent?.id === event.id ? 0.5 : 1
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!draggedEvent) {
-                                e.currentTarget.style.transform = 'translateY(-2px)';
-                                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-                              }
-                            }}
-                            onMouseLeave={(e) => {
-                              e.currentTarget.style.transform = 'translateY(0)';
-                              e.currentTarget.style.boxShadow = 'none';
-                            }}
-                            title={`${time}\n${displayTitle}\n${event.contact_name || ''}\n${event.quote_number ? `Quote: ${event.quote_number}` : ''}\n${event.amount ? `$${event.amount.toLocaleString()}` : ''}\n\nDrag to reschedule or click to edit`}
-                          >
-                            <div className="d-flex align-items-center gap-1" style={{ marginBottom: '2px' }}>
-                              <span style={{ fontSize: '0.6rem', opacity: 0.8 }}>
-                                {event.event_type === 'quote' ? '💰' : event.event_type === 'installation' ? '🔧' : event.event_type === 'inspection' ? '✓' : '📋'}
-                              </span>
-                              <div style={{ fontSize: '0.7rem', fontWeight: '700', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.2', flex: 1 }}>
-                                {event.quote_number || displayTitle}
-                              </div>
-                            </div>
-                            <div style={{ fontSize: '0.65rem', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.1', opacity: 0.9 }}>
-                              {event.contact_name}
-                            </div>
-                            {event.amount && (
-                              <div style={{ fontSize: '0.65rem', fontWeight: '600', color: colors.text, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', lineHeight: '1.1', marginTop: '1px' }}>
-                                ${event.amount.toLocaleString()}
-                              </div>
-                            )}
-                            {/* Resize Handle - only show on single day events or end of multi-day events */}
-                            {(!position.isMultiDay || position.dayType === 'end') && (
-                              <div
-                                className="resize-handle"
-                                onMouseDown={(e) => handleResizeStart(e, event)}
-                                style={{
-                                  position: 'absolute',
-                                  right: '-2px',
-                                  top: 0,
-                                  bottom: 0,
-                                  width: '8px',
-                                  cursor: 'ew-resize',
-                                  backgroundColor: 'transparent',
-                                  zIndex: 2
-                                }}
-                                onMouseEnter={(e) => {
-                                  e.currentTarget.style.backgroundColor = colors.border;
-                                }}
-                                onMouseLeave={(e) => {
-                                  e.currentTarget.style.backgroundColor = 'transparent';
-                                }}
-                              />
-                            )}
-                          </div>
-                        );
-                      });
-                      })()}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+            <DispatchingTimelineView
+              events={events}
+              selectedSubcontractors={selectedSubcontractors}
+              subcontractorsWithColors={subcontractorsWithColors}
+              selectedDate={selectedDate}
+              onEventClick={(event) => {
+                setSelectedEvent(event);
+                setShowEditModal(true);
+              }}
+              onEventsChange={loadCalendarData}
+            />
           ) : (
             <DispatchingMapView
               events={events}
