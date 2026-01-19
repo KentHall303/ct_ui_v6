@@ -549,7 +549,7 @@ const TableView = () => {
       if (!scrollRef.current) return;
       const rect = scrollRef.current.getBoundingClientRect();
       const vh = window.innerHeight;
-      const h = Math.max(200, Math.floor(vh - rect.top - 16));
+      const h = Math.max(200, Math.floor(vh - rect.top - 8));
       setMaxHeight(h);
     }
     computeHeight();
@@ -561,10 +561,10 @@ const TableView = () => {
     <>
     <div
       ref={scrollRef}
-      className="bg-white rounded-3 overflow-auto border shadow-sm"
-      style={{ maxHeight: maxHeight ?? undefined }}
+      className="bg-white rounded-3 border shadow-sm flex-fill d-flex flex-column"
+      style={{ maxHeight: maxHeight ?? undefined, minHeight: 0, overflow: 'auto' }}
     >
-      <div style={{ minWidth: '1600px' }}>
+      <div style={{ minWidth: 0 }}>
         <Table className="jobs-table" striped>
           <TableHeader>
             <TableRow>
@@ -774,7 +774,7 @@ const DispatchingView = () => {
       if (!scrollRef.current) return;
       const rect = scrollRef.current.getBoundingClientRect();
       const vh = window.innerHeight;
-      const h = Math.max(400, Math.floor(vh - rect.top - 16));
+      const h = Math.max(400, Math.floor(vh - rect.top - 8));
       setMaxHeight(h);
     }
     computeHeight();
@@ -1189,8 +1189,8 @@ const DispatchingView = () => {
   return (
     <div
       ref={scrollRef}
-      className="bg-white rounded-3 border shadow-sm"
-      style={{ maxHeight: maxHeight ?? undefined, display: 'flex', flexDirection: 'column' }}
+      className="bg-white rounded-3 border shadow-sm flex-fill"
+      style={{ maxHeight: maxHeight ?? undefined, display: 'flex', flexDirection: 'column', minHeight: 0 }}
     >
       <div className="d-flex flex-fill" style={{ minHeight: 0 }}>
         {/* Left Sidebar */}
@@ -1707,7 +1707,7 @@ const CalendarView = () => {
       if (!scrollRef.current) return;
       const rect = scrollRef.current.getBoundingClientRect();
       const vh = window.innerHeight;
-      const h = Math.max(400, Math.floor(vh - rect.top - 16));
+      const h = Math.max(400, Math.floor(vh - rect.top - 8));
       setMaxHeight(h);
     }
     computeHeight();
@@ -1852,8 +1852,8 @@ const CalendarView = () => {
   return (
     <div
       ref={scrollRef}
-      className="bg-white rounded-3 border shadow-sm"
-      style={{ maxHeight: maxHeight ?? undefined, display: 'flex', flexDirection: 'column' }}
+      className="bg-white rounded-3 border shadow-sm flex-fill"
+      style={{ maxHeight: maxHeight ?? undefined, display: 'flex', flexDirection: 'column', minHeight: 0 }}
     >
       <div className="d-flex flex-fill" style={{ minHeight: 0 }}>
         <div className="border-end bg-light p-3" style={{ width: '240px', flexShrink: 0, overflowY: 'auto' }}>
@@ -2007,7 +2007,7 @@ export const Jobs = (): JSX.Element => {
 
   return (
     <>
-      <div className="d-flex flex-column w-100 h-100">
+      <div className="d-flex flex-column w-100 h-100 overflow-hidden">
         <div className="flex-shrink-0">
           <JobsHeader
             currentView={currentView}
@@ -2021,7 +2021,7 @@ export const Jobs = (): JSX.Element => {
             setPayments={setPayments}
           />
         </div>
-        <div className="px-3 pt-2 pb-3">
+        <div className="px-3 pt-2 pb-1 d-flex flex-column flex-grow-1" style={{ minHeight: 0 }}>
           {currentView === 'table' ? (
             <TableView />
           ) : currentView === 'calendar' ? (
