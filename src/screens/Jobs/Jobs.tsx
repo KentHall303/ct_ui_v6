@@ -3,7 +3,7 @@ import { Button } from "../../components/bootstrap/Button";
 import { FloatingInput, FloatingSelect, FloatingSelectOption } from "../../components/bootstrap/FormControls";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "../../components/bootstrap/Table";
 import { Badge, Card, Container, Row, Col, ButtonGroup, Button as BSButton, Form } from "react-bootstrap";
-import { Search as SearchIcon, RefreshCw as RefreshCwIcon, Settings as SettingsIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronsLeft as ChevronsLeftIcon, ChevronsRight as ChevronsRightIcon, ChevronDown, ChevronUp, Plus as PlusIcon, Minus as MinusIcon, Mail as MailIcon, MessageSquare as MessageSquareIcon, FileText as FileTextIcon, Printer as PrinterIcon, Download as DownloadIcon, CreditCard as EditIcon, Trash as TrashIcon, User as UserIcon, DollarSign as DollarSignIcon, Calendar as CalendarIcon, TrendingUp as TrendingUpIcon, List as ListIcon, Calendar as CalendarIconView, Receipt as ReceiptIcon, Eye as EyeIcon } from "lucide-react";
+import { Search as SearchIcon, RefreshCw as RefreshCwIcon, Settings as SettingsIcon, ChevronLeft as ChevronLeftIcon, ChevronRight as ChevronRightIcon, ChevronsLeft as ChevronsLeftIcon, ChevronsRight as ChevronsRightIcon, ChevronDown, ChevronUp, Plus as PlusIcon, Minus as MinusIcon, Mail as MailIcon, MessageSquare as MessageSquareIcon, FileText as FileTextIcon, Printer as PrinterIcon, Download as DownloadIcon, CreditCard as EditIcon, Trash as TrashIcon, User as UserIcon, DollarSign as DollarSignIcon, Calendar as CalendarIcon, TrendingUp as TrendingUpIcon, List as ListIcon, Calendar as CalendarIconView, Receipt as ReceiptIcon, Eye as EyeIcon, PanelLeftClose as PanelLeftCloseIcon, PanelLeftOpen as PanelLeftOpenIcon } from "lucide-react";
 import { AddCOGSModal } from "../../components/modals/AddCOGSModal";
 import { GrossMarginModal } from "../../components/modals/GrossMarginModal";
 import { JobsReportsFSModal } from "../../components/modals/JobsReportsFSModal";
@@ -2000,6 +2000,8 @@ interface SubcontractorWithColor extends Estimator {
   color: string;
 }
 
+const SIDEBAR_COLLAPSED_KEY = 'jobs-calendar-sidebar-collapsed';
+
 const CalendarView = () => {
   const scrollRef = React.useRef<HTMLDivElement | null>(null);
   const [maxHeight, setMaxHeight] = React.useState<number | null>(null);
@@ -2008,6 +2010,14 @@ const CalendarView = () => {
   const [events, setEvents] = React.useState<CalendarEventWithCalendar[]>([]);
   const [currentDate, setCurrentDate] = React.useState(new Date());
   const [view, setView] = React.useState<'month' | 'week'>('month');
+  const [sidebarCollapsed, setSidebarCollapsed] = React.useState<boolean>(() => {
+    const stored = localStorage.getItem(SIDEBAR_COLLAPSED_KEY);
+    return stored === 'true';
+  });
+
+  React.useEffect(() => {
+    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
 
   const colors = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', '#ec4899', '#06b6d4', '#84cc16', '#ef4444', '#14b8a6', '#f97316', '#a855f7', '#22c55e', '#eab308'];
 
@@ -2158,14 +2168,15 @@ const CalendarView = () => {
     <div
       ref={scrollRef}
       className="bg-white rounded-3 border shadow-sm flex-fill"
-      style={{ maxHeight: maxHeight ?? undefined, display: 'flex', flexDirection: 'column', minHeight: 0 }}
+      style={{ maxHeight: maxHeight ?? undefined, display: 'flex', flexDirection: 'column', minHeight: 0, overflow: 'hidden' }}
     >
-      <div className="d-flex flex-fill" style={{ minHeight: 0 }}>
-        <div className="border-end bg-light" style={{ width: '300px', flexShrink: 0, overflowY: 'auto', maxHeight: '100%' }}>
-          <div className="p-3">
-            <div className="d-flex align-items-center justify-content-between mb-3">
-              <h6 className="fw-bold text-dark mb-0">Subcontractors</h6>
-            </div>
+      <div className="d-flex flex-fill" style={{ minHeight: 0, overflow: 'hidden' }}>
+        {!sidebarCollapsed && (
+          <div className="border-end bg-light" style={{ width: '300px', flexShrink: 0, overflowY: 'auto', maxHeight: '100%' }}>
+            <div className="p-3">
+              <div className="d-flex align-items-center justify-content-between mb-3">
+                <h6 className="fw-bold text-dark mb-0">Users</h6>
+              </div>
 
             <div className="d-flex gap-2 mb-3">
               <Button
@@ -2263,15 +2274,25 @@ const CalendarView = () => {
 
             {subcontractors.length === 0 && (
               <div className="text-center text-secondary small py-4">
-                No subcontractors available
+                No users available
               </div>
             )}
           </div>
         </div>
+        )}
 
-        <div className="flex-fill d-flex flex-column" style={{ minHeight: 0 }}>
+        <div className="flex-fill d-flex flex-column" style={{ minHeight: 0, minWidth: 0, overflow: 'hidden' }}>
           <div className="d-flex align-items-center justify-content-between px-4 py-3 border-bottom bg-white">
             <div className="d-flex align-items-center gap-2">
+              <button
+                type="button"
+                className="btn p-1 text-secondary"
+                onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                title={sidebarCollapsed ? 'Show filters' : 'Hide filters'}
+                style={{ border: 'none', background: 'transparent', flexShrink: 0 }}
+              >
+                {sidebarCollapsed ? <PanelLeftOpenIcon size={20} /> : <PanelLeftCloseIcon size={20} />}
+              </button>
               <div style={{
                 border: '1px solid #f8f9fa',
                 borderRadius: '6px',
@@ -2333,8 +2354,8 @@ const CalendarView = () => {
           {view === 'week' ? (
             <JobsWeekView currentDate={currentDate} events={events} getColorForEvent={getColorForEvent} />
           ) : (
-            <div className="flex-fill p-3" style={{ overflowY: 'auto' }}>
-              <div className="d-grid mb-2" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+            <div className="flex-fill p-3" style={{ overflow: 'auto', minWidth: 0 }}>
+              <div className="d-grid mb-2" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', minWidth: 0 }}>
                 {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
                   <div key={day} className="text-center py-2 small fw-semibold text-secondary bg-light rounded">
                     {day}
@@ -2342,7 +2363,7 @@ const CalendarView = () => {
                 ))}
               </div>
 
-              <div className="d-grid" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
+              <div className="d-grid" style={{ gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', minWidth: 0 }}>
                 {calendarDays.map((day, i) => (
                   <div
                     key={i}
