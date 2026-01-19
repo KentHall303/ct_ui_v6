@@ -564,24 +564,24 @@ const TableView = () => {
       className="bg-white rounded-3 border shadow-sm flex-fill d-flex flex-column"
       style={{ maxHeight: maxHeight ?? undefined, minHeight: 0, overflow: 'auto' }}
     >
-      <div style={{ minWidth: 0 }}>
+      <div style={{ minWidth: '1200px' }}>
         <Table className="jobs-table" striped>
           <TableHeader>
             <TableRow>
               <TableHead style={{ width: '48px' }}></TableHead>
-              <TableHead style={{ minWidth: '150px' }}>Quote #</TableHead>
-              <TableHead style={{ minWidth: '180px' }}>Contact Name</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Material</TableHead>
-              <TableHead>Labor</TableHead>
-              <TableHead>Balance Due</TableHead>
-              <TableHead>Start Date</TableHead>
-              <TableHead>End Date</TableHead>
-              <TableHead>WO Status</TableHead>
-              <TableHead>Payments</TableHead>
-              <TableHead>Total COGS</TableHead>
-              <TableHead>Gross Margin</TableHead>
-              <TableHead style={{ minWidth: '120px' }}>Actions</TableHead>
+              <TableHead style={{ width: '120px' }}>Quote #</TableHead>
+              <TableHead style={{ width: '160px' }}>Contact Name</TableHead>
+              <TableHead style={{ width: '90px' }}>Amount</TableHead>
+              <TableHead style={{ width: '90px' }}>Material</TableHead>
+              <TableHead style={{ width: '80px' }}>Labor</TableHead>
+              <TableHead style={{ width: '100px' }}>Balance Due</TableHead>
+              <TableHead style={{ width: '100px' }}>Start Date</TableHead>
+              <TableHead style={{ width: '100px' }}>End Date</TableHead>
+              <TableHead style={{ width: '80px' }}>WO Status</TableHead>
+              <TableHead style={{ width: '90px' }}>Payments</TableHead>
+              <TableHead style={{ width: '100px' }}>Total COGS</TableHead>
+              <TableHead style={{ width: '100px' }}>Gross Margin</TableHead>
+              <TableHead style={{ width: '130px' }}>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -614,7 +614,7 @@ const TableView = () => {
                         )}
                       </button>
                     </TableCell>
-                    <TableCell style={{ minWidth: '150px' }}>
+                    <TableCell>
                       <div className="fw-medium small text-dark">{quote.quote_number}</div>
                     </TableCell>
                     <TableCell>
