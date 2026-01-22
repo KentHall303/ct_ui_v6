@@ -12,7 +12,7 @@
   ✓ Pipeline page with 98 opportunities across 21 sales cycles
   ✓ Action Plans page with 18 plans (all types)
   ✓ Templates page with 69 templates
-  ✓ Settings pages with all configurations
+  ✓ Settings pages with all configurations (including 15 users)
   ✓ Calendar with 100+ events
   ✓ Messages center with 22 messages
   ✓ No empty tables or errors!
@@ -39,6 +39,7 @@ DROP TABLE IF EXISTS templates CASCADE;
 DROP TABLE IF EXISTS saved_filters CASCADE;
 DROP TABLE IF EXISTS account_settings CASCADE;
 DROP TABLE IF EXISTS action_plans_settings CASCADE;
+DROP TABLE IF EXISTS users CASCADE;
 
 -- ============================================================
 -- PART 2: CREATE SALES_CYCLES TABLE
@@ -502,6 +503,41 @@ ALTER TABLE action_plans_settings ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow public access to action_plans_settings"
   ON action_plans_settings FOR ALL TO public USING (true) WITH CHECK (true);
+
+-- ============================================================
+-- PART 16: CREATE USERS TABLE
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS users (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  username text UNIQUE NOT NULL,
+  first_name text NOT NULL,
+  last_name text NOT NULL,
+  email text UNIQUE NOT NULL,
+  phone text NOT NULL,
+  address text NOT NULL,
+  city text NOT NULL,
+  state text NOT NULL,
+  zipcode text NOT NULL,
+  user_type text NOT NULL DEFAULT 'standard',
+  api_id text,
+  timezone text DEFAULT 'America/Denver',
+  default_page text DEFAULT 'Pipeline',
+  default_contact_tab text DEFAULT 'Contacts',
+  is_active boolean DEFAULT true,
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now(),
+  CONSTRAINT valid_user_type CHECK (user_type IN ('standard', 'admin', 'salesperson', 'subcontractor'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_users_user_type ON users(user_type);
+CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
+CREATE INDEX IF NOT EXISTS idx_users_is_active ON users(is_active);
+
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Allow public access to users"
+  ON users FOR ALL TO public USING (true) WITH CHECK (true);
 
 -- ============================================================
 -- SEED PART 1: SALES CYCLES (21 records)
@@ -1154,6 +1190,28 @@ INSERT INTO action_plans_settings (
 ON CONFLICT DO NOTHING;
 
 -- ============================================================
+-- SEED PART 12: USERS (15 records)
+-- ============================================================
+
+INSERT INTO users (username, first_name, last_name, phone, email, user_type, api_id, address, city, state, zipcode) VALUES
+  ('saraadmin', 'Sara', 'Admin', '4359388063', 'sara.hansen181+admin@gmail.com', 'admin', '17469', '1450 Blake St', 'Denver', 'CO', '80202'),
+  ('tmrkadmin', 'TMRK Admin', 'Team', '3039291579', 'g+Admin@tmrk.com', 'admin', '19605', '635 S State St', 'Salt Lake City', 'UT', '84111'),
+  ('neeradminuser', 'Neeraj', 'Admin User', '8878789922', 'neeraj+admin@clienttether.com', 'admin', '20791', '2400 17th St', 'Denver', 'CO', '80202'),
+  ('collin+newadmin', 'Col', 'Gav', '4802344319', 'collin+newadmin@gmail.com', 'admin', '22780', '275 E South Temple', 'Salt Lake City', 'UT', '84111'),
+  ('angeltestingacc', 'Angel', 'TestAccount', '3039291447', 'angel+test20@clienttether.com', 'standard', '31690', '1701 Wynkoop St', 'Denver', 'CO', '80202'),
+  ('ctdefault1', 'Admin', 'Kent', '4152511945', 'KentHall303+User35051@gmail.com', 'admin', '35051', '1700 Lincoln St', 'Denver', 'CO', '80203'),
+  ('referpro1', 'ReferPro', 'Platform', '8018555555', 'matt+referpro1@referpro.com', 'standard', '35952', '123 Tech Drive', 'Provo', 'UT', '84601'),
+  ('ctdefault2', 'Standard', 'Kent', '4152511945', 'KentHall303+User102@gmail.com', 'standard', '11672', '1899 Wynkoop St', 'Denver', 'CO', '80202'),
+  ('kentjoe', 'Sara', 'Joe', '4359388063', 'kent+joe@clienttether.com', 'salesperson', '17032', '1600 Glenarm Pl', 'Denver', 'CO', '80202'),
+  ('sarastand', 'Jeanette', 'Standards', '3039291579', 'sara.hansen181+Standards@gmail.com', 'standard', '17468', '1500 Market St', 'Denver', 'CO', '80202'),
+  ('akshitan', 'Akshita', 'Nagar', '8017091800', 'nagarakshita20@gmail.com', 'salesperson', '18361', '55 E 400 S', 'Salt Lake City', 'UT', '84111'),
+  ('tmrk', 'TMRK', 'Team', '3039291447', 'g@tmrk.com', 'standard', '19604', '1435 Arapahoe St', 'Denver', 'CO', '80202'),
+  ('neerct1', 'Neeraj', 'QA', '8878789922', 'neeraj12@clienttether.com', 'standard', '20612', '1801 California St', 'Denver', 'CO', '80202'),
+  ('collintestuser', 'Collin', 'Gavel', '4806212649', 'collin+testuser@clienttether.com', 'subcontractor', '20833', '350 S 400 W', 'Salt Lake City', 'UT', '84101'),
+  ('jvs_georgeduffield', 'Jule', 'Virtual Scheduler', '8015551234', 'jvs_georgeduffield@clienttether.com', 'subcontractor', '21902', '145 W Broadway', 'Salt Lake City', 'UT', '84101')
+ON CONFLICT (username) DO NOTHING;
+
+-- ============================================================
 -- VERIFICATION QUERIES
 -- ============================================================
 
@@ -1180,6 +1238,7 @@ BEGIN
   RAISE NOTICE 'saved_filters: %', (SELECT COUNT(*) FROM saved_filters);
   RAISE NOTICE 'account_settings: %', (SELECT COUNT(*) FROM account_settings);
   RAISE NOTICE 'action_plans_settings: %', (SELECT COUNT(*) FROM action_plans_settings);
+  RAISE NOTICE 'users: %', (SELECT COUNT(*) FROM users);
   RAISE NOTICE '';
   RAISE NOTICE '======================================================';
   RAISE NOTICE '✓ All tables created and seeded successfully!';
@@ -1190,7 +1249,7 @@ BEGIN
   RAISE NOTICE '✓ Action Plans page ready with % plans', (SELECT COUNT(*) FROM connection_plans);
   RAISE NOTICE '✓ Calendar ready with % events', (SELECT COUNT(*) FROM calendar_events);
   RAISE NOTICE '✓ Messages center ready with % messages', (SELECT COUNT(*) FROM messages);
-  RAISE NOTICE '✓ Settings pages configured';
+  RAISE NOTICE '✓ Settings pages configured with % users', (SELECT COUNT(*) FROM users);
   RAISE NOTICE '';
   RAISE NOTICE 'REFRESH YOUR APP - Everything should work now!';
   RAISE NOTICE '======================================================';
