@@ -169,7 +169,7 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
   }
 
   return (
-    <div className="h-100">
+    <div className="h-100" style={{ overflowY: 'auto' }}>
       <div style={{ padding: '0 24px' }}>
         {groupedEvents.map((dayData) => (
           <div key={dayData.date.toISOString()}>

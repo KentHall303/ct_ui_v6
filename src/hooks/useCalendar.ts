@@ -5,7 +5,7 @@ import {
   Calendar,
   CalendarEventWithCalendar
 } from '../services/calendarService';
-import { getNextNDatesWithEvents } from '../utils/dateUtils';
+import { getNextNDatesWithEvents, getUniqueDatesWithEvents } from '../utils/dateUtils';
 
 export type CalendarView = 'month' | 'week' | 'day' | 'agenda';
 
@@ -123,9 +123,10 @@ export function useCalendar(): UseCalendarReturn {
 
   const goToPrevious = useCallback(() => {
     if (view === 'agenda') {
-      const newAnchor = new Date(agendaAnchorDate);
-      newAnchor.setDate(newAnchor.getDate() - 1);
-      setAgendaAnchorDate(newAnchor);
+      const previousDates = getUniqueDatesWithEvents(events, agendaAnchorDate, 'backward');
+      if (previousDates.length > 0) {
+        setAgendaAnchorDate(previousDates[0]);
+      }
       return;
     }
     setCurrentDate(prev => {
@@ -145,13 +146,16 @@ export function useCalendar(): UseCalendarReturn {
       }
       return newDate;
     });
-  }, [view, agendaAnchorDate]);
+  }, [view, agendaAnchorDate, events]);
 
   const goToNext = useCallback(() => {
     if (view === 'agenda') {
-      const newAnchor = new Date(agendaAnchorDate);
-      newAnchor.setDate(newAnchor.getDate() + 1);
-      setAgendaAnchorDate(newAnchor);
+      const nextAnchor = new Date(agendaAnchorDate);
+      nextAnchor.setDate(nextAnchor.getDate() + 1);
+      const nextDates = getUniqueDatesWithEvents(events, nextAnchor, 'forward');
+      if (nextDates.length > 0) {
+        setAgendaAnchorDate(nextDates[0]);
+      }
       return;
     }
     setCurrentDate(prev => {
@@ -171,7 +175,7 @@ export function useCalendar(): UseCalendarReturn {
       }
       return newDate;
     });
-  }, [view, agendaAnchorDate]);
+  }, [view, agendaAnchorDate, events]);
 
   return {
     currentDate,
