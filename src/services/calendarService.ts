@@ -94,9 +94,11 @@ export async function fetchCalendarEventsWithCalendar(
     .gte('end_date', startDate.toISOString())
     .order('start_date');
 
-  if (selectedCalendarIds && selectedCalendarIds.length > 0) {
-    const calendarIdsFilter = selectedCalendarIds.map(id => `calendar_id.eq.${id}`).join(',');
-    query = query.or(`calendar_id.is.null,${calendarIdsFilter}`);
+  if (selectedCalendarIds !== undefined) {
+    if (selectedCalendarIds.length === 0) {
+      return [];
+    }
+    query = query.in('calendar_id', selectedCalendarIds);
   }
 
   const { data, error } = await query;
