@@ -76,7 +76,7 @@ export function useCalendar(): UseCalendarReturn {
     const data = await fetchCalendarEventsWithCalendar(
       startDate,
       endDate,
-      selectedCalendars.length > 0 ? selectedCalendars : undefined
+      selectedCalendars
     );
     setEvents(data);
     setIsLoading(false);
@@ -91,7 +91,7 @@ export function useCalendar(): UseCalendarReturn {
     const eventsData = await fetchCalendarEventsWithCalendar(
       startDate,
       endDate,
-      selectedCalendars.length > 0 ? selectedCalendars : undefined
+      selectedCalendars
     );
     setEvents(eventsData);
     setIsLoading(false);
