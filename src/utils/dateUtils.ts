@@ -252,3 +252,37 @@ export function formatCompactTime(date: Date | string): string {
 export function formatCompactTimeRange(startDate: string, endDate: string): string {
   return `${formatCompactTime(startDate)}–${formatCompactTime(endDate)}`;
 }
+
+export function formatAgendaTime(startDate: string, endDate: string, isAllDay: boolean): string {
+  if (isAllDay) return 'All day';
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  const formatHour = (d: Date) => {
+    const hours = d.getHours();
+    const minutes = d.getMinutes();
+    const isPM = hours >= 12;
+    const displayHour = hours === 0 ? 12 : hours > 12 ? hours - 12 : hours;
+    const minuteStr = minutes > 0 ? `:${minutes.toString().padStart(2, '0')}` : '';
+    const period = isPM ? 'pm' : 'am';
+    return `${displayHour}${minuteStr}${period}`;
+  };
+  return `${formatHour(start)} - ${formatHour(end)}`;
+}
+
+export function formatAgendaDayHeader(date: Date): { day: number; monthDay: string } {
+  const day = date.getDate();
+  const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+  const weekday = date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase();
+  return { day, monthDay: `${month}, ${weekday}` };
+}
+
+export function getAgendaDays(startDate: Date, numberOfDays: number): Date[] {
+  const days: Date[] = [];
+  const current = new Date(startDate);
+  current.setHours(0, 0, 0, 0);
+  for (let i = 0; i < numberOfDays; i++) {
+    days.push(new Date(current));
+    current.setDate(current.getDate() + 1);
+  }
+  return days;
+}

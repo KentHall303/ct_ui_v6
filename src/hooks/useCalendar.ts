@@ -119,6 +119,9 @@ export function useCalendar(): UseCalendarReturn {
         case 'day':
           newDate.setDate(newDate.getDate() - 1);
           break;
+        case 'agenda':
+          newDate.setDate(newDate.getDate() - 7);
+          break;
         default:
           newDate.setMonth(newDate.getMonth() - 1);
       }
@@ -138,6 +141,9 @@ export function useCalendar(): UseCalendarReturn {
           break;
         case 'day':
           newDate.setDate(newDate.getDate() + 1);
+          break;
+        case 'agenda':
+          newDate.setDate(newDate.getDate() + 7);
           break;
         default:
           newDate.setMonth(newDate.getMonth() + 1);
@@ -194,7 +200,7 @@ function getDateRange(date: Date, view: CalendarView): { startDate: Date; endDat
       break;
     case 'agenda':
       startDate.setHours(0, 0, 0, 0);
-      endDate.setMonth(endDate.getMonth() + 1);
+      endDate.setMonth(endDate.getMonth() + 2);
       endDate.setHours(23, 59, 59, 999);
       break;
   }

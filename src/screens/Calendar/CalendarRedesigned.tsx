@@ -5,6 +5,7 @@ import { CalendarSidebar } from '../../components/calendar/CalendarSidebar';
 import { MonthView } from '../../components/calendar/MonthView';
 import { WeekView } from '../../components/calendar/WeekView';
 import { DayView } from '../../components/calendar/DayView';
+import { AgendaView } from '../../components/calendar/AgendaView';
 import { CalendarEventWithCalendar } from '../../services/calendarService';
 import { EventDetailsPopup } from '../../components/calendar/EventDetailsPopup';
 
@@ -127,9 +128,11 @@ export const CalendarRedesigned: React.FC = () => {
                   />
                 )}
                 {calendar.view === 'agenda' && (
-                  <div className="d-flex align-items-center justify-content-center flex-fill text-secondary">
-                    Agenda view coming soon
-                  </div>
+                  <AgendaView
+                    currentDate={calendar.currentDate}
+                    events={calendar.events}
+                    onEventClick={handleEventClick}
+                  />
                 )}
               </>
             )}
