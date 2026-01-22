@@ -64,6 +64,7 @@ export const CalendarRedesigned: React.FC = () => {
           currentDate={calendar.currentDate}
           view={calendar.view}
           sidebarCollapsed={calendar.sidebarCollapsed}
+          agendaVisibleDates={calendar.agendaVisibleDates}
           onViewChange={calendar.setView}
           onToday={calendar.goToToday}
           onPrevious={calendar.goToPrevious}
@@ -129,8 +130,8 @@ export const CalendarRedesigned: React.FC = () => {
                 )}
                 {calendar.view === 'agenda' && (
                   <AgendaView
-                    currentDate={calendar.currentDate}
                     events={calendar.events}
+                    visibleDates={calendar.agendaVisibleDates}
                     onEventClick={handleEventClick}
                   />
                 )}

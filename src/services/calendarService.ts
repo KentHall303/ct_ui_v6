@@ -95,7 +95,8 @@ export async function fetchCalendarEventsWithCalendar(
     .order('start_date');
 
   if (selectedCalendarIds && selectedCalendarIds.length > 0) {
-    query = query.in('calendar_id', selectedCalendarIds);
+    const calendarIdsFilter = selectedCalendarIds.map(id => `calendar_id.eq.${id}`).join(',');
+    query = query.or(`calendar_id.is.null,${calendarIdsFilter}`);
   }
 
   const { data, error } = await query;

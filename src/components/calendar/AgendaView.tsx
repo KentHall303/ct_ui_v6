@@ -4,13 +4,12 @@ import {
   isToday,
   isEventOnDate,
   formatAgendaTime,
-  formatAgendaDayHeader,
-  getAgendaDays
+  formatAgendaDayHeader
 } from '../../utils/dateUtils';
 
 interface AgendaViewProps {
-  currentDate: Date;
   events: CalendarEventWithCalendar[];
+  visibleDates: Date[];
   onEventClick?: (event: CalendarEventWithCalendar, clientX?: number, clientY?: number) => void;
 }
 
@@ -150,12 +149,11 @@ const AgendaEventRow: React.FC<AgendaEventRowProps> = ({ event, onClick }) => {
 };
 
 export const AgendaView: React.FC<AgendaViewProps> = ({
-  currentDate,
   events,
+  visibleDates,
   onEventClick
 }) => {
-  const days = useMemo(() => getAgendaDays(currentDate, 60), [currentDate]);
-  const groupedEvents = useMemo(() => groupEventsByDay(events, days), [events, days]);
+  const groupedEvents = useMemo(() => groupEventsByDay(events, visibleDates), [events, visibleDates]);
 
   if (groupedEvents.length === 0) {
     return (
@@ -167,9 +165,9 @@ export const AgendaView: React.FC<AgendaViewProps> = ({
   }
 
   return (
-    <div className="h-100" style={{ overflowY: 'auto' }}>
+    <div className="h-100">
       <div style={{ padding: '0 24px' }}>
-        {groupedEvents.map((dayData, index) => (
+        {groupedEvents.map((dayData) => (
           <div key={dayData.date.toISOString()}>
             <AgendaDayHeader date={dayData.date} />
             <div>

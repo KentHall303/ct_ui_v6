@@ -286,3 +286,66 @@ export function getAgendaDays(startDate: Date, numberOfDays: number): Date[] {
   }
   return days;
 }
+
+export interface AgendaEvent {
+  start_date: string;
+  end_date: string;
+}
+
+export function getUniqueDatesWithEvents<T extends AgendaEvent>(
+  events: T[],
+  fromDate: Date,
+  direction: 'forward' | 'backward' = 'forward'
+): Date[] {
+  const dateSet = new Set<string>();
+  const fromTime = new Date(fromDate);
+  fromTime.setHours(0, 0, 0, 0);
+
+  events.forEach(event => {
+    const startDate = new Date(event.start_date);
+    const endDate = new Date(event.end_date);
+    const current = new Date(startDate);
+    current.setHours(0, 0, 0, 0);
+
+    while (current <= endDate) {
+      const dateStr = dateToString(current);
+      const currentTime = current.getTime();
+      if (direction === 'forward' && currentTime >= fromTime.getTime()) {
+        dateSet.add(dateStr);
+      } else if (direction === 'backward' && currentTime < fromTime.getTime()) {
+        dateSet.add(dateStr);
+      }
+      current.setDate(current.getDate() + 1);
+    }
+  });
+
+  const dates = Array.from(dateSet)
+    .map(dateStr => {
+      const [year, month, day] = dateStr.split('-').map(Number);
+      return new Date(year, month - 1, day);
+    })
+    .sort((a, b) => direction === 'forward'
+      ? a.getTime() - b.getTime()
+      : b.getTime() - a.getTime()
+    );
+
+  return dates;
+}
+
+export function getNextNDatesWithEvents<T extends AgendaEvent>(
+  events: T[],
+  fromDate: Date,
+  count: number
+): Date[] {
+  const uniqueDates = getUniqueDatesWithEvents(events, fromDate, 'forward');
+  return uniqueDates.slice(0, count);
+}
+
+export function getPreviousNDatesWithEvents<T extends AgendaEvent>(
+  events: T[],
+  beforeDate: Date,
+  count: number
+): Date[] {
+  const uniqueDates = getUniqueDatesWithEvents(events, beforeDate, 'backward');
+  return uniqueDates.slice(0, count).reverse();
+}

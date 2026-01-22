@@ -14,6 +14,7 @@ interface CalendarHeaderProps {
   currentDate: Date;
   view: CalendarView;
   sidebarCollapsed: boolean;
+  agendaVisibleDates?: Date[];
   onViewChange: (view: CalendarView) => void;
   onToday: () => void;
   onPrevious: () => void;
@@ -25,6 +26,7 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   currentDate,
   view,
   sidebarCollapsed,
+  agendaVisibleDates,
   onViewChange,
   onToday,
   onPrevious,
@@ -44,6 +46,9 @@ export const CalendarHeader: React.FC<CalendarHeaderProps> = ({
     }
     if (view === 'week') {
       return formatWeekHeader(currentDate);
+    }
+    if (view === 'agenda' && agendaVisibleDates && agendaVisibleDates.length > 0) {
+      return formatMonthYear(agendaVisibleDates[0]);
     }
     return formatMonthYear(currentDate);
   };

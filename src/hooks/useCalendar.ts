@@ -1,12 +1,15 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import {
   fetchCalendars,
   fetchCalendarEventsWithCalendar,
   Calendar,
   CalendarEventWithCalendar
 } from '../services/calendarService';
+import { getNextNDatesWithEvents, getPreviousNDatesWithEvents } from '../utils/dateUtils';
 
 export type CalendarView = 'month' | 'week' | 'day' | 'agenda';
+
+export const AGENDA_DATES_PER_PAGE = 7;
 
 export interface UseCalendarReturn {
   currentDate: Date;
@@ -17,6 +20,8 @@ export interface UseCalendarReturn {
   isLoading: boolean;
   searchTerm: string;
   sidebarCollapsed: boolean;
+  agendaAnchorDate: Date;
+  agendaVisibleDates: Date[];
   setCurrentDate: (date: Date) => void;
   setView: (view: CalendarView) => void;
   toggleCalendar: (calendarId: string) => void;
@@ -39,6 +44,12 @@ export function useCalendar(): UseCalendarReturn {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
+  const [agendaAnchorDate, setAgendaAnchorDate] = useState<Date>(new Date());
+
+  const agendaVisibleDates = useMemo(() => {
+    if (view !== 'agenda') return [];
+    return getNextNDatesWithEvents(events, agendaAnchorDate, AGENDA_DATES_PER_PAGE);
+  }, [events, agendaAnchorDate, view]);
 
   useEffect(() => {
     loadInitialData();
@@ -103,10 +114,24 @@ export function useCalendar(): UseCalendarReturn {
   }, []);
 
   const goToToday = useCallback(() => {
-    setCurrentDate(new Date());
-  }, []);
+    const today = new Date();
+    setCurrentDate(today);
+    if (view === 'agenda') {
+      setAgendaAnchorDate(today);
+    }
+  }, [view]);
 
   const goToPrevious = useCallback(() => {
+    if (view === 'agenda') {
+      const firstVisibleDate = agendaVisibleDates[0];
+      if (firstVisibleDate) {
+        const prevDates = getPreviousNDatesWithEvents(events, firstVisibleDate, AGENDA_DATES_PER_PAGE);
+        if (prevDates.length > 0) {
+          setAgendaAnchorDate(prevDates[0]);
+        }
+      }
+      return;
+    }
     setCurrentDate(prev => {
       const newDate = new Date(prev);
       switch (view) {
@@ -119,17 +144,23 @@ export function useCalendar(): UseCalendarReturn {
         case 'day':
           newDate.setDate(newDate.getDate() - 1);
           break;
-        case 'agenda':
-          newDate.setDate(newDate.getDate() - 7);
-          break;
         default:
           newDate.setMonth(newDate.getMonth() - 1);
       }
       return newDate;
     });
-  }, [view]);
+  }, [view, agendaVisibleDates, events]);
 
   const goToNext = useCallback(() => {
+    if (view === 'agenda') {
+      const lastVisibleDate = agendaVisibleDates[agendaVisibleDates.length - 1];
+      if (lastVisibleDate) {
+        const nextDay = new Date(lastVisibleDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+        setAgendaAnchorDate(nextDay);
+      }
+      return;
+    }
     setCurrentDate(prev => {
       const newDate = new Date(prev);
       switch (view) {
@@ -142,15 +173,12 @@ export function useCalendar(): UseCalendarReturn {
         case 'day':
           newDate.setDate(newDate.getDate() + 1);
           break;
-        case 'agenda':
-          newDate.setDate(newDate.getDate() + 7);
-          break;
         default:
           newDate.setMonth(newDate.getMonth() + 1);
       }
       return newDate;
     });
-  }, [view]);
+  }, [view, agendaVisibleDates]);
 
   return {
     currentDate,
@@ -161,6 +189,8 @@ export function useCalendar(): UseCalendarReturn {
     isLoading,
     searchTerm,
     sidebarCollapsed,
+    agendaAnchorDate,
+    agendaVisibleDates,
     setCurrentDate,
     setView,
     toggleCalendar,
