@@ -1,11 +1,11 @@
 import React from "react";
-import { MessageSquare as MessageSquareIcon, Phone as PhoneIcon, Mail as MailIcon, Pin as PinIcon, Search as SearchIcon, RefreshCw as RefreshIcon, Settings as SettingsIcon, Star as StarIcon, Trash as TrashIcon, Archive as ArchiveIcon, Clipboard as WhiteboardIcon, History as HistoryIcon, Calendar as EventIcon, SquareCheck as TaskIcon, Hash as ThumbmarkIcon, MessageCircle as SalesChatzIcon, Filter as FilterIcon } from "lucide-react";
-import { Badge, Button, InputGroup, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
+import { MessageSquare as MessageSquareIcon, Phone as PhoneIcon, Mail as MailIcon, Pin as PinIcon, Search as SearchIcon, RefreshCw as RefreshIcon, Settings as SettingsIcon, Star as StarIcon, Trash as TrashIcon, Archive as ArchiveIcon, Filter as FilterIcon } from "lucide-react";
+import { Badge, Button, InputGroup, Form } from "react-bootstrap";
 import { messageService, Message, MessageCounts, MessageFilters } from "../../services/messageService";
 import { FloatingSelect } from "../../components/bootstrap/FormControls";
 import { MessageCenterPageSettingsModal } from "./MessageCenterPageSettingsModal";
 import { MessageCenterFilterModal } from "./MessageCenterFilterModal";
-import { useLayout } from "../../contexts/LayoutContext";
+import { ContactCommunicationHub } from "../../components/contacts/ContactCommunicationHub";
 
 interface MessageCenterHeaderProps {
   selectedType: string;
@@ -393,83 +393,15 @@ const MessageListPanel: React.FC<MessageListPanelProps> = ({ messages, selectedM
   );
 };
 
-interface CommunicationPanelProps {
+interface SenderInfoHeaderProps {
   message: Message | null;
   onDelete: (messageId: string) => void;
   onToggleStar: (messageId: string, isStarred: boolean) => void;
 }
 
-const CommunicationPanel: React.FC<CommunicationPanelProps> = ({ message, onDelete, onToggleStar }) => {
-  const [activeTab, setActiveTab] = React.useState('text');
-  const { isLeftSidebarCollapsed } = useLayout();
-
-  const isCompactMode = !isLeftSidebarCollapsed;
-
-  const tabs = [
-    { id: 'whiteboard', label: 'Whiteboard', icon: WhiteboardIcon },
-    { id: 'history', label: 'History', icon: HistoryIcon },
-    { id: 'text', label: 'Text', icon: MessageSquareIcon },
-    { id: 'email', label: 'Email', icon: MailIcon },
-    { id: 'event', label: 'Event', icon: EventIcon },
-    { id: 'task', label: 'Task', icon: TaskIcon },
-    { id: 'thumbtack', label: 'Thumbtack', icon: ThumbmarkIcon },
-    { id: 'saleschatz', label: 'SalesChatz', icon: SalesChatzIcon }
-  ];
-
+const SenderInfoHeader: React.FC<SenderInfoHeaderProps> = ({ message, onDelete, onToggleStar }) => {
   if (!message) {
-    return (
-      <div className="d-flex flex-column h-100 bg-white">
-        {/* Tabs Section - Disabled State */}
-        <div className="border-bottom bg-white">
-          <div
-            className="d-flex gap-0"
-            style={{ overflow: 'hidden' }}
-          >
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <OverlayTrigger
-                  key={tab.id}
-                  placement="top"
-                  delay={{ show: 500, hide: 0 }}
-                  overlay={<Tooltip id={`tooltip-${tab.id}`}>{tab.label}</Tooltip>}
-                >
-                  <button
-                    disabled
-                    className={`btn btn-link text-decoration-none d-flex align-items-center justify-content-center border-0 rounded-0 text-secondary ${
-                      isCompactMode ? 'gap-0 px-2' : 'gap-2 px-3'
-                    }`}
-                    style={{
-                      whiteSpace: 'nowrap',
-                      borderBottom: '3px solid transparent',
-                      borderBottomLeftRadius: 0,
-                      borderBottomRightRadius: 0,
-                      opacity: 0.5,
-                      cursor: 'not-allowed',
-                      paddingTop: '12px',
-                      paddingBottom: '12px',
-                      flex: isCompactMode ? '1 1 0' : 'initial'
-                    }}
-                  >
-                    <Icon size={18} />
-                    {!isCompactMode && <span className="small fw-medium">{tab.label}</span>}
-                  </button>
-                </OverlayTrigger>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Empty State Message */}
-        <div className="d-flex align-items-center justify-content-center flex-grow-1">
-          <div className="text-center text-secondary">
-            <MessageSquareIcon size={64} className="mb-3" />
-            <h5>Select a message to view</h5>
-            <p className="mb-0">Choose a message from the list to see its full content</p>
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const formatFullDate = (timestamp: string) => {
@@ -484,120 +416,48 @@ const CommunicationPanel: React.FC<CommunicationPanelProps> = ({ message, onDele
   };
 
   return (
-    <div className="d-flex flex-column h-100">
-      <div className="border-bottom p-3 bg-white">
-        <div className="d-flex justify-content-between align-items-start mb-2">
-          <div className="flex-grow-1">
-            <h5 className="mb-1">{message.sender_name}</h5>
-            <div className="small text-muted">
-              {message.sender_email && <div>{message.sender_email}</div>}
-              {message.sender_phone && <div>{message.sender_phone}</div>}
-            </div>
-          </div>
-          <div className="d-flex gap-2">
-            <Button
-              variant="outline-secondary"
-              size="sm"
-              onClick={() => onToggleStar(message.id, !message.is_starred)}
-              title={message.is_starred ? 'Unstar' : 'Star'}
-            >
-              <StarIcon size={16} fill={message.is_starred ? 'currentColor' : 'none'} />
-            </Button>
-            <Button
-              variant="outline-secondary"
-              size="sm"
-              title="Archive"
-            >
-              <ArchiveIcon size={16} />
-            </Button>
-            <Button
-              variant="outline-danger"
-              size="sm"
-              onClick={() => onDelete(message.id)}
-              title="Delete"
-            >
-              <TrashIcon size={16} />
-            </Button>
+    <div className="border-bottom p-3 bg-white">
+      <div className="d-flex justify-content-between align-items-start mb-2">
+        <div className="flex-grow-1">
+          <h5 className="mb-1">{message.sender_name}</h5>
+          <div className="small text-muted">
+            {message.sender_email && <div>{message.sender_email}</div>}
+            {message.sender_phone && <div>{message.sender_phone}</div>}
           </div>
         </div>
-        <div className="small text-muted mb-2">{formatFullDate(message.timestamp)}</div>
-        {message.company_name && (
-          <div className="small"><strong>Company:</strong> {message.company_name}</div>
-        )}
-        {message.opportunity_name && (
-          <div className="small"><strong>Opportunity:</strong> {message.opportunity_name}</div>
-        )}
-      </div>
-
-      <div className="border-bottom bg-white">
-        <div
-          className="d-flex gap-0"
-          style={{ overflow: 'hidden' }}
-        >
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <OverlayTrigger
-                key={tab.id}
-                placement="top"
-                delay={{ show: 500, hide: 0 }}
-                overlay={<Tooltip id={`tooltip-active-${tab.id}`}>{tab.label}</Tooltip>}
-              >
-                <button
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`btn btn-link text-decoration-none d-flex align-items-center justify-content-center border-0 rounded-0 ${
-                    isActive ? 'text-primary border-bottom border-primary border-3' : 'text-secondary'
-                  } ${isCompactMode ? 'gap-0 px-2' : 'gap-2 px-3'}`}
-                  style={{
-                    whiteSpace: 'nowrap',
-                    borderBottomLeftRadius: 0,
-                    borderBottomRightRadius: 0,
-                    paddingTop: '8px',
-                    paddingBottom: '8px',
-                    flex: isCompactMode ? '1 1 0' : 'initial'
-                  }}
-                >
-                  <Icon size={16} />
-                  {!isCompactMode && <span className="small">{tab.label}</span>}
-                </button>
-              </OverlayTrigger>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="flex-grow-1 overflow-auto p-4">
-        {message.subject && (
-          <h4 className="mb-3">{message.subject}</h4>
-        )}
-        <div className="mb-4" style={{ whiteSpace: 'pre-wrap' }}>
-          {message.body}
-        </div>
-        {message.attachments && message.attachments.length > 0 && (
-          <div className="border-top pt-3">
-            <h6 className="mb-2">Attachments</h6>
-            <div className="d-flex flex-column gap-2">
-              {message.attachments.map((attachment: any, index: number) => (
-                <div key={index} className="border rounded p-2 d-flex align-items-center gap-2">
-                  <span>{attachment.name || `Attachment ${index + 1}`}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="border-top p-3">
         <div className="d-flex gap-2">
-          <Button variant="primary" size="sm">
-            Reply
+          <Button
+            variant="outline-secondary"
+            size="sm"
+            onClick={() => onToggleStar(message.id, !message.is_starred)}
+            title={message.is_starred ? 'Unstar' : 'Star'}
+          >
+            <StarIcon size={16} fill={message.is_starred ? 'currentColor' : 'none'} />
           </Button>
-          <Button variant="outline-secondary" size="sm">
-            Forward
+          <Button
+            variant="outline-secondary"
+            size="sm"
+            title="Archive"
+          >
+            <ArchiveIcon size={16} />
+          </Button>
+          <Button
+            variant="outline-danger"
+            size="sm"
+            onClick={() => onDelete(message.id)}
+            title="Delete"
+          >
+            <TrashIcon size={16} />
           </Button>
         </div>
       </div>
+      <div className="small text-muted mb-2">{formatFullDate(message.timestamp)}</div>
+      {message.company_name && (
+        <div className="small"><strong>Company:</strong> {message.company_name}</div>
+      )}
+      {message.opportunity_name && (
+        <div className="small"><strong>Opportunity:</strong> {message.opportunity_name}</div>
+      )}
     </div>
   );
 };
@@ -764,10 +624,14 @@ const MessageCenterBody: React.FC<MessageCenterBodyProps> = ({ selectedType, sea
             }}
           />
           <div className="overflow-auto flex-grow-1 d-flex flex-column" style={{ minHeight: 0 }}>
-            <CommunicationPanel
+            <SenderInfoHeader
               message={selectedMessage}
               onDelete={handleDelete}
               onToggleStar={handleToggleStar}
+            />
+            <ContactCommunicationHub
+              contactId={selectedMessage?.contact_id || null}
+              defaultTab="text"
             />
           </div>
         </div>

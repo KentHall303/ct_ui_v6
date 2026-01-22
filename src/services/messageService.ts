@@ -44,6 +44,97 @@ export interface MessageFilters {
 }
 
 export const messageService = {
+  async findOrCreateContact(message: Message): Promise<string | null> {
+    try {
+      // Try to find existing contact by email
+      if (message.sender_email) {
+        const { data: contactByEmail } = await supabase
+          .from('contacts')
+          .select('id')
+          .eq('email', message.sender_email)
+          .maybeSingle();
+
+        if (contactByEmail) {
+          return contactByEmail.id;
+        }
+      }
+
+      // Try to find by phone
+      if (message.sender_phone) {
+        const { data: contactByPhone } = await supabase
+          .from('contacts')
+          .select('id')
+          .eq('phone', message.sender_phone)
+          .maybeSingle();
+
+        if (contactByPhone) {
+          return contactByPhone.id;
+        }
+      }
+
+      // Try to find by name
+      if (message.sender_name) {
+        const nameParts = message.sender_name.trim().split(' ');
+        const firstName = nameParts[0];
+        const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+
+        let nameQuery = supabase
+          .from('contacts')
+          .select('id')
+          .eq('first_name', firstName);
+
+        if (lastName) {
+          nameQuery = nameQuery.eq('last_name', lastName);
+        }
+
+        const { data: contactByName } = await nameQuery.maybeSingle();
+
+        if (contactByName) {
+          return contactByName.id;
+        }
+      }
+
+      // No match found - create new contact
+      const nameParts = message.sender_name.trim().split(' ');
+      const firstName = nameParts[0] || 'Unknown';
+      const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+
+      const { data: newContact, error } = await supabase
+        .from('contacts')
+        .insert({
+          first_name: firstName,
+          last_name: lastName,
+          email: message.sender_email || null,
+          phone: message.sender_phone || null,
+          company: message.company_name || null,
+          contact_type: message.contact_type || 'new-other'
+        })
+        .select('id')
+        .single();
+
+      if (error) {
+        console.error('Error creating contact:', error);
+        return null;
+      }
+
+      return newContact.id;
+    } catch (error) {
+      console.error('Error in findOrCreateContact:', error);
+      return null;
+    }
+  },
+
+  async linkMessageToContact(messageId: string, contactId: string): Promise<void> {
+    const { error } = await supabase
+      .from('messages')
+      .update({ contact_id: contactId })
+      .eq('id', messageId);
+
+    if (error) {
+      console.error('Error linking message to contact:', error);
+    }
+  },
+
   async getMessages(type?: string, filters?: MessageFilters): Promise<Message[]> {
     if (filters?.messageDirection === 'none') {
       return [];
@@ -126,7 +217,20 @@ export const messageService = {
       throw error;
     }
 
-    return data || [];
+    const messages = data || [];
+
+    // Auto-link messages to contacts if not already linked
+    for (const message of messages) {
+      if (!message.contact_id) {
+        const contactId = await this.findOrCreateContact(message);
+        if (contactId) {
+          await this.linkMessageToContact(message.id, contactId);
+          message.contact_id = contactId;
+        }
+      }
+    }
+
+    return messages;
   },
 
   async getUnreadCounts(): Promise<MessageCounts> {
@@ -191,5 +295,26 @@ export const messageService = {
       console.error('Error deleting message:', error);
       throw error;
     }
+  },
+
+  async getMessagesByContactId(contactId: string, type?: string): Promise<Message[]> {
+    let query = supabase
+      .from('messages')
+      .select('*')
+      .eq('contact_id', contactId)
+      .order('timestamp', { ascending: false });
+
+    if (type && type !== 'all') {
+      query = query.eq('type', type);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('Error fetching messages by contact:', error);
+      throw error;
+    }
+
+    return data || [];
   }
 };
