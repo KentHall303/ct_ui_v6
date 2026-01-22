@@ -82,35 +82,39 @@ const AgendaEventRow: React.FC<AgendaEventRowProps> = ({ event, onClick }) => {
   const timeDisplay = formatAgendaTime(event.start_date, event.end_date, event.is_all_day);
   const isCancelled = event.status === 'overdue';
 
+  const hexToRgba = (hex: string, alpha: number) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
+  const backgroundColor = hexToRgba(calendarColor, 0.1);
+  const hoverBackgroundColor = hexToRgba(calendarColor, 0.18);
+
   return (
     <div
-      className="d-flex align-items-start gap-3 py-2"
+      className="d-flex align-items-start gap-3 py-2 px-3"
       style={{
-        paddingLeft: 56,
+        marginLeft: 56,
+        marginRight: 8,
+        marginTop: 4,
+        marginBottom: 4,
+        borderRadius: 6,
+        backgroundColor: backgroundColor,
         cursor: onClick ? 'pointer' : 'default',
         transition: 'background-color 0.15s ease'
       }}
       onClick={(e) => onClick?.(event, e.clientX, e.clientY)}
       onMouseEnter={(e) => {
         if (onClick) {
-          e.currentTarget.style.backgroundColor = '#f8f9fa';
+          e.currentTarget.style.backgroundColor = hoverBackgroundColor;
         }
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.backgroundColor = 'transparent';
+        e.currentTarget.style.backgroundColor = backgroundColor;
       }}
     >
-      <div
-        style={{
-          width: 10,
-          height: 10,
-          borderRadius: '50%',
-          backgroundColor: isCancelled ? 'transparent' : calendarColor,
-          border: isCancelled ? `2px solid ${calendarColor}` : 'none',
-          flexShrink: 0,
-          marginTop: 5
-        }}
-      />
       <div
         style={{
           width: 110,
