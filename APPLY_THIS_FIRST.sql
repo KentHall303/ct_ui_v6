@@ -761,13 +761,114 @@ Best regards,
 {user.name}', 'email', true, 0);
 
 -- Add more email templates (8 more for 10 total)
-INSERT INTO templates (name, subject, contact_type, content, category, is_active) VALUES
-('Missing Data Follow-up 2', 'Additional Information Needed', 'All', 'We need more information...', 'email', true),
-('Signature Request 2', 'Please Sign Documents', 'All', 'Your signature is needed...', 'email', true),
-('Missing Data Follow-up 3', 'Information Required', 'All', 'Please provide missing data...', 'email', true),
-('Signature Request 3', 'Document Signing', 'All', 'Please complete signing...', 'email', true),
-('Missing Data Follow-up 4', 'Form Completion', 'All', 'Complete the form...', 'email', true),
-('Signature Request 4', 'Signature Portal', 'All', 'Access the signing portal...', 'email', true);
+INSERT INTO templates (name, subject, contact_type, exclude_client, content, category, is_active, usage_count) VALUES
+('Missing Data Follow-up 2', 'Additional Information Needed', 'All', false, 'Dear {client.firstName},
+
+We noticed that some required information is still missing from your account. To ensure we can provide you with the best service, please complete the following:
+
+{missing_information}
+
+Please log into your account or reply to this email with the requested information.
+
+Thank you,
+{user.name}', 'email', true, 0),
+('Signature Request 2', 'Please Sign Documents', 'All', false, 'Hi {client.firstName},
+
+Attached you will find the documents that require your signature. We have prepared everything for your convenience:
+
+- Document 1: {document_1}
+- Document 2: {document_2}
+
+Please review and sign at your earliest convenience. The signature process is simple and secure.
+
+{signature_instructions}
+
+Looking forward to hearing from you soon.
+
+Sincerely,
+{user.name}', 'email', true, 0),
+('Missing Data Follow-up 3', 'Information Required', 'All', false, 'Dear {client.firstName},
+
+We need some additional information to complete your request. Please provide the missing data as soon as possible:
+
+{required_information}
+
+This information is crucial for us to proceed with your project efficiently.
+
+Thank you for your prompt attention to this matter.
+
+Best regards,
+{user.name}', 'email', true, 0),
+('Signature Request 3', 'Document Signing', 'All', false, 'Dear {client.firstName},
+
+Your documents are ready for signature. Please follow the secure link below to review and sign:
+
+{document_link}
+
+The process is quick and easy:
+- Review the document
+- Add your signature
+- Submit
+
+Please complete this within the next 48 hours.
+
+Thank you,
+{user.name}', 'email', true, 0),
+('Missing Data Follow-up 4', 'Form Completion', 'All', false, 'Hello {client.firstName},
+
+We are currently unable to proceed with your request due to missing information. Please fill in the following details:
+
+{form_fields}
+
+You can complete this form by clicking the link below:
+{form_link}
+
+We appreciate your cooperation.
+
+Regards,
+{user.name}', 'email', true, 0),
+('Signature Request 4', 'Signature Portal', 'All', false, 'Hi {client.firstName},
+
+As discussed, here are the documents requiring your signature:
+
+{document_list}
+
+Please review and sign these documents using our secure portal.
+
+{portal_link}
+
+Feel free to reach out if you have any questions.
+
+Best wishes,
+{user.name}', 'email', true, 0),
+('Project Update Email', 'Project Status Update', 'All', false, 'Hello {client.firstName},
+
+I wanted to provide you with an update on your project status.
+
+Current Progress: {project.progress}%
+Next Milestone: {project.nextMilestone}
+Expected Completion: {project.completionDate}
+
+{project_updates}
+
+Please let me know if you have any questions or concerns.
+
+Best regards,
+{user.name}', 'email', true, 0),
+('Payment Reminder', 'Payment Due Reminder', 'All', false, 'Dear {client.firstName},
+
+This is a friendly reminder that payment is due for your project.
+
+Invoice Number: {invoice.number}
+Amount Due: {invoice.amount}
+Due Date: {invoice.dueDate}
+
+You can make a payment online at: {payment_link}
+
+Thank you for your prompt attention to this matter.
+
+Best regards,
+{user.name}', 'email', true, 0);
 
 -- Text Templates (15 records)
 INSERT INTO templates (name, contact_type, content, category, content_tcpa, select_token, is_active) VALUES
@@ -890,7 +991,89 @@ INSERT INTO connection_plan_actions (connection_plan_id, step_number, action_nam
 ('44444444-4444-4444-4444-444444444444', 3, 'Send Documentation', 'email', 'Day 3', 'Email', 3, '{"template": "docs"}'::jsonb),
 ('44444444-4444-4444-4444-444444444444', 4, 'One-Week Check-In', 'call', 'Day 7', 'Task', 4, '{"duration": "30min"}'::jsonb),
 ('44444444-4444-4444-4444-444444444444', 5, 'Feedback Survey', 'email', 'Day 14', 'Email', 5, '{"template": "survey"}'::jsonb),
-('44444444-4444-4444-4444-444444444444', 6, 'Completion Certificate', 'email', 'Day 30', 'Email', 6, '{"template": "complete"}'::jsonb)
+('44444444-4444-4444-4444-444444444444', 6, 'Completion Certificate', 'email', 'Day 30', 'Email', 6, '{"template": "complete"}'::jsonb),
+
+-- Actions for Lead Conversion Fast Track (3 actions)
+('11111111-2222-3333-4444-555555555555', 1, 'Immediate Response', 'email', 'Immediate', 'Email', 1, '{"template": "immediate_response", "priority": "urgent"}'::jsonb),
+('11111111-2222-3333-4444-555555555555', 2, 'Schedule Demo Today', 'call', 'Same Day', 'Task', 2, '{"duration": "30min", "priority": "high"}'::jsonb),
+('11111111-2222-3333-4444-555555555555', 3, 'Close Deal', 'email', 'Day 1', 'Email', 3, '{"template": "close_proposal", "discount": "early_bird"}'::jsonb),
+
+-- Actions for Standard Conversion Flow (4 actions)
+('22222222-3333-4444-5555-666666666666', 1, 'Welcome and Educate', 'email', 'Immediate', 'Email', 1, '{"template": "education_series"}'::jsonb),
+('22222222-3333-4444-5555-666666666666', 2, 'Feature Highlight', 'email', 'Day 3', 'Email', 2, '{"template": "feature_benefits"}'::jsonb),
+('22222222-3333-4444-5555-666666666666', 3, 'Case Study Share', 'email', 'Day 7', 'Email', 3, '{"template": "success_story"}'::jsonb),
+('22222222-3333-4444-5555-666666666666', 4, 'Conversion Offer', 'email', 'Day 14', 'Email', 4, '{"template": "limited_offer"}'::jsonb),
+
+-- Actions for Enterprise Conversion (5 actions)
+('33333333-4444-5555-6666-777777777777', 1, 'Executive Welcome', 'email', 'Immediate', 'Email', 1, '{"template": "executive_welcome"}'::jsonb),
+('33333333-4444-5555-6666-777777777777', 2, 'Schedule Executive Demo', 'call', 'Day 2', 'Task', 2, '{"duration": "60min", "attendees": "multiple"}'::jsonb),
+('33333333-4444-5555-6666-777777777777', 3, 'ROI Analysis', 'email', 'Day 5', 'Email', 3, '{"template": "roi_calculator"}'::jsonb),
+('33333333-4444-5555-6666-777777777777', 4, 'Custom Proposal', 'email', 'Day 10', 'Email', 4, '{"template": "enterprise_proposal"}'::jsonb),
+('33333333-4444-5555-6666-777777777777', 5, 'Contract Negotiation', 'call', 'Day 15', 'Task', 5, '{"duration": "90min"}'::jsonb),
+
+-- Actions for Customer Loyalty Program (4 actions)
+('44444444-5555-6666-7777-888888888888', 1, 'Thank You Message', 'email', 'Immediate', 'Email', 1, '{"template": "loyalty_welcome"}'::jsonb),
+('44444444-5555-6666-7777-888888888888', 2, 'Exclusive Benefits', 'email', 'Day 7', 'Email', 2, '{"template": "loyalty_benefits"}'::jsonb),
+('44444444-5555-6666-7777-888888888888', 3, 'Referral Program', 'email', 'Day 30', 'Email', 3, '{"template": "referral_invite"}'::jsonb),
+('44444444-5555-6666-7777-888888888888', 4, 'Anniversary Reward', 'email', 'Day 90', 'Email', 4, '{"template": "anniversary_special"}'::jsonb),
+
+-- Actions for Win-Back Campaign (4 actions)
+('55555555-6666-7777-8888-999999999999', 1, 'We Miss You', 'email', 'Immediate', 'Email', 1, '{"template": "win_back_intro"}'::jsonb),
+('55555555-6666-7777-8888-999999999999', 2, 'Special Win-Back Offer', 'email', 'Day 3', 'Email', 2, '{"template": "win_back_offer", "discount": "30%"}'::jsonb),
+('55555555-6666-7777-8888-999999999999', 3, 'Feedback Request', 'email', 'Day 7', 'Email', 3, '{"template": "feedback_survey"}'::jsonb),
+('55555555-6666-7777-8888-999999999999', 4, 'Final Attempt', 'email', 'Day 14', 'Email', 4, '{"template": "last_chance"}'::jsonb),
+
+-- Actions for VIP Customer Care (5 actions)
+('66666666-7777-8888-9999-aaaaaaaaaaaa', 1, 'VIP Welcome', 'email', 'Immediate', 'Email', 1, '{"template": "vip_welcome", "tone": "exclusive"}'::jsonb),
+('66666666-7777-8888-9999-aaaaaaaaaaaa', 2, 'Dedicated Account Manager', 'call', 'Day 1', 'Task', 2, '{"duration": "45min", "type": "introduction"}'::jsonb),
+('66666666-7777-8888-9999-aaaaaaaaaaaa', 3, 'VIP Benefits Overview', 'email', 'Day 3', 'Email', 3, '{"template": "vip_perks"}'::jsonb),
+('66666666-7777-8888-9999-aaaaaaaaaaaa', 4, 'Monthly Check-In', 'call', 'Day 30', 'Task', 4, '{"duration": "30min", "recurring": true}'::jsonb),
+('66666666-7777-8888-9999-aaaaaaaaaaaa', 5, 'Exclusive Preview', 'email', 'Day 60', 'Email', 5, '{"template": "vip_preview"}'::jsonb),
+
+-- Actions for Trade Show Follow-Up (3 actions)
+('77777777-8888-9999-aaaa-bbbbbbbbbbbb', 1, 'Thank You for Visiting', 'email', 'Same Day', 'Email', 1, '{"template": "tradeshow_thanks"}'::jsonb),
+('77777777-8888-9999-aaaa-bbbbbbbbbbbb', 2, 'Booth Materials', 'email', 'Day 1', 'Email', 2, '{"template": "tradeshow_materials"}'::jsonb),
+('77777777-8888-9999-aaaa-bbbbbbbbbbbb', 3, 'Schedule Follow-Up', 'call', 'Day 3', 'Task', 3, '{"duration": "30min"}'::jsonb),
+
+-- Actions for Webinar Attendee Sequence (4 actions)
+('88888888-9999-aaaa-bbbb-cccccccccccc', 1, 'Webinar Thank You', 'email', 'Same Day', 'Email', 1, '{"template": "webinar_thanks", "include_recording": true}'::jsonb),
+('88888888-9999-aaaa-bbbb-cccccccccccc', 2, 'Slides and Resources', 'email', 'Day 1', 'Email', 2, '{"template": "webinar_resources"}'::jsonb),
+('88888888-9999-aaaa-bbbb-cccccccccccc', 3, 'Implementation Guide', 'email', 'Day 3', 'Email', 3, '{"template": "implementation_guide"}'::jsonb),
+('88888888-9999-aaaa-bbbb-cccccccccccc', 4, 'Consultation Offer', 'email', 'Day 7', 'Email', 4, '{"template": "free_consultation"}'::jsonb),
+
+-- Actions for Conference Networking (3 actions)
+('99999999-aaaa-bbbb-cccc-dddddddddddd', 1, 'Nice Meeting You', 'email', 'Same Day', 'Email', 1, '{"template": "conference_intro"}'::jsonb),
+('99999999-aaaa-bbbb-cccc-dddddddddddd', 2, 'Share Resources', 'email', 'Day 2', 'Email', 2, '{"template": "conference_resources"}'::jsonb),
+('99999999-aaaa-bbbb-cccc-dddddddddddd', 3, 'Partnership Discussion', 'call', 'Day 7', 'Task', 3, '{"duration": "45min", "type": "partnership"}'::jsonb),
+
+-- Actions for Spring Campaign (3 actions)
+('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', 1, 'Spring Announcement', 'email', 'Immediate', 'Email', 1, '{"template": "spring_launch"}'::jsonb),
+('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', 2, 'Spring Special Offer', 'email', 'Day 7', 'Email', 2, '{"template": "spring_promo"}'::jsonb),
+('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', 3, 'Last Chance Spring', 'email', 'Day 21', 'Email', 3, '{"template": "spring_ending"}'::jsonb),
+
+-- Actions for Summer Special (3 actions)
+('bbbbbbbb-cccc-dddd-eeee-ffffffffffff', 1, 'Summer Kickoff', 'email', 'Immediate', 'Email', 1, '{"template": "summer_start"}'::jsonb),
+('bbbbbbbb-cccc-dddd-eeee-ffffffffffff', 2, 'Mid-Summer Sale', 'email', 'Day 14', 'Email', 2, '{"template": "summer_sale"}'::jsonb),
+('bbbbbbbb-cccc-dddd-eeee-ffffffffffff', 3, 'End of Summer', 'email', 'Day 28', 'Email', 3, '{"template": "summer_finale"}'::jsonb),
+
+-- Actions for Holiday Greetings (4 actions)
+('cccccccc-dddd-eeee-ffff-000000000000', 1, 'Holiday Greeting', 'email', 'Immediate', 'Email', 1, '{"template": "holiday_greeting"}'::jsonb),
+('cccccccc-dddd-eeee-ffff-000000000000', 2, 'Year-End Thank You', 'email', 'Day 7', 'Email', 2, '{"template": "year_end_thanks"}'::jsonb),
+('cccccccc-dddd-eeee-ffff-000000000000', 3, 'New Year Message', 'email', 'Day 14', 'Email', 3, '{"template": "new_year_message"}'::jsonb),
+('cccccccc-dddd-eeee-ffff-000000000000', 4, 'New Year Special', 'email', 'Day 21', 'Email', 4, '{"template": "new_year_offer"}'::jsonb),
+
+-- Actions for Multi-Channel Blast (5 actions)
+('dddddddd-eeee-ffff-0000-111111111111', 1, 'Email Announcement', 'email', 'Immediate', 'Email', 1, '{"template": "multi_channel_email"}'::jsonb),
+('dddddddd-eeee-ffff-0000-111111111111', 2, 'SMS Alert', 'text', 'Immediate', 'Text', 2, '{"template": "multi_channel_sms"}'::jsonb),
+('dddddddd-eeee-ffff-0000-111111111111', 3, 'Follow-Up Call', 'call', 'Day 1', 'Task', 3, '{"duration": "15min"}'::jsonb),
+('dddddddd-eeee-ffff-0000-111111111111', 4, 'Social Media Touch', 'email', 'Day 2', 'Email', 4, '{"template": "social_reminder"}'::jsonb),
+('dddddddd-eeee-ffff-0000-111111111111', 5, 'Final Push', 'email', 'Day 7', 'Email', 5, '{"template": "final_reminder"}'::jsonb),
+
+-- Actions for Urgent Response Protocol (4 actions)
+('eeeeeeee-ffff-0000-1111-222222222222', 1, 'Immediate Acknowledgment', 'email', 'Immediate', 'Email', 1, '{"template": "urgent_ack", "priority": "critical"}'::jsonb),
+('eeeeeeee-ffff-0000-1111-222222222222', 2, 'Urgent Call', 'call', 'Immediate', 'Task', 2, '{"duration": "15min", "priority": "urgent"}'::jsonb),
+('eeeeeeee-ffff-0000-1111-222222222222', 3, 'Status Update', 'email', 'Same Day', 'Email', 3, '{"template": "urgent_update"}'::jsonb),
+('eeeeeeee-ffff-0000-1111-222222222222', 4, 'Resolution Follow-Up', 'call', 'Day 1', 'Task', 4, '{"duration": "30min", "type": "resolution"}'::jsonb)
 ON CONFLICT DO NOTHING;
 
 -- ============================================================
