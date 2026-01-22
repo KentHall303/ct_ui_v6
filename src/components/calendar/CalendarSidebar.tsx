@@ -97,14 +97,14 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
         </div>
 
         <div className="bg-white rounded-3 shadow-sm p-3">
-          <div className="d-flex flex-column gap-3">
+          <div className="d-flex flex-column gap-2">
             {activeCalendars.map((calendar) => {
               const isSelected = selectedCalendars.includes(calendar.id);
               const eventCount = eventCountsByCalendar[calendar.id] || 0;
               return (
                 <label
                   key={calendar.id}
-                  className="d-flex align-items-center gap-3"
+                  className="d-flex align-items-center gap-2"
                   style={{ cursor: 'pointer' }}
                 >
                   <input
@@ -141,7 +141,7 @@ export const CalendarSidebar: React.FC<CalendarSidebarProps> = ({
                   </div>
                   <span
                     className={`text-dark ${isSelected ? 'fw-bold' : ''}`}
-                    style={{ fontSize: '0.95rem', flex: 1 }}
+                    style={{ fontSize: '0.85rem', flex: 1 }}
                   >
                     {calendar.name}
                   </span>

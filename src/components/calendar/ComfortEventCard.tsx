@@ -1,7 +1,6 @@
 import React from 'react';
 import { CalendarEventWithCalendar } from '../../services/calendarService';
 import { formatTime } from '../../utils/dateUtils';
-import { ChevronRight } from 'lucide-react';
 
 type DisplayMode = 'single' | 'multiple';
 
@@ -144,10 +143,6 @@ export const ComfortEventCard: React.FC<ComfortEventCardProps> = ({
         e.currentTarget.style.backgroundColor = hexToRgba(calendarColor, 0.08);
       }}
     >
-      <ChevronRight
-        size={12}
-        style={{ color: calendarColor, flexShrink: 0 }}
-      />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div className="d-flex align-items-center gap-2">
           {event.quote_number && (
